@@ -1,35 +1,27 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import React from 'react';
+import MapView from './components/MapView.jsx'; // ajustá la ruta si tu carpeta difiere
 
-function App() {
-  const [count, setCount] = useState(0)
+const demo = [
+  {
+    id: 'a1',
+    name: 'Rafting Río Mendoza',
+    location: { lat: -32.915, lng: -68.845, city: 'Potrerillos', province: 'Mendoza' },
+    difficulty: 'media', rating: 4.7, durationMinutes: 150
+  },
+  {
+    id: 'a2',
+    name: 'Trekking Cerro Arco',
+    location: { lat: -32.861, lng: -68.93, city: 'Mendoza', province: 'Mendoza' },
+    difficulty: 'baja', rating: 4.5, durationMinutes: 120
+  }
+];
 
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ padding: 16 }}>
+      <h1>Mapa con Leaflet</h1>
+      <MapView items={demo} />
+    </div>
+  );
 }
-
-export default App
