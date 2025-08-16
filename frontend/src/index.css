@@ -1,192 +1,138 @@
-@import "tailwindcss";
-
-
-
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-
-html, body {
-  width: 100vw;
-  height: 100vh;
-  min-width: 100vw;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: white;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-/*Estructura de HTML - Index*/
-
 
 .parent {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(5, 1fr);
-    gap: 8px;
-    width: 100vw;
-    height: 100vh;
-   justify-items: center; /* Centra horizontalmente */
-    align-items: center;   /* Centra verticalmente */
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 8px;
+  width: 100vw;
+  height: 100vh;
 
+
+  justify-items: stretch;
+  align-items: stretch;
 }
+
+
 .div1 {
-    grid-row: span 5 / span 5;
-    color: red
+  grid-row: span 5 / span 5;
+  color: red;
 }
 
 .div2 {
-    grid-column: span 3 / span 3;
-    grid-row: span 2 / span 2;
-   color:blue
+  grid-column: span 3 / span 3;
+  grid-row: span 2 / span 2;
+  color: blue;
 }
 
 .div3 {
-    grid-row: span 2 / span 2;
-    grid-column-start: 5;
-   color: green
+  grid-row: span 2 / span 2;
+  grid-column-start: 5;
+  color: green;
 }
 
+
 .div4 {
-    grid-column: span 3 / span 3;
-    grid-row: span 3 / span 3;
-    grid-column-start: 2;
-    grid-row-start: 3;
-     color: grey
+  grid-column: span 3 / span 3;
+  grid-row: span 3 / span 3;
+  grid-column-start: 2;
+  grid-row-start: 3;
+  color: grey;
+
+  justify-self: stretch;
+  align-self: stretch;
+  height: 520px;      /* ⚠️ CLAVE: altura real para el mapa */
 }
 
 .div6 {
-    grid-row: span 3 / span 3;
-    grid-column-start: 5;
-    grid-row-start: 3;  
-   color:yellow
+  grid-row: span 3 / span 3;
+  grid-column-start: 5;
+  grid-row-start: 3;
+  color: yellow;
 }
 
-.container3 {
-  background-color: white;
-  border-radius: 8px;
-  padding: 6rem 6rem; /* Padding grande: arriba/abajo, izquierda/derecha */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); /* Sombra suave y visible */
-}
-
-.container4 {
-  background-color: white;
-  border-radius: 8px;
-  padding: 6rem 6rem; /* Padding grande: arriba/abajo, izquierda/derecha */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); /* Sombra suave y visible */
-}
-
-
-
+/* Tarjetas (solo ejemplo; usaremos container4 para el mapa) */
+.container3,
 .container6 {
   background-color: white;
   border-radius: 8px;
-  padding: 6rem 6rem; /* Padding grande: arriba/abajo, izquierda/derecha */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); /* Sombra suave y visible */
-}
-.div4 {
-  min-height: 520px;   /* 👈 fuerza altura para que el mapa se vea */
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
+/* ⬇️ Tarjeta del CONTENEDOR 4 (donde va el mapa) */
 .container4 {
   background-color: white;
-  border-radius: 8px;
-  padding: 1rem;       /* reducimos el padding (antes era 6rem) */
+  border-radius: 12px;
+  padding: 0;                  /* sin padding para que el mapa use todo */
   box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-  height: 100%;        /* que ocupe todo el espacio del div4 */
-  width: 100%;
-  overflow: hidden;    /* que el mapa no se salga */
-}
-/* Contenedor 4: altura para que el mapa exista */
-.div4 {
-  /* mantené tus grid-rows/cols como los tenías */
-  min-height: 520px;      /* ⬅️ CLAVE */
-}
-
-/* Tarjeta del contenedor 4 */
-.container4 {
-  background-color: white;
-  border-radius: 8px;
-  padding: 1rem;          /* antes tenías 6rem: lo bajamos */
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-  height: 100%;           /* ocupa todo el alto del div4 */
+  height: 100%;                /* ocupa todo el alto de .div4 */
   width: 100%;
   overflow: hidden;
-}
-/* Hacer que SOLO el contenedor 4 se estire dentro de su celda de grid */
-.div4 {
-  justify-self: stretch;    /* ocupa todo el ancho de su celda */
-  align-self: stretch;      /* ocupa todo el alto de su celda */
-  height: 520px;            /* altura DEFINIDA para el mapa */
+  border: 1px solid #eee;      /* opcional: para ver el contorno */
 }
 
-/* La tarjeta de adentro debe ocupar 100% (sin padding grande) */
+/* Visual de fondo del canvas del mapa (opcional) */
+.leaflet-container {
+  background: #f2f4f7;
+}
+/* ===== Layout tipo dashboard ===== */
+.parent {
+  display: grid;
+  /* 3 columnas: izquierda fija, centro flexible, derecha fija */
+  grid-template-columns: 320px 1fr 320px;
+  /* 3 filas: header auto, contenido 1fr, contenido auto */
+  grid-template-rows: auto 1fr auto;
+  /* Áreas: igual a tu boceto */
+  grid-template-areas:
+    "c1   header  c3"
+    "c1   map     c6"
+    "c1   map     c6";
+  gap: 24px;
+  padding: 24px;
+  width: 100vw;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Mapeo de tus divs a las áreas */
+.div1 { grid-area: c1; }
+.div2 { grid-area: header; }
+.div3 { grid-area: c3; }
+.div4 { grid-area: map; }
+.div6 { grid-area: c6; }
+/* Si querés usar .div5 más adelante, podés asignarla a otra área */
+
+/* Tarjeta base para los contenedores (menos el mapa) */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 16px;
+}
+
+/* Caja del MAPA (ocupa todo su área, sin padding) */
 .container4 {
-  padding: 0;               /* el padding grande mata el espacio del mapa */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-  border: 1px solid #eee;   /* borde temporal para ver el contorno */
+  padding: 0;         /* clave para que el mapa use todo */
+  min-height: 600px;  /* alto cómodo para el mapa */
+}
+
+/* Responsive: en móvil, apila todo */
+@media (max-width: 980px) {
+  .parent {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto;
+    grid-template-areas:
+      "header"
+      "map"
+      "c1"
+      "c3"
+      "c6";
+  }
+  .container4 { min-height: 420px; }
 }
