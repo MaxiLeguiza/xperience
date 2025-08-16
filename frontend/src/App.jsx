@@ -1,5 +1,5 @@
 // src/App.jsx
-import MapView from "./components/MapView";
+import MapView from "./components/MapView.jsx";
 
 export default function App() {
   return (
