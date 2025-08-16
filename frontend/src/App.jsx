@@ -1,27 +1,22 @@
 // src/App.jsx
-import React from 'react';
-import MapView from './components/MapView.jsx'; // ajustá la ruta si tu carpeta difiere
-
-const demo = [
-  {
-    id: 'a1',
-    name: 'Rafting Río Mendoza',
-    location: { lat: -32.915, lng: -68.845, city: 'Potrerillos', province: 'Mendoza' },
-    difficulty: 'media', rating: 4.7, durationMinutes: 150
-  },
-  {
-    id: 'a2',
-    name: 'Trekking Cerro Arco',
-    location: { lat: -32.861, lng: -68.93, city: 'Mendoza', province: 'Mendoza' },
-    difficulty: 'baja', rating: 4.5, durationMinutes: 120
-  }
-];
+import MapView from "./components/MapView";
 
 export default function App() {
   return (
-    <div style={{ padding: 16 }}>
-      <h1>Mapa con Leaflet</h1>
-      <MapView items={demo} />
+    <div className="parent">
+      <div className="div1">Contenedor 1</div>
+      <div className="div2">Contenedor 2</div>
+      <div className="div3">Contenedor 3</div>
+
+      {/* Contenedor 4: SOLO el mapa adentro */}
+      <div className="div4">
+        <div className="container4">
+          <MapView />
+        </div>
+      </div>
+
+      <div className="div5">Contenedor 5</div>
+      <div className="div6">Contenedor 6</div>
     </div>
   );
 }

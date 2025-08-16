@@ -1,52 +1,29 @@
-import React, { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+// src/components/MapView.jsx
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
-// Fix de íconos para Vite
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
+// Fix de íconos (Vite)
+import iconUrl from "leaflet/dist/images/marker-icon.png";
+import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
+import shadowUrl from "leaflet/dist/images/marker-shadow.png";
+L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
-function FitBounds({ positions }) {
-  const map = useMap();
-  useEffect(() => {
-    if (!positions.length) return;
-    map.fitBounds(L.latLngBounds(positions), { padding: [30, 30] });
-  }, [positions, map]);
-  return null;
-}
-
-export default function MapView({ items = [], onHover }) {
-  const positions = useMemo(
-    () => items.filter(a => a?.location?.lat && a?.location?.lng).map(a => [a.location.lat, a.location.lng]),
-    [items]
-  );
-  const defaultCenter = useMemo(() => [-32.889, -68.845], []); // Mendoza
-
+export default function MapView() {
   return (
-    <div className="card overflow-hidden">
-      <MapContainer center={positions[0] || defaultCenter} zoom={9} style={{ height: 420, width: '100%' }} scrollWheelZoom>
+    <div style={{ width: "100%", height: "100%" }}>
+      <MapContainer
+        center={[-32.8895, -68.8458]} // Mendoza
+        zoom={13}
+        style={{ height: "100%", width: "100%" }}
+      >
         <TileLayer
-          url={import.meta.env.VITE_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
-          attribution={import.meta.env.VITE_TILE_ATTR || '&copy; OpenStreetMap contributors'}
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; OpenStreetMap contributors'
         />
-        <FitBounds positions={positions} />
-        {items.map(a => (
-          <Marker
-            key={a.id}
-            position={[a.location.lat, a.location.lng]}
-            eventHandlers={{ mouseover: () => onHover?.(a), mouseout: () => onHover?.(null) }}
-          >
-            <Popup>
-              <strong>{a.name}</strong><br />
-              {a.location.city}, {a.location.province}<br />
-              Dificultad: {a.difficulty} • Rating: {a.rating} ⭐<br />
-              Duración: {a.durationMinutes} min
-            </Popup>
-          </Marker>
-        ))}
+        <Marker position={[-32.8895, -68.8458]}>
+          <Popup>Mendoza, Argentina 🚀</Popup>
+        </Marker>
       </MapContainer>
     </div>
   );

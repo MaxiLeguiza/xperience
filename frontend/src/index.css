@@ -143,3 +143,50 @@ button:focus-visible {
   padding: 6rem 6rem; /* Padding grande: arriba/abajo, izquierda/derecha */
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); /* Sombra suave y visible */
 }
+.div4 {
+  min-height: 520px;   /* 👈 fuerza altura para que el mapa se vea */
+}
+
+.container4 {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1rem;       /* reducimos el padding (antes era 6rem) */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  height: 100%;        /* que ocupe todo el espacio del div4 */
+  width: 100%;
+  overflow: hidden;    /* que el mapa no se salga */
+}
+/* Contenedor 4: altura para que el mapa exista */
+.div4 {
+  /* mantené tus grid-rows/cols como los tenías */
+  min-height: 520px;      /* ⬅️ CLAVE */
+}
+
+/* Tarjeta del contenedor 4 */
+.container4 {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1rem;          /* antes tenías 6rem: lo bajamos */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  height: 100%;           /* ocupa todo el alto del div4 */
+  width: 100%;
+  overflow: hidden;
+}
+/* Hacer que SOLO el contenedor 4 se estire dentro de su celda de grid */
+.div4 {
+  justify-self: stretch;    /* ocupa todo el ancho de su celda */
+  align-self: stretch;      /* ocupa todo el alto de su celda */
+  height: 520px;            /* altura DEFINIDA para el mapa */
+}
+
+/* La tarjeta de adentro debe ocupar 100% (sin padding grande) */
+.container4 {
+  padding: 0;               /* el padding grande mata el espacio del mapa */
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  border: 1px solid #eee;   /* borde temporal para ver el contorno */
+}
