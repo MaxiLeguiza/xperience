@@ -1,3 +1,4 @@
+import React from "react";
 // src/App.jsx
 import MapView from "./components/MapView";
 
@@ -33,6 +34,18 @@ export default function App() {
         <div className="card">Contenedor 6</div>
       </div>
     </div>
+    // 
+    // Asi tendrian que estar las rutas
+    // 
+    // <Routes>
+    //                     <Route path="/" element={<AuthLayout />}>
+    //                         <Route index element={<Login />} />
+    //                         <Route path="registrar" element={<Registrar />} />
+    //                         <Route path="olvide-password" element={<OlvidePassword />} />
+    //                         <Route path="olvide-password/:token" element={<NuevoPassword />} />
+    //                         <Route path="confirmar/:id" element={<ConfirmarCuenta />} />
+    //                     </Route>
+    //                 </Routes>
   );
 }
 
