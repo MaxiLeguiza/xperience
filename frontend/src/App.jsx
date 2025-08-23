@@ -14,12 +14,14 @@ export default function App() {
 
       {/* Columna izquierda alta (Contenedor 1) */}
       <div className="div1">
-        <div className="card">Contenedor 1</div>
+        <div className="card">menu</div>
       </div>
 
       {/* Derecha arriba (Contenedor 3) */}
       <div className="div3">
-        <div className="card">Contenedor 3</div>
+        <div className="card">
+          <button>Login</button>
+        </div>
       </div>
 
       {/* Centro grande: MAPA (Contenedor 4) */}
@@ -31,7 +33,7 @@ export default function App() {
 
       {/* Derecha media (Contenedor 6) */}
       <div className="div6">
-        <div className="card">Contenedor 6</div>
+        <div className="card">Mejores recorridos</div>
       </div>
     </div>
     //
