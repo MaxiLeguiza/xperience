@@ -1,26 +1,6 @@
 [
   {
-    "id": "a1",
-    "name": "Rafting Río Mendoza",
-    "category": "rafting",
-    "difficulty": "media",
-    "rating": 4.7,
-    "address": "Lujan, Mendoza",
-    "location": { "lat": -33.03726, "lng": -69.03567 },
-    "images": ["/images/rafting.jpg"]
-  },
-  {
     "id": "a2",
-    "name": "Trekking Cerro Arco",
-    "category": "trekking",
-    "difficulty": "baja",
-    "rating": 4.5,
-    "address": "Mendoza, Argentina",
-    "location": { "lat": -32.861, "lng": -68.93 },
-    "images": ["/images/trekking.jpg"]
-  },
-  {
-    "id": "a3",
     "name": "Parapente en Cacheuta",
     "category": "parapente",
     "difficulty": "alta",
@@ -30,7 +10,7 @@
     "images": ["/images/parapente.jpg"]
   },
   {
-    "id": "a4",
+    "id": "a3",
     "name": "Mountain Bike Chacras",
     "category": "ciclismo ",
     "difficulty": "media",
@@ -40,7 +20,7 @@
     "images": ["/images/bike.jpg"]
   },
   {
-    "id": "a5",
+    "id": "a",
     "name": "Cabalgata en Uspallata",
     "category": "cabalgata",
     "difficulty": "baja",
@@ -48,15 +28,5 @@
     "address": "Uspallata, Mendoza",
     "location": { "lat": -32.593, "lng": -69.348 },
     "images": ["/images/cabalgata.jpg"]
-  },
-  {
-    "id": "a6",
-    "name": "Instituto xd",
-    "category": "Desarrollo de Software",
-    "difficulty": "alta",
-    "rating": 5,
-    "address": "Maipu, Mendoza",
-    "location": { "lat": -32.97104, "lng": -68.79137 },
-    "images": ["/images/insti.jpg"]
   }
 ]

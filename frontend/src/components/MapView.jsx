@@ -5,13 +5,51 @@ import L from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 
-// Fix íconos (Vite)
+// Fix íconos (Vite) para el default de Leaflet
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
-// --- Helpers ---
+/* ================== ICONOS DESDE src/assets ================== */
+
+import cabalgataSvg from "../assets/markers/cabalgata.svg";
+import ciclismoSvg from "../assets/markers/ciclismo.svg";
+import DesaPng from "../assets/markers/Desa.png";
+import parapentePng from "../assets/markers/parapente.png";
+import trekkingPng from "../assets/markers/trekking.png";
+
+function makeIcon(url, size = [40, 40], anchor = [20, 40]) {
+  return L.icon({
+    iconUrl: url,
+    iconRetinaUrl: url,
+    iconSize: size,
+    iconAnchor: anchor,
+    popupAnchor: [0, -32],
+    shadowUrl,
+    shadowSize: [41, 41],
+    shadowAnchor: [12, 41],
+  });
+}
+
+// categoría -> icono (ajustá tamaños/anchor si hace falta)
+const ICONS = {
+  cabalgata: makeIcon(cabalgataSvg, [44, 44], [22, 44]),
+  ciclismo: makeIcon(ciclismoSvg, [40, 40], [20, 40]),
+  parapente: makeIcon(parapentePng, [40, 40], [20, 40]),
+  trekking: makeIcon(trekkingPng, [40, 40], [20, 40]),
+  insti: makeIcon(DesaPng, [40, 40], [20, 40]),
+  default: new L.Icon.Default(),
+};
+
+const iconFor = (p) => {
+  const cat = (p.category || "").toString().trim().toLowerCase();
+  if (p.icon) return makeIcon(p.icon); // ruta directa opcional en el JSON
+  return ICONS[cat] ?? ICONS.default; // por categoría normalizada
+};
+/* ============================================================= */
+
+/* -------------------- Helpers -------------------- */
 function InvalidateSizeOnce() {
   const map = useMap();
   useEffect(() => {
@@ -82,6 +120,7 @@ function SearchControl({ onSelect }) {
   }, [map, onSelect]);
   return null;
 }
+/* ----------------------------------------------- */
 
 // --- Mapa principal ---
 export default function MapView({ items = [] }) {
@@ -265,6 +304,7 @@ export default function MapView({ items = [] }) {
           <Marker
             key={p.id}
             position={p.pos}
+            icon={iconFor(p)} // ícono por categoría
             eventHandlers={{ click: () => setSelected(p) }}
           >
             <Popup>
