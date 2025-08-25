@@ -1,32 +1,56 @@
 [
   {
-    "id": "a2",
-    "name": "Parapente en Cacheuta",
-    "category": "parapente",
-    "difficulty": "alta",
-    "rating": 4.8,
-    "address": "Cacheuta, Mendoza",
-    "location": { "lat": -32.965, "lng": -69.101 },
-    "images": ["/images/parapente.jpg"]
-  },
-  {
-    "id": "a3",
-    "name": "Mountain Bike Chacras",
-    "category": "ciclismo ",
+    "id": "a1",
+    "name": "Rafting Río Mendoza",
+    "category": "rafting",
     "difficulty": "media",
-    "rating": 4.4,
-    "address": "Chacras de Coria, Mendoza",
-    "location": { "lat": -32.96668, "lng": -68.9042 },
-    "images": ["/images/bike.jpg"]
+    "rating": 4.7,
+    "address": "Potrerillos, Luján de Cuyo, Mendoza",
+    "location": { "lat": -33.03601461365326, "lng": -69.02376745907407 }
   },
   {
-    "id": "a",
+    "id": "a2",
     "name": "Cabalgata en Uspallata",
     "category": "cabalgata",
     "difficulty": "baja",
     "rating": 4.6,
     "address": "Uspallata, Mendoza",
-    "location": { "lat": -32.593, "lng": -69.348 },
-    "images": ["/images/cabalgata.jpg"]
+    "location": { "lat": -32.980079889761065, "lng": -68.89297353927822 }
+  },
+  {
+    "id": "a3",
+    "name": "Ciclismo en Chacras de Coria",
+    "category": "ciclismo",
+    "difficulty": "media",
+    "rating": 4.4,
+    "address": "Chacras de Coria, Mendoza",
+    "location": { "lat": -32.96628927915576, "lng": -68.90426253860052 }
+  },
+  {
+    "id": "a4",
+    "name": "Parapente en Cacheuta",
+    "category": "parapente",
+    "difficulty": "alta",
+    "rating": 4.8,
+    "address": "Cacheuta, Mendoza",
+    "location": { "lat": -32.84863693133508, "lng": -68.90136278118 }
+  },
+  {
+    "id": "a5",
+    "name": "Trekking Cerro Arco",
+    "category": "trekking",
+    "difficulty": "baja",
+    "rating": 4.5,
+    "address": "El Challao, Mendoza",
+    "location": { "lat": -32.845648192366575, "lng": -68.93390411878813 }
+  },
+  {
+    "id": "a6",
+    "name": "Instituto (Desarrollo de Software)",
+    "category": "insti",
+    "difficulty": null,
+    "rating": 5.0,
+    "address": "Ciudad de Mendoza",
+    "location": { "lat": -32.97177, "lng": -68.79116 }
   }
 ]

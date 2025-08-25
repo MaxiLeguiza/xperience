@@ -5,20 +5,13 @@ import L from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 
-// Fix íconos (Vite) para el default de Leaflet
+// Fix íconos (Leaflet default)
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
-/* ================== ICONOS DESDE src/assets ================== */
-
-import cabalgataSvg from "../assets/markers/cabalgata.svg";
-import ciclismoSvg from "../assets/markers/ciclismo.svg";
-import DesaPng from "../assets/markers/Desa.png";
-import parapentePng from "../assets/markers/parapente.png";
-import trekkingPng from "../assets/markers/trekking.png";
-
+/* ============== Íconos personalizados desde /public/images/markers ============== */
 function makeIcon(url, size = [40, 40], anchor = [20, 40]) {
   return L.icon({
     iconUrl: url,
@@ -34,20 +27,22 @@ function makeIcon(url, size = [40, 40], anchor = [20, 40]) {
 
 // categoría -> icono (ajustá tamaños/anchor si hace falta)
 const ICONS = {
-  cabalgata: makeIcon(cabalgataSvg, [44, 44], [22, 44]),
-  ciclismo: makeIcon(ciclismoSvg, [40, 40], [20, 40]),
-  parapente: makeIcon(parapentePng, [40, 40], [20, 40]),
-  trekking: makeIcon(trekkingPng, [40, 40], [20, 40]),
-  insti: makeIcon(DesaPng, [40, 40], [20, 40]),
+  rafting: makeIcon("/images/markers/rafting.png", [40, 40], [20, 40]),
+  cabalgata: makeIcon("/images/markers/cabalgata.svg", [44, 44], [22, 44]),
+  ciclismo: makeIcon("/images/markers/ciclismo.svg", [40, 40], [20, 40]),
+  parapente: makeIcon("/images/markers/parapente.png", [40, 40], [20, 40]),
+  trekking: makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]),
+  insti: makeIcon("/images/markers/insti.png", [40, 40], [20, 40]),
   default: new L.Icon.Default(),
 };
 
+// Normaliza categoría y permite ruta directa en el item (p.icon)
 const iconFor = (p) => {
-  const cat = (p.category || "").toString().trim().toLowerCase();
-  if (p.icon) return makeIcon(p.icon); // ruta directa opcional en el JSON
-  return ICONS[cat] ?? ICONS.default; // por categoría normalizada
+  if (p?.icon) return makeIcon(p.icon);
+  const cat = (p?.category || "").toString().trim().toLowerCase();
+  return ICONS[cat] ?? ICONS.default;
 };
-/* ============================================================= */
+/* ============================================================================== */
 
 /* -------------------- Helpers -------------------- */
 function InvalidateSizeOnce() {
