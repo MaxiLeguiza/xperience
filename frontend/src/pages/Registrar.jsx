@@ -33,7 +33,7 @@ const Registrar = () => {
 
         // Crear el usuario en la api
         try {
-            await clienteAxios.post('/veterinarios', { nombre, email, password })
+            await clienteAxios.post('api/user', { nombre, email, password })
             setAlerta({
                 msg: 'Creado Correctamente, revisa tu email',
                 error: false
@@ -52,9 +52,9 @@ const Registrar = () => {
     return (
         <>
             <div>
-                <h1 className="text-indigo-600 font-black text-6xl">
-                    Crea tu Cuenta y Administra {""} 
-                    <span className="text-black">tus Pacientes</span>
+                <h1 className="text-orange-600 font-black text-6xl">
+                    Crea tu Cuenta y Busca {""} 
+                    <span className="text-black">tus Actividades Favoritas</span>
                 </h1>
             </div>
 
