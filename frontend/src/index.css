@@ -1,20 +1,5 @@
 @import "tailwindcss";
 
-
-.parent {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  gap: 8px;
-  width: 100vw;
-  height: 100vh;
-
-
-  justify-items: stretch;
-  align-items: stretch;
-}
-
-
 .div1 {
   grid-row: span 5 / span 5;
   color: red;
@@ -91,7 +76,7 @@
     "c1   map     c6";
   gap: 24px;
   padding: 24px;
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
 }
