@@ -25,18 +25,16 @@ function makeIcon(url, size = [40, 40], anchor = [20, 40]) {
   });
 }
 
-// categoría -> icono (ajustá tamaños/anchor si hace falta)
 const ICONS = {
   rafting: makeIcon("/images/markers/rafting.png", [40, 40], [20, 40]),
   cabalgata: makeIcon("/images/markers/cabalgata.svg", [44, 44], [22, 44]),
   ciclismo: makeIcon("/images/markers/ciclismo.svg", [40, 40], [20, 40]),
-  parapente: makeIcon("/images/markers/parapente.png", [40, 40], [20, 40]),
+  parapente: makeIcon("/images/markers/parapente.svg", [40, 40], [20, 40]),
   trekking: makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]),
   insti: makeIcon("/images/markers/insti.png", [40, 40], [20, 40]),
   default: new L.Icon.Default(),
 };
 
-// Normaliza categoría y permite ruta directa en el item (p.icon)
 const iconFor = (p) => {
   if (p?.icon) return makeIcon(p.icon);
   const cat = (p?.category || "").toString().trim().toLowerCase();
@@ -125,7 +123,6 @@ export default function MapView({ items = [] }) {
   const [q, setQ] = useState("");
   const [fitKey, setFitKey] = useState(0);
 
-  // Normalizar puntos válidos
   const points = useMemo(
     () =>
       items
@@ -138,7 +135,6 @@ export default function MapView({ items = [] }) {
     [items]
   );
 
-  // Opciones dinámicas
   const categories = useMemo(
     () => Array.from(new Set(points.map((p) => p.category))).filter(Boolean),
     [points]
@@ -148,7 +144,6 @@ export default function MapView({ items = [] }) {
     [points]
   );
 
-  // Filtro
   const filtered = useMemo(() => {
     return points.filter((p) => {
       if (category !== "all" && p.category !== category) return false;
@@ -161,18 +156,13 @@ export default function MapView({ items = [] }) {
   const positions = useMemo(() => filtered.map((p) => p.pos), [filtered]);
   const center = points[0]?.pos || [-32.8895, -68.8458];
 
-  // Tile provider (MapTiler si hay key, sino OSM)
-  const MT_KEY = import.meta.env.VITE_MAPTILER_KEY || "";
-  const TILE_URL = MT_KEY
-    ? `https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MT_KEY}`
-    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-  const ATTR = MT_KEY
-    ? "&copy; MapTiler &copy; OpenStreetMap contributors"
-    : "&copy; OpenStreetMap contributors";
+  // FORZAR OSM (sin MapTiler ni .env)
+  const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+  const ATTR = "&copy; OpenStreetMap contributors";
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      {/* Filtros + acciones (UI flotante) */}
+      {/* Filtros + acciones */}
       <div
         style={{
           position: "absolute",
@@ -238,7 +228,7 @@ export default function MapView({ items = [] }) {
         </div>
       </div>
 
-      {/* Panel de detalle (simple) */}
+      {/* Panel de detalle */}
       <div
         style={{
           position: "absolute",
@@ -299,7 +289,7 @@ export default function MapView({ items = [] }) {
           <Marker
             key={p.id}
             position={p.pos}
-            icon={iconFor(p)} // ícono por categoría
+            icon={iconFor(p)}
             eventHandlers={{ click: () => setSelected(p) }}
           >
             <Popup>
