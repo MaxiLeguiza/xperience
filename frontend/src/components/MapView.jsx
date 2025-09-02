@@ -1,9 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react"; 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
-import "leaflet-geosearch/dist/geosearch.css";
 
 // Fix íconos (Leaflet default)
 import iconUrl from "leaflet/dist/images/marker-icon.png";
@@ -69,48 +67,6 @@ function FitToBounds({ positions, trigger }) {
     const b = L.latLngBounds(positions);
     map.fitBounds(b, { padding: [30, 30] });
   }, [positions, trigger, map]);
-  return null;
-}
-
-function SearchControl({ onSelect }) {
-  const map = useMap();
-  const ref = useRef();
-  useEffect(() => {
-    const provider = new OpenStreetMapProvider();
-    if (!ref.current) {
-      ref.current = new GeoSearchControl({
-        provider,
-        style: "bar",
-        showMarker: true,
-        showPopup: true,
-        marker: { icon: new L.Icon.Default() },
-        popupFormat: ({ result }) => result.label,
-        autoClose: true,
-        retainZoomLevel: false,
-        animateZoom: true,
-        keepResult: true,
-      });
-      map.addControl(ref.current);
-    }
-    const onShow = (e) => {
-      const r = e?.location;
-      if (!r) return;
-      onSelect?.({
-        id: `search-${Date.now()}`,
-        name: r.label || r.raw?.name || "Lugar",
-        address: r.label || r.raw?.display_name,
-        location: { lat: r.y, lng: r.x },
-      });
-    };
-    map.on("geosearch/showlocation", onShow);
-    return () => {
-      if (ref.current) {
-        map.removeControl(ref.current);
-        ref.current = null;
-      }
-      map.off("geosearch/showlocation", onShow);
-    };
-  }, [map, onSelect]);
   return null;
 }
 /* ----------------------------------------------- */
@@ -280,7 +236,6 @@ export default function MapView({ items = [] }) {
         style={{ width: "100%", height: "100%" }}
       >
         <LocateOnMount />
-        <SearchControl onSelect={setSelected} />
         <InvalidateSizeOnce />
         <FitToBounds positions={positions} trigger={fitKey} />
         <TileLayer url={TILE_URL} attribution={ATTR} />
