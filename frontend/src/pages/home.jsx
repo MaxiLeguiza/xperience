@@ -2,7 +2,8 @@ import React from 'react'
 import activities from "../data/activities.json";
 import MapView from "../components/MapView";
 import { Link } from "react-router-dom";
-
+import SearchBooking from "../components/SearchBooking";
+import Menu from "../components/Menu";
 
 function Home() {
   return (
@@ -17,7 +18,9 @@ function Home() {
 
       {/* Columna izquierda alta (Contenedor 1) */}
       <div className="div1">
-        <div className="card">menu</div>
+        <Menu/>
+        <br />
+        <SearchBooking />
       </div>
 
       {/* Derecha arriba (Contenedor 3) */}
