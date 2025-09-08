@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import SearchBooking from "../SearchBooking";
 
 const SearchResults = () => {
-  const navigate = useNavigate(); // Para navegar a otra página (ej: confirmación)
+  const navigate = useNavigate(); // Para navegar a otra página (ej: carrito)
   const location = useLocation(); // Para obtener filtros enviados desde otra página
   const { checkIn, checkOut, personas } = location.state || {}; // Filtros iniciales
 
@@ -153,9 +153,12 @@ const SearchResults = () => {
               <div className="mt-4">
                 <button
                   onClick={() => {
-                    // 🔗 Aquí se conectará a la nueva página/componente
-                    console.log("Continuar con items:", selectedItems);
-                    // Ejemplo: navigate("/confirmacion", { state: selectedItems });
+                    if (selectedItems.length === 0) {
+                      alert("Debes seleccionar al menos un recorrido antes de continuar.");
+                      return;
+                    }
+                    // 🔗 Redirige al carrito con los items seleccionados
+                    navigate("/carrito", { state: { selectedItems } });
                   }}
                   className="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-xl hover:bg-green-700 transition"
                 >
