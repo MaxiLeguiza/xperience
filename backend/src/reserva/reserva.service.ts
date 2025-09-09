@@ -1,20 +1,35 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateReservaDto } from './dto/create-reserva.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
 import { Reserva } from './entities/reserva.entity';
 import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Injectable()
 export class ReservaService {
   constructor(
     @InjectModel(Reserva.name)
     private readonly reservaModel: Model<Reserva>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createReservaDto: CreateReservaDto) {
     try {
       const reserva = await this.reservaModel.create(createReservaDto);
+
+      // 1. Envía la notificación después de crear la reserva
+      this.notificationsService.notifyNewReservation({
+        message: '¡Nueva reserva registrada!',
+        reservaId: reserva._id,
+        descripcion: reserva.descripcion,
+      });
+
       return reserva;
     } catch (error) {
       this.handleExceptions(error);
@@ -56,8 +71,12 @@ export class ReservaService {
 
   private handleExceptions(error: any) {
     if (error.code === 11000) {
-      throw new BadRequestException(`Reserva exists ${JSON.stringify(error.keyValue)}`);
+      throw new BadRequestException(
+        `Reserva exists ${JSON.stringify(error.keyValue)}`,
+      );
     }
-    throw new InternalServerErrorException(`Can't create Reserva - Check server logs`);
+    throw new InternalServerErrorException(
+      `Can't create Reserva - Check server logs`,
+    );
   }
 }
