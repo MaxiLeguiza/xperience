@@ -4,6 +4,8 @@ import MapView from "../components/MapView";
 import { Link } from "react-router-dom";
 import SearchBooking from "../components/SearchBooking";
 import Menu from "../components/Menu";
+// import Notifications from '../components/Notifications';
+import { NotificationIcon, Notifications } from '../components/Notifications_standalone';
 
 function Home() {
   return (
@@ -24,11 +26,14 @@ function Home() {
       </div>
 
       {/* Derecha arriba (Contenedor 3) */}
-      <div className="div3">
+      <div className="div3 flex justify-between">
         <div className="card">
           <Link to="/login">
             <button>Login</button>
           </Link>
+        </div>
+        <div className='flex items-center gap-4'>
+          <Notifications/>
         </div>
       </div>
 
