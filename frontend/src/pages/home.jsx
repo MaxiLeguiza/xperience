@@ -37,7 +37,7 @@ function Home() {
 
       {/* Columna izquierda alta (Contenedor 1) */}
       <div className="div1">
-        <Menu/>
+        <Menu />
         <br />
         <SearchBooking />
       </div>
@@ -50,7 +50,7 @@ function Home() {
           </Link>
         </div>
         <div className='flex items-center gap-4'>
-          <Notifications/>
+          <Notifications />
         </div>
       </div>
 
@@ -64,13 +64,13 @@ function Home() {
       {/* Derecha media (Contenedor 6) */}
       <div className="div6">
         <div className="card p-4">
-          <h2 className="text-lg font-semibold mb-2">Mejores recorridos</h2>
+          <h2 className="text-lg font-semibold mb-2 text-orange-500">Mejores recorridos</h2>
 
           {/* Listado simple de los mejores recorridos */}
           <ul className="space-y-2">
             {topTours.map((tour) => (
-              <li key={tour.id} className="border rounded p-2 bg-gray-50">
-                <p className="font-medium">{tour.title}</p>
+              <li key={tour.id} className="border border-black rounded p-2 bg-gray-50">
+                <p className="font-medium text-orange-500">{tour.title}</p>
                 <p className="text-sm text-gray-600">Autor: {tour.author}</p>
                 <p className="text-sm text-gray-600">Duración: {tour.duration}</p>
               </li>
@@ -89,6 +89,7 @@ function Home() {
         </div>
       </div>
     </div>
+
   );
 }
 
