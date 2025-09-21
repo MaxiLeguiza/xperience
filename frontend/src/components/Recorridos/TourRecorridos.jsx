@@ -26,12 +26,15 @@ function TourCard({ tour, onSelect }) {
         </div>
         <div className="text-right">
           <div className="text-sm text-gray-600">Duración</div>
-          <div className="font-medium">{formatDuration(tour.durationMinutes)}</div>
+          <div className="font-medium">
+            {formatDuration(tour.durationMinutes)}
+          </div>
         </div>
       </div>
-
       <div className="mt-3 flex items-center justify-between">
-        <div className="text-sm text-gray-500">Paquete: {tour.packageName || "—"}</div>
+        <div className="text-sm text-gray-500">
+          Paquete: {tour.packageName || "—"}
+        </div>
         <div className="text-lg font-bold">${tour.price}</div>
       </div>
     </div>
@@ -48,25 +51,34 @@ function Filters({ filters, setFilters, applyFilters }) {
           placeholder="🔍 Buscar por título o autor"
           className="p-2 border rounded"
           value={filters.q}
-          onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
+          onChange={(e) =>
+            setFilters((f) => ({ ...f, q: e.target.value }))
+          }
         />
+
         {/* Precio mínimo */}
         <input
           type="number"
           placeholder="💲 Precio mínimo"
           className="p-2 border rounded"
           value={filters.priceMin}
-          onChange={(e) => setFilters((f) => ({ ...f, priceMin: e.target.value }))}
+          onChange={(e) =>
+            setFilters((f) => ({ ...f, priceMin: e.target.value }))
+          }
         />
+
         {/* Precio máximo */}
         <input
           type="number"
           placeholder="💲 Precio máximo"
           className="p-2 border rounded"
           value={filters.priceMax}
-          onChange={(e) => setFilters((f) => ({ ...f, priceMax: e.target.value }))}
+          onChange={(e) =>
+            setFilters((f) => ({ ...f, priceMax: e.target.value }))
+          }
         />
       </div>
+
       <div className="mt-3 flex justify-end">
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
@@ -81,7 +93,7 @@ function Filters({ filters, setFilters, applyFilters }) {
 
 // ------------------ Modal para crear nuevo Tour ------------------
 function CreateTourModal({ open, onClose, onCreated, packages }) {
-  // Estado del formulario
+  // Estado local para manejar los valores del formulario
   const [form, setForm] = useState({
     title: "",
     author: "",
@@ -90,121 +102,150 @@ function CreateTourModal({ open, onClose, onCreated, packages }) {
     recommendedPackageId: "",
   });
 
-  // Manejar submit del formulario
+  // Función que se ejecuta al enviar el formulario
   function submit(e) {
-    e.preventDefault();
-    // 🔥 Backend: aquí se debería hacer POST al backend (Nest) y guardar en Mongo
+    e.preventDefault(); // evita que la página se recargue
+
+    // Creamos un objeto con los datos del nuevo tour
     const newTour = {
-      id: Date.now().toString(),
+      id: Date.now().toString(), // id único basado en la fecha
       title: form.title,
       author: form.author,
       durationMinutes: form.durationMinutes,
       price: form.price,
-      packageName: packages.find((p) => p.id === form.recommendedPackageId)?.title || "—",
+      // Si se seleccionó un paquete, se busca su título; si no, se pone "—"
+      packageName:
+        packages.find((p) => p.id === form.recommendedPackageId)?.title || "—",
     };
-    onCreated(newTour); // solo mock, reemplazar con respuesta del backend
-    onClose();
+
+    onCreated(newTour); // avisamos al padre que se creó un tour
+    onClose();          // cerramos el modal
   }
 
+  // Si la prop "open" es false, no se renderiza nada
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <form
-        onSubmit={submit}
-        className="w-full max-w-lg bg-white rounded-2xl p-6 shadow-lg"
+    // Overlay que cubre toda la pantalla
+    // bg-white/30 = blanco semitransparente
+    // backdrop-blur-sm = efecto vidrio (desenfoque)
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/01 backdrop-bright"
+      onClick={onClose} // si clickeamos fuera del modal, se cierra
+    >
+      {/* Contenedor del modal */}
+      <div
+        className="w-full max-w-lg bg-white rounded-2xl p-6 shadow-xl relative"
+        onClick={(e) => e.stopPropagation()} // evita que se cierre si clickeamos dentro
       >
-        <h2 className="text-xl font-semibold mb-4">🆕 Crear nuevo recorrido</h2>
-
-        {/* Campo Título */}
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Nombre del recorrido
-        </label>
-        <input
-          required
-          placeholder="Ej: City Tour Nocturno"
-          className="p-2 border rounded mb-3 w-full"
-          value={form.title}
-          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-        />
-
-        {/* Campo Autor */}
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Autor / Responsable
-        </label>
-        <input
-          required
-          placeholder="Ej: Juan Pérez"
-          className="p-2 border rounded mb-3 w-full"
-          value={form.author}
-          onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-        />
-
-        {/* Duración */}
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Duración en minutos
-        </label>
-        <input
-          required
-          type="number"
-          placeholder="Ej: 90"
-          className="p-2 border rounded mb-3 w-full"
-          value={form.durationMinutes}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, durationMinutes: Number(e.target.value) }))
-          }
-        />
-
-        {/* Precio */}
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Precio en pesos
-        </label>
-        <input
-          required
-          type="number"
-          placeholder="Ej: 5000"
-          className="p-2 border rounded mb-3 w-full"
-          value={form.price}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, price: Number(e.target.value) }))
-          }
-        />
-
-        {/* Selección de paquete */}
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Seleccionar paquete recomendado
-        </label>
-        <select
-          className="p-2 border rounded mb-4 w-full"
-          value={form.recommendedPackageId}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, recommendedPackageId: e.target.value }))
-          }
+        {/* Botón de cierre (X en la esquina) */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
         >
-          <option value="">Ninguno</option>
-          {packages.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.title}
-            </option>
-          ))}
-        </select>
+          ❌
+        </button>
 
-        {/* Botones de acción */}
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded bg-gray-100"
+        {/* Título del modal */}
+        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span className="text-blue-600">🆕</span> Crear nuevo recorrido
+        </h2>
+
+        {/* Formulario */}
+        <form onSubmit={submit}>
+          {/* Campo: Nombre del recorrido */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Nombre del recorrido
+          </label>
+          <input
+            required
+            placeholder="Ej: City Tour Nocturno"
+            className="p-2 border rounded mb-3 w-full"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+          />
+
+          {/* Campo: Autor */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Autor / Responsable
+          </label>
+          <input
+            required
+            placeholder="Ej: Juan Pérez"
+            className="p-2 border rounded mb-3 w-full"
+            value={form.author}
+            onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+          />
+
+          {/* Campo: Duración */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Duración en minutos
+          </label>
+          <input
+            required
+            type="number"
+            placeholder="Ej: 90"
+            className="p-2 border rounded mb-3 w-full"
+            value={form.durationMinutes}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, durationMinutes: Number(e.target.value) }))
+            }
+          />
+
+          {/* Campo: Precio */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Precio en pesos
+          </label>
+          <input
+            required
+            type="number"
+            placeholder="Ej: 5000"
+            className="p-2 border rounded mb-3 w-full"
+            value={form.price}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, price: Number(e.target.value) }))
+            }
+          />
+
+          {/* Campo: Selección de paquete */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Seleccionar paquete recomendado
+          </label>
+          <select
+            className="p-2 border rounded mb-4 w-full"
+            value={form.recommendedPackageId}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, recommendedPackageId: e.target.value }))
+            }
           >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 rounded bg-green-600 text-white"
-          >
-            Guardar recorrido
-          </button>
-        </div>
-      </form>
+            <option value="">Ninguno</option>
+            {packages.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </select>
+
+          {/* Botones de acción */}
+          <div className="flex justify-end gap-2">
+            {/* Botón cancelar */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            {/* Botón guardar */}
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+            >
+              Guardar recorrido
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -226,6 +267,7 @@ function RecommendedPackages({ packages, onSelect }) {
   return (
     <div className="bg-white rounded-2xl p-3 shadow-sm h-full flex flex-col select-none">
       <h4 className="font-semibold mb-2">📦 Paquetes recomendados</h4>
+
       {packages.length > 0 && (
         <div className="relative w-full overflow-hidden flex-1">
           <div
@@ -252,15 +294,20 @@ function RecommendedPackages({ packages, onSelect }) {
 
 // ------------------ Componente principal ------------------
 export default function TourRecorridos() {
-  const [tours, setTours] = useState([]);
+  const [tours, setTours] = useState([]); // Lista de tours completa
+  const [filteredTours, setFilteredTours] = useState([]); // Lista filtrada
   const [packages, setPackages] = useState([]);
-  const [filters, setFilters] = useState({ q: "", priceMin: "", priceMax: "" });
+  const [filters, setFilters] = useState({
+    q: "",
+    priceMin: "",
+    priceMax: "",
+  });
   const [createOpen, setCreateOpen] = useState(false);
 
   // Cargar datos mock al inicio
   useEffect(() => {
     // 🔥 Backend: fetch("/api/tours")
-    setTours([
+    const mockTours = [
       {
         id: "t1",
         title: "City Tour",
@@ -277,7 +324,9 @@ export default function TourRecorridos() {
         price: 3500,
         packageName: "Paquete Premium",
       },
-    ]);
+    ];
+    setTours(mockTours);
+    setFilteredTours(mockTours);
 
     // 🔥 Backend: fetch("/api/packages/recommended")
     setPackages([
@@ -286,9 +335,30 @@ export default function TourRecorridos() {
     ]);
   }, []);
 
-  // Aplicar filtros (solo mock ahora)
+  // ------------------ Aplicar filtros ------------------
   function applyFilters() {
     console.log("Aplicar filtros (mock)", filters);
+
+    // Filtramos tours en base a lo que el usuario escribe o selecciona
+    const results = tours.filter((tour) => {
+      // Filtro por texto: título o autor (case-insensitive)
+      const matchText =
+        filters.q === "" ||
+        tour.title.toLowerCase().includes(filters.q.toLowerCase()) ||
+        tour.author.toLowerCase().includes(filters.q.toLowerCase());
+
+      // Filtro por precio mínimo
+      const matchPriceMin =
+        filters.priceMin === "" || tour.price >= Number(filters.priceMin);
+
+      // Filtro por precio máximo
+      const matchPriceMax =
+        filters.priceMax === "" || tour.price <= Number(filters.priceMax);
+
+      return matchText && matchPriceMin && matchPriceMax;
+    });
+
+    setFilteredTours(results);
   }
 
   return (
@@ -308,7 +378,11 @@ export default function TourRecorridos() {
       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
         {/* Columna izquierda: filtros + paquetes */}
         <div className="flex flex-col space-y-4 overflow-y-auto">
-          <Filters filters={filters} setFilters={setFilters} applyFilters={applyFilters} />
+          <Filters
+            filters={filters}
+            setFilters={setFilters}
+            applyFilters={applyFilters}
+          />
           <RecommendedPackages
             packages={packages}
             onSelect={(p) => console.log("Seleccionado", p)}
@@ -318,13 +392,21 @@ export default function TourRecorridos() {
         {/* Columna derecha: listado de tours */}
         <main className="md:col-span-2 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {tours.map((t) => (
-              <TourCard
-                key={t.id}
-                tour={t}
-                onSelect={(tour) => console.log("Tour seleccionado", tour)}
-              />
-            ))}
+            {filteredTours.length > 0 ? (
+              filteredTours.map((t) => (
+                <TourCard
+                  key={t.id}
+                  tour={t}
+                  onSelect={(tour) =>
+                    console.log("Tour seleccionado", tour)
+                  }
+                />
+              ))
+            ) : (
+              <p className="text-gray-500 p-4">
+                ⚠️ No se encontraron recorridos con estos filtros
+              </p>
+            )}
           </div>
         </main>
       </div>
@@ -333,7 +415,14 @@ export default function TourRecorridos() {
       <CreateTourModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onCreated={(newTour) => setTours((t) => [newTour, ...t])}
+        onCreated={(newTour) => {
+          // Agregamos el nuevo tour y aplicamos filtros de nuevo
+          setTours((t) => {
+            const updated = [newTour, ...t];
+            setFilteredTours(updated);
+            return updated;
+          });
+        }}
         packages={packages}
       />
     </div>
