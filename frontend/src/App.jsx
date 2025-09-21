@@ -9,8 +9,8 @@ import SearchResults from "./components/Booking/SearchResults";
 import Cart from "./components/Booking/Cart";          
 import Confirmacion from "./components/Booking/Confirmacion";
 import Exito from "./components/Booking/Exito";
-
-import { Routes, Route } from "react-router-dom";
+import TourRecorridos from "./components/Recorridos/TourRecorridos";
+import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 
 
 export default function App() {
@@ -34,6 +34,9 @@ export default function App() {
       <Route path="/confirmacion" element={<Confirmacion />} />
       {/* Página de éxito */}
       <Route path="/exito" element={<Exito />} /> {/* Nueva ruta */}
+      {/* Página de recorridos */}
+      <Route path="/recorridos" element={<TourRecorridos />} />
+
 
     </Routes>
 

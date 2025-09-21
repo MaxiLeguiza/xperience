@@ -30,7 +30,7 @@ const Confirmacion = () => {
 
     // 🔗 Aquí puedes enviar los datos al backend
     /*
-    fetch("http://localhost:5000/api/reservar", {
+    fetch("http://localhost:27017/reserva", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ formData, selectedItems, total }),

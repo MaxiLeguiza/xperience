@@ -68,8 +68,8 @@ const SearchResults = () => {
       setResults(filtrados);
 
       // 🔗 Ejemplo de conexión futura con backend (comentado)
-      /*
-      fetch("http://localhost:5000/api/buscar", {
+      /*mongodb://localhost:27017/nest-xperience
+      fetch("http://localhost:27017/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(filters),
