@@ -1,15 +1,32 @@
-import React from 'react'
+// Home.jsx
+// Página principal donde agregamos un listado de mejores recorridos
+// y un botón "Ver más" que redirige al componente TourRecorridosApp
+
+import React, { useState, useEffect } from 'react';
 import activities from "../data/activities.json";
 import MapView from "../components/MapView";
 import { Link } from "react-router-dom";
 import SearchBooking from "../components/SearchBooking";
 import Menu from "../components/Menu";
-// import Notifications from '../components/Notifications';
-import { NotificationIcon, Notifications } from '../components/Notifications_standalone';
+import { Notifications } from '../components/Notifications_standalone';
+
+
 
 function Home() {
-  return (
+  // Estado local para guardar los mejores recorridos (mock o desde backend)
+  const [topTours, setTopTours] = useState([]);
 
+  // Simulamos obtener los mejores recorridos (puedes cambiarlo por un fetch a Nest)
+  useEffect(() => {
+    // Aquí podrías hacer fetch("/api/tours/top") si tu backend lo soporta
+    setTopTours([
+      { id: 1, title: "Recorrido Histórico", author: "Ana", duration: "2h 30m" },
+      { id: 2, title: "Aventura en Montaña", author: "Luis", duration: "4h 00m" },
+      { id: 3, title: "City Tour Nocturno", author: "María", duration: "1h 45m" }
+    ]);
+  }, []);
+
+  return (
     <div className="parent">
       {/* Cabecera centrada (Contenedor 2) */}
       <div className="div2">
@@ -46,10 +63,33 @@ function Home() {
 
       {/* Derecha media (Contenedor 6) */}
       <div className="div6">
-        <div className="card">Mejores recorridos</div>
+        <div className="card p-4">
+          <h2 className="text-lg font-semibold mb-2">Mejores recorridos</h2>
+
+          {/* Listado simple de los mejores recorridos */}
+          <ul className="space-y-2">
+            {topTours.map((tour) => (
+              <li key={tour.id} className="border rounded p-2 bg-gray-50">
+                <p className="font-medium">{tour.title}</p>
+                <p className="text-sm text-gray-600">Autor: {tour.author}</p>
+                <p className="text-sm text-gray-600">Duración: {tour.duration}</p>
+              </li>
+            ))}
+          </ul>
+
+          {/* Botón que lleva al componente TourRecorridosApp */}
+          <div className="mt-4 text-right">
+            {/* Usamos Link de react-router-dom para navegar sin recargar */}
+            <Link to="/recorridos">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                Ver más
+              </button>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;
