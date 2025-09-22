@@ -1,365 +1,234 @@
-// TourRecorridos_App.jsx
-// Componente principal con mocks y preparado para conectar con Nest + Mongo
-// Todos los comentarios en español para guiarte
+// TourRecorridos.jsx
+// -------------------------------------------------------------
+// Versión actualizada: vuelve a mostrar los influencers en la UI
+// - Influencers clickeables en la columna izquierda
+// - Filtrado por influencer (puede deseleccionarse con "Mostrar todos")
+// - TourCard sigue abriendo el modal de detalle y permite reservar
+// -------------------------------------------------------------
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
+import TourCard from "./TourCard"; // Asumo que ya lo tenés en tu proyecto
+import Filters from "./Filters"; // Asumo que ya lo tenés
+import CreateTourModal from "./CreateTourModal"; // Asumo que ya lo tenés
+import RecommendedPackages from "./RecommendedPackages"; // Asumo que ya lo tenés
 
-// ------------------ Función utilitaria para mostrar duración ------------------
-function formatDuration(minutes) {
-  const hrs = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hrs > 0) return `${hrs}h ${mins}m`;
-  return `${mins}m`;
-}
-
-// ------------------ Tarjeta de Tour ------------------
-function TourCard({ tour, onSelect }) {
+/* ------------------------------------------------------------------
+   Componente interno: RecommendedInfluencers
+   Lo dejo aquí dentro para que NO necesites crear un archivo nuevo.
+   Muestra una fila scrollable de influencers, clickeables.
+   onSelect(null) -> limpia el filtro.
+   ------------------------------------------------------------------ */
+function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
   return (
-    <div
-      className="border rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer bg-white"
-      onClick={() => onSelect(tour)}
-    >
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-semibold">{tour.title}</h3>
-          <p className="text-sm text-gray-500">Autor: {tour.author}</p>
-        </div>
-        <div className="text-right">
-          <div className="text-sm text-gray-600">Duración</div>
-          <div className="font-medium">
-            {formatDuration(tour.durationMinutes)}
-          </div>
-        </div>
-      </div>
-      <div className="mt-3 flex items-center justify-between">
-        <div className="text-sm text-gray-500">
-          Paquete: {tour.packageName || "—"}
-        </div>
-        <div className="text-lg font-bold">${tour.price}</div>
-      </div>
-    </div>
-  );
-}
+    <div className="bg-white p-4 rounded-2xl shadow">
+      <h3 className="text-lg font-semibold mb-3">Influencers recomendados</h3>
 
-// ------------------ Filtros de búsqueda ------------------
-function Filters({ filters, setFilters, applyFilters }) {
-  return (
-    <div className="bg-white p-3 rounded-2xl shadow-sm">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        {/* Campo de búsqueda general */}
-        <input
-          placeholder="🔍 Buscar por título o autor"
-          className="p-2 border rounded"
-          value={filters.q}
-          onChange={(e) =>
-            setFilters((f) => ({ ...f, q: e.target.value }))
-          }
-        />
+      <div className="flex items-center gap-3 overflow-x-auto pb-2">
+        {influencers.map((inf) => (
+          <button
+            key={inf.id}
+            onClick={() => onSelect(inf)}
+            className={`flex-shrink-0 w-40 p-3 rounded-xl border transition-transform transform hover:scale-[1.02] text-left flex gap-3 items-center ${{
+              true: "",
+            }} ${selectedId === inf.id ? "ring-2 ring-indigo-400 border-indigo-200" : "border-gray-200"}`}
+          >
+            <img
+              src={inf.avatar}
+              alt={inf.name}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <div className="flex-1">
+              <p className="text-sm font-medium">{inf.name}</p>
+              <p className="text-xs text-gray-400">{inf.social}</p>
+            </div>
+          </button>
+        ))}
 
-        {/* Precio mínimo */}
-        <input
-          type="number"
-          placeholder="💲 Precio mínimo"
-          className="p-2 border rounded"
-          value={filters.priceMin}
-          onChange={(e) =>
-            setFilters((f) => ({ ...f, priceMin: e.target.value }))
-          }
-        />
-
-        {/* Precio máximo */}
-        <input
-          type="number"
-          placeholder="💲 Precio máximo"
-          className="p-2 border rounded"
-          value={filters.priceMax}
-          onChange={(e) =>
-            setFilters((f) => ({ ...f, priceMax: e.target.value }))
-          }
-        />
-      </div>
-
-      <div className="mt-3 flex justify-end">
+        {/* Botón para borrar filtro */}
         <button
-          className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
-          onClick={applyFilters}
+          onClick={() => onSelect(null)}
+          className="flex-shrink-0 px-3 py-2 bg-gray-100 rounded-full text-sm font-medium"
         >
-          Aplicar filtros
+          Mostrar todos
         </button>
       </div>
     </div>
   );
 }
 
-// ------------------ Modal para crear nuevo Tour ------------------
-function CreateTourModal({ open, onClose, onCreated, packages }) {
-  // Estado local para manejar los valores del formulario
-  const [form, setForm] = useState({
-    title: "",
-    author: "",
-    durationMinutes: 60,
-    price: 0,
-    recommendedPackageId: "",
-  });
-
-  // Función que se ejecuta al enviar el formulario
-  function submit(e) {
-    e.preventDefault(); // evita que la página se recargue
-
-    // Creamos un objeto con los datos del nuevo tour
-    const newTour = {
-      id: Date.now().toString(), // id único basado en la fecha
-      title: form.title,
-      author: form.author,
-      durationMinutes: form.durationMinutes,
-      price: form.price,
-      // Si se seleccionó un paquete, se busca su título; si no, se pone "—"
-      packageName:
-        packages.find((p) => p.id === form.recommendedPackageId)?.title || "—",
-    };
-
-    onCreated(newTour); // avisamos al padre que se creó un tour
-    onClose();          // cerramos el modal
-  }
-
-  // Si la prop "open" es false, no se renderiza nada
-  if (!open) return null;
+/* ------------------------------------------------------------------
+   Modal de detalle (inline)
+   - Muestra info del tour
+   - Botón reservar (mock)
+   ------------------------------------------------------------------ */
+function TourDetailModal({ tour, onClose, onReserve }) {
+  if (!tour) return null;
 
   return (
-    // Overlay que cubre toda la pantalla
-    // bg-white/30 = blanco semitransparente
-    // backdrop-blur-sm = efecto vidrio (desenfoque)
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/01 backdrop-bright"
-      onClick={onClose} // si clickeamos fuera del modal, se cierra
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+      onClick={onClose}
     >
-      {/* Contenedor del modal */}
       <div
-        className="w-full max-w-lg bg-white rounded-2xl p-6 shadow-xl relative"
-        onClick={(e) => e.stopPropagation()} // evita que se cierre si clickeamos dentro
+        className="bg-white p-6 rounded-2xl shadow-xl max-w-2xl w-full relative"
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Botón de cierre (X en la esquina) */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+          className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl"
         >
-          ❌
+          ✕
         </button>
 
-        {/* Título del modal */}
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <span className="text-blue-600">🆕</span> Crear nuevo recorrido
-        </h2>
+        <h2 className="text-2xl font-bold mb-2">{tour.title}</h2>
+        <p className="text-gray-500 mb-1">Autor: {tour.author}</p>
+        <p className="text-gray-500 mb-1">
+          Duración: {tour.durationMinutes} min · {tour.distanceKm} km
+        </p>
+        <p className="text-gray-800 font-semibold mb-3">💲 {tour.price} ARS</p>
 
-        {/* Formulario */}
-        <form onSubmit={submit}>
-          {/* Campo: Nombre del recorrido */}
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre del recorrido
-          </label>
-          <input
-            required
-            placeholder="Ej: City Tour Nocturno"
-            className="p-2 border rounded mb-3 w-full"
-            value={form.title}
-            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+        {/* Carrusel simple de imágenes mock */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <img
+            src={tour.image || "https://picsum.photos/600/300"}
+            alt="imagen recorrido"
+            className="w-full h-40 object-cover rounded-lg"
           />
-
-          {/* Campo: Autor */}
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Autor / Responsable
-          </label>
-          <input
-            required
-            placeholder="Ej: Juan Pérez"
-            className="p-2 border rounded mb-3 w-full"
-            value={form.author}
-            onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+          <img
+            src={tour.image2 || "https://picsum.photos/601/300"}
+            alt="imagen recorrido 2"
+            className="w-full h-40 object-cover rounded-lg"
           />
+        </div>
 
-          {/* Campo: Duración */}
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Duración en minutos
-          </label>
-          <input
-            required
-            type="number"
-            placeholder="Ej: 90"
-            className="p-2 border rounded mb-3 w-full"
-            value={form.durationMinutes}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, durationMinutes: Number(e.target.value) }))
-            }
+        <p className="text-gray-600 mb-4">{tour.description}</p>
+
+        <div className="flex gap-2 items-center mb-3">
+          <img
+            src={tour.influencer?.avatar || "https://via.placeholder.com/40"}
+            alt={tour.influencer?.name}
+            className="w-10 h-10 rounded-full"
           />
-
-          {/* Campo: Precio */}
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Precio en pesos
-          </label>
-          <input
-            required
-            type="number"
-            placeholder="Ej: 5000"
-            className="p-2 border rounded mb-3 w-full"
-            value={form.price}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, price: Number(e.target.value) }))
-            }
-          />
-
-          {/* Campo: Selección de paquete */}
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Seleccionar paquete recomendado
-          </label>
-          <select
-            className="p-2 border rounded mb-4 w-full"
-            value={form.recommendedPackageId}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, recommendedPackageId: e.target.value }))
-            }
-          >
-            <option value="">Ninguno</option>
-            {packages.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-          </select>
-
-          {/* Botones de acción */}
-          <div className="flex justify-end gap-2">
-            {/* Botón cancelar */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
-            >
-              Cancelar
-            </button>
-            {/* Botón guardar */}
-            <button
-              type="submit"
-              className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-            >
-              Guardar recorrido
-            </button>
+          <div>
+            <p className="text-sm font-medium">{tour.influencer?.name}</p>
+            <p className="text-xs text-gray-400">{tour.influencer?.social}</p>
           </div>
-        </form>
+        </div>
+
+        <button
+          onClick={() => onReserve(tour)}
+          className="w-full bg-green-600 text-white py-2 px-4 rounded-xl hover:bg-green-700 transition"
+        >
+          Reservar este recorrido
+        </button>
       </div>
     </div>
   );
 }
 
-// ------------------ Slider de paquetes recomendados ------------------
-function RecommendedPackages({ packages, onSelect }) {
-  const [index, setIndex] = useState(0);
-  const intervalRef = useRef(null);
-
-  // Cambio automático de paquete cada 3 segundos
-  useEffect(() => {
-    if (packages.length === 0) return;
-    intervalRef.current = setInterval(() => {
-      setIndex((prev) => (prev + 1) % packages.length);
-    }, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, [packages.length]);
-
-  return (
-    <div className="bg-white rounded-2xl p-3 shadow-sm h-full flex flex-col select-none">
-      <h4 className="font-semibold mb-2">📦 Paquetes recomendados</h4>
-
-      {packages.length > 0 && (
-        <div className="relative w-full overflow-hidden flex-1">
-          <div
-            className="flex transition-transform duration-500 h-full"
-            style={{ transform: `translateX(-${index * 100}%)` }}
-          >
-            {packages.map((p) => (
-              <div key={p.id} className="min-w-full flex-shrink-0 p-4">
-                <button
-                  onClick={() => onSelect(p)}
-                  className="w-full h-full border rounded-xl p-4 text-left bg-gray-50 hover:bg-gray-100"
-                >
-                  <div className="font-medium">{p.title}</div>
-                  <div className="text-sm text-gray-500">{p.description}</div>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ------------------ Componente principal ------------------
+/* ------------------------------------------------------------------
+   Componente principal
+   - Maneja tours, filtros y selección de influencer
+   ------------------------------------------------------------------ */
 export default function TourRecorridos() {
-  const [tours, setTours] = useState([]); // Lista de tours completa
-  const [filteredTours, setFilteredTours] = useState([]); // Lista filtrada
+  const [tours, setTours] = useState([]);
+  const [filteredTours, setFilteredTours] = useState([]);
   const [packages, setPackages] = useState([]);
-  const [filters, setFilters] = useState({
-    q: "",
-    priceMin: "",
-    priceMax: "",
-  });
+  const [influencers, setInfluencers] = useState([]);
+  const [filters, setFilters] = useState({ q: "", priceMin: "", priceMax: "", sortPriceAsc: false });
   const [createOpen, setCreateOpen] = useState(false);
 
-  // Cargar datos mock al inicio
+  // Estado del tour seleccionado y del influencer seleccionado
+  const [selectedTour, setSelectedTour] = useState(null);
+  const [selectedInfluencerId, setSelectedInfluencerId] = useState(null);
+
+  // Mock de confirmación de reserva
+  const [reservation, setReservation] = useState(null);
+
+  // ------------------ Cargar datos mock al inicio ------------------
   useEffect(() => {
-    // 🔥 Backend: fetch("/api/tours")
     const mockTours = [
       {
         id: "t1",
         title: "City Tour",
         author: "Juan Pérez",
         durationMinutes: 120,
+        distanceKm: 10,
         price: 5000,
-        packageName: "Paquete Básico",
+        description: "Recorre los puntos más icónicos de la ciudad.",
+        image: "https://picsum.photos/id/1018/1000/600/",
+        image2: "https://picsum.photos/id/1015/1000/600/",
+        influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://yt3.googleusercontent.com/ytc/AIdro_nyXrAAt-FJ5azOAUoNd5Iw0aGQb-_b-SLSOkW0B_N2md4=s160-c-k-c0x00ffffff-no-rj", social: "@luisitocomunica" },
       },
       {
         id: "t2",
         title: "Tour Histórico",
         author: "Ana Gómez",
         durationMinutes: 90,
+        distanceKm: 6,
         price: 3500,
-        packageName: "Paquete Premium",
+        description: "Sumérgete en la historia con guías expertos.",
+        image: "https://picsum.photos/id/1025/1000/600/",
+        image2: "https://picsum.photos/id/1020/1000/600/",
+        influencer: { id: "i2", name: "Drew Binsky", avatar: "https://yt3.googleusercontent.com/VCZmgTUILsHKyibr4m9W-bYkDhWPZtjcq3cksdTgtM3iVDMqHnXh0_M5hQoXLlFHRBeK9q7I=s160-c-k-c0x00ffffff-no-rj", social: "@drewbinsky" },
+      },
+      {
+        id: "t3",
+        title: "Escapada a la playa",
+        author: "María Luna",
+        durationMinutes: 180,
+        distanceKm: 40,
+        price: 8000,
+        description: "Relax total en playas paradisíacas.",
+        influencer: { id: "i1", name: "Charly Sinewan", avatar: "https://yt3.googleusercontent.com/XJLr0QWEyjktFrSi9HXh7GxUYAB3kMHlsy81uxxPofqwk3iD03WeYDTEq3e5t11ncdi8uEEyWA=s160-c-k-c0x00ffffff-no-rj", social: "@charlysinewan" },
       },
     ];
+
     setTours(mockTours);
     setFilteredTours(mockTours);
 
-    // 🔥 Backend: fetch("/api/packages/recommended")
     setPackages([
       { id: "p1", title: "Paquete Básico", description: "Recorridos esenciales" },
       { id: "p2", title: "Paquete Premium", description: "Experiencias con extras" },
     ]);
+
+    setInfluencers([
+      { id: "i1", name: "Luisito Comunica", avatar: "https://yt3.googleusercontent.com/ytc/AIdro_nyXrAAt-FJ5azOAUoNd5Iw0aGQb-_b-SLSOkW0B_N2md4=s160-c-k-c0x00ffffff-no-rj", social: "@luisitocomunica" },
+      { id: "i2",  name: "Drew Binsky", avatar: "https://yt3.googleusercontent.com/VCZmgTUILsHKyibr4m9W-bYkDhWPZtjcq3cksdTgtM3iVDMqHnXh0_M5hQoXLlFHRBeK9q7I=s160-c-k-c0x00ffffff-no-rj", social: "@drewbinsky"},
+      { id: "i3", name: "Charly Sinewan", avatar: "https://yt3.googleusercontent.com/XJLr0QWEyjktFrSi9HXh7GxUYAB3kMHlsy81uxxPofqwk3iD03WeYDTEq3e5t11ncdi8uEEyWA=s160-c-k-c0x00ffffff-no-rj", social: "@charlysinewan" },
+    ]);
   }, []);
 
-  // ------------------ Aplicar filtros ------------------
+  // ------------------ Aplicar filtros (ahora incluye influencer) ------------------
   function applyFilters() {
-    console.log("Aplicar filtros (mock)", filters);
-
-    // Filtramos tours en base a lo que el usuario escribe o selecciona
-    const results = tours.filter((tour) => {
-      // Filtro por texto: título o autor (case-insensitive)
+    let results = tours.filter((tour) => {
       const matchText =
         filters.q === "" ||
         tour.title.toLowerCase().includes(filters.q.toLowerCase()) ||
         tour.author.toLowerCase().includes(filters.q.toLowerCase());
 
-      // Filtro por precio mínimo
-      const matchPriceMin =
-        filters.priceMin === "" || tour.price >= Number(filters.priceMin);
+      const matchPriceMin = filters.priceMin === "" || tour.price >= Number(filters.priceMin);
+      const matchPriceMax = filters.priceMax === "" || tour.price <= Number(filters.priceMax);
 
-      // Filtro por precio máximo
-      const matchPriceMax =
-        filters.priceMax === "" || tour.price <= Number(filters.priceMax);
+      // Filtrado por influencer si hay uno seleccionado
+      const matchInfluencer =
+        !selectedInfluencerId || (tour.influencer && tour.influencer.id === selectedInfluencerId);
 
-      return matchText && matchPriceMin && matchPriceMax;
+      return matchText && matchPriceMin && matchPriceMax && matchInfluencer;
     });
+
+    if (filters.sortPriceAsc) {
+      results = [...results].sort((a, b) => a.price - b.price);
+    }
 
     setFilteredTours(results);
   }
+
+  // Recalcular siempre que cambien filtros, tours o influencer seleccionado
+  useEffect(() => {
+    applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, tours, selectedInfluencerId]);
 
   return (
     <div className="h-screen w-screen bg-gray-50 p-4 md:p-6 overflow-hidden flex flex-col">
@@ -376,17 +245,43 @@ export default function TourRecorridos() {
 
       {/* Layout general */}
       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
-        {/* Columna izquierda: filtros + paquetes */}
+        {/* Columna izquierda: filtros + paquetes + influencers (re-sumado) */}
         <div className="flex flex-col space-y-4 overflow-y-auto">
-          <Filters
-            filters={filters}
-            setFilters={setFilters}
-            applyFilters={applyFilters}
+          <Filters filters={filters} setFilters={setFilters} applyFilters={applyFilters} />
+
+          <RecommendedPackages packages={packages} onSelect={(p) => console.log("Paquete seleccionado", p)} />
+
+          {/* Influencers: componente inline */}
+          <RecommendedInfluencers
+            influencers={influencers}
+            onSelect={(inf) => setSelectedInfluencerId(inf ? inf.id : null)}
+            selectedId={selectedInfluencerId}
           />
-          <RecommendedPackages
-            packages={packages}
-            onSelect={(p) => console.log("Seleccionado", p)}
-          />
+
+          {/* Indicador de filtro activo */}
+          {selectedInfluencerId && (
+            <div className="bg-white p-3 rounded-xl shadow flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img
+                  src={influencers.find((i) => i.id === selectedInfluencerId)?.avatar}
+                  alt="avatar"
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <p className="text-sm font-medium">
+                    Filtrando por: {influencers.find((i) => i.id === selectedInfluencerId)?.name}
+                  </p>
+                  <p className="text-xs text-gray-400">Haz clic en "Mostrar todos" para limpiar</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedInfluencerId(null)}
+                className="px-3 py-1 bg-gray-100 rounded-full text-sm"
+              >
+                Limpiar
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Columna derecha: listado de tours */}
@@ -394,29 +289,28 @@ export default function TourRecorridos() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTours.length > 0 ? (
               filteredTours.map((t) => (
-                <TourCard
-                  key={t.id}
-                  tour={t}
-                  onSelect={(tour) =>
-                    console.log("Tour seleccionado", tour)
-                  }
-                />
+                <div key={t.id} className="relative">
+                  {/* Si el tour pertenece al influencer seleccionado, destacarlo */}
+                  <div className={`${t.influencer?.id === selectedInfluencerId ? "ring-2 ring-indigo-300 rounded-xl p-1" : ""}`}>
+                    <TourCard
+                      tour={t}
+                      onSelect={() => setSelectedTour(t)}
+                    />
+                  </div>
+                </div>
               ))
             ) : (
-              <p className="text-gray-500 p-4">
-                ⚠️ No se encontraron recorridos con estos filtros
-              </p>
+              <p className="text-gray-500 p-4">⚠️ No se encontraron recorridos con estos filtros</p>
             )}
           </div>
         </main>
       </div>
 
-      {/* Modal de creación */}
+      {/* Modal: crear tour */}
       <CreateTourModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onCreated={(newTour) => {
-          // Agregamos el nuevo tour y aplicamos filtros de nuevo
           setTours((t) => {
             const updated = [newTour, ...t];
             setFilteredTours(updated);
@@ -424,6 +318,22 @@ export default function TourRecorridos() {
           });
         }}
         packages={packages}
+      />
+
+      {/* Modal de detalle */}
+      <TourDetailModal
+        tour={selectedTour}
+        onClose={() => setSelectedTour(null)}
+        onReserve={(tour) => {
+          setSelectedTour(null);
+          setReservation(tour);
+
+          // Mock: confirmación visual
+          setTimeout(() => {
+            alert(`✅ Reserva confirmada para: ${tour.title}`);
+            setReservation(null);
+          }, 500);
+        }}
       />
     </div>
   );
