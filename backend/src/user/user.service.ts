@@ -19,10 +19,7 @@ export class UserService {
       return user;
 
     } catch (error) {
-      if ( error.code === 11000 ) {
-        throw new BadRequestException(`User exists ${ JSON.stringify( error.keyValue ) }`);
-      }
-      throw new InternalServerErrorException(`Can't create User - Check server logs`);
+      this.handleExceptions( error );
     }
   }
 
@@ -30,24 +27,56 @@ export class UserService {
     return this.userModel.find();
   }
 
-  async findOne(id: string) {
-  if (!isValidObjectId(id)) {
-    throw new BadRequestException(`Invalid user id: ${id}`);
+  async findOne(term: string) {
+
+  if (!isValidObjectId(term)) {
+    throw new BadRequestException(`Invalid user id: ${term}`);
   }
 
-  const user = await this.userModel.findById(id);
+  const user = await this.userModel.findById(term);
 
   if (!user) {
-    throw new NotFoundException(`User with id ${id} not found`);
+    throw new NotFoundException(`User with id ${term} not found`);
   }
   return user;
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(term: string, updateUserDto: UpdateUserDto) {
+
+    const user = await this.findOne(term);
+    
+    try {
+
+      await user.updateOne( updateUserDto, { new: true });
+      return { ...user.toJSON(), ...updateUserDto };
+
+    } catch (error) {
+      this.handleExceptions( error );
+    }
+
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+
+    // const user = await this.findOne(id);
+    // await user.deleteOne();
+
+    //const deleted = await this.userModel.findByIdAndDelete(id);
+
+    const { deletedCount } = await this.userModel.deleteOne({ _id: id });
+    if (deletedCount === 0) {
+      throw new BadRequestException(`User with id ${id} not found`);
+    }
+
+    return;
   }
-}
+
+  private handleExceptions( error: any ) {
+    if ( error.code === 11000 ) {
+      throw new BadRequestException(`User exists ${ JSON.stringify( error.keyValue ) }`);
+    }
+    throw new InternalServerErrorException(`Can't create User - Check server logs`);
+
+  }
+
+  }
