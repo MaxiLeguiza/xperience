@@ -1,27 +1,37 @@
-import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { Notifications } from "./Notifications_standalone";
 
-function Header() {
+export default function HeaderRight() {
+  const { auth, logout } = useAuth();
+
   return (
-    <div className="flex justify-between px-6">
-      {/* <div className="div1">
-        <div className="card">menu</div>
-      </div>
+    <div className="div3 flex justify-between">
+      <div className="card">
+        {auth ? (
+          <div className="flex items-center gap-3">
+            <span className="font-semibold">
+              Hola, {auth.nombre || auth.email?.split("@")[0]}
+            </span>
+            <button
+              onClick={logout}
+              className="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300"
+            >
+              Salir
+            </button>
 
-      <div className="div2">
-        <div className="card">
-          <h1 style={{ margin: 0, textAlign: "center" }}>Xperience</h1>
-        </div>
-      </div>
-      <div className="div3">
-        <div className="card">
+            <div className="flex items-center gap-4">
+              <Notifications />
+            </div>
+          </div>
+        ) : (
           <Link to="/login">
-            <button>Login</button>
+            <button className="px-3 py-1 rounded-md bg-indigo-600 text-white">
+              Login
+            </button>
           </Link>
-        </div>
-      </div> */}
+        )}
+      </div>
     </div>
   );
 }
-
-export default Header;
