@@ -7,12 +7,10 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { RecorridoModule } from './recorrido/recorrido.module';
 import { SocketConfig } from './events/socketConfig';
 import { QrModule } from './qr/qr.module';
-import { AuthModule } from './auth/auth.module';
 
 
 @Module({
   imports: [
-    AuthModule,
     NotificationsModule,
     UserModule,
     MongooseModule.forRoot('mongodb://localhost:27017/nest-xperience'),

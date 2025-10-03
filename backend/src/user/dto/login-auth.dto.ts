@@ -1,4 +1,3 @@
-import { RegisterAuthDto } from './register-auth.dto';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
 export class LoginAuthDto {
@@ -7,5 +6,5 @@ export class LoginAuthDto {
 
     @IsNotEmpty()
     @MinLength(6)
-    accessKey: string;
+    password: string;
 }

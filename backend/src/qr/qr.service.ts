@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, GoneException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Qr } from './qr.entity';
 import { Model } from 'mongoose';
@@ -26,7 +26,6 @@ export class QrService {
 
     const qrContent = JSON.stringify(qrData);
 
-    // Generar string QR en base64 (para frontend) o terminal
     const qrBase64 = await QRCode.toDataURL(qrContent);
     // qrcodeTerminal.generate(qrContent, { small: true }); // consola
 
@@ -38,13 +37,51 @@ export class QrService {
     return newQr.save();
   }
 
-  // 🔹 Obtener todos los QR guardados
   async getQrList() {
     return this.qrModel.find();
   }
 
-  // 🔹 Buscar un QR por id
   async getQrById(id: string) {
     return this.qrModel.findById(id);
+  }
+
+  async validateQr(content: string, currentUserId?: string) {
+    if (!content) throw new BadRequestException('Falta contenido del QR');
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      throw new BadRequestException('Contenido de QR inválido (no es JSON)');
+    }
+
+    const { recorridoId, userId, email } = parsed || {};
+    if (!recorridoId) {
+      throw new BadRequestException('El QR no tiene recorridoId');
+    }
+
+    // Buscamos el QR emitido para ese recorrido
+    const qrDoc = await this.qrModel.findOne({ recorridoId });
+    if (!qrDoc) {
+      throw new NotFoundException('QR no registrado en el sistema');
+    }
+
+    if (qrDoc.used) {
+      throw new ConflictException('QR ya fue utilizado');
+    }
+
+    // Marcamos como usado (anti-reuso básico)
+    qrDoc.used = true;
+    qrDoc.usedAt = new Date();
+    qrDoc.usedBy = currentUserId ?? userId ?? null;
+    await qrDoc.save();
+
+    return {
+      ok: true,
+      recorridoId,
+      userId: qrDoc.usedBy,
+      email: email ?? null,
+      usedAt: qrDoc.usedAt,
+    };
   }
 }
