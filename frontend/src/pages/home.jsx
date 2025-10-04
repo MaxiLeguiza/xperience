@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import SearchBooking from "../components/SearchBooking";
 import Menu from "../components/Menu";
 import { Notifications } from '../components/Notifications_standalone';
+import HeaderRight from '../components/Header';
 
 
 
@@ -44,14 +45,15 @@ function Home() {
 
       {/* Derecha arriba (Contenedor 3) */}
       <div className="div3 flex justify-between">
-        <div className="card">
+        {/* <div className="card">
           <Link to="/login">
             <button>Login</button>
           </Link>
         </div>
         <div className='flex items-center gap-4'>
           <Notifications />
-        </div>
+        </div> */}
+        <HeaderRight/>
       </div>
 
       {/* Centro grande: MAPA (Contenedor 4) */}
