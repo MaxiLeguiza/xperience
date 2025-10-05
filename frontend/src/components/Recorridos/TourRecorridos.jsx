@@ -180,7 +180,7 @@ export default function TourRecorridos() {
         distanceKm: 40,
         price: 8000,
         description: "Relax total en playas paradisíacas.",
-        influencer: { id: "i1", name: "Charly Sinewan", avatar: "https://yt3.googleusercontent.com/XJLr0QWEyjktFrSi9HXh7GxUYAB3kMHlsy81uxxPofqwk3iD03WeYDTEq3e5t11ncdi8uEEyWA=s160-c-k-c0x00ffffff-no-rj", social: "@charlysinewan" },
+        influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://yt3.googleusercontent.com/ytc/AIdro_nyXrAAt-FJ5azOAUoNd5Iw0aGQb-_b-SLSOkW0B_N2md4=s160-c-k-c0x00ffffff-no-rj", social: "@luisitocomunica" },
       },
     ];
 
