@@ -7,8 +7,6 @@ import { Qr, QrSchema } from './qr.entity';
 @Module({
   controllers: [QrController],
   providers: [QrService],
-  imports: [
-    MongooseModule.forFeature([{ name: Qr.name, schema: QrSchema }]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: Qr.name, schema: QrSchema }])],
 })
 export class QrModule {}

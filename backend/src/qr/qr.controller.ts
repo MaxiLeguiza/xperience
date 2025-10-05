@@ -1,14 +1,16 @@
-import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req /*, UseGuards*/,
+} from '@nestjs/common';
 import { QrService } from './qr.service';
 import { CreateQrDto } from './create-qr.dto';
-import { JwtAuthGuard } from 'src/user/auth.guard';
-import { RedeemQrDto } from './redeem-qr.dto';
+// import { JwtAuthGuard } from 'src/user/auth.guard';
 
 interface AuthRequest extends Request {
-  user: {
-    id: string;
-    email: string;
-  };
+  user?: { id: string; email: string };
 }
 
 @Controller('qr')
@@ -21,20 +23,16 @@ export class QrController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  saveQr(@Req() req: AuthRequest, @Body() body: CreateQrDto) {
-    //any
+  // @UseGuards(JwtAuthGuard)   // ⬅️ DESACTIVADO TEMPORALMENTE
+  async saveQr(@Req() req: AuthRequest, @Body() body: CreateQrDto) {
     const { recorridoId } = body;
-    const idUser = req.user.id;
-    const email = req.user.email;
-    const data = { recorridoId, idUser, email };
-    return this.qrService.createQr(data);
+    const idUser = (req as any)?.user?.id ?? 'anon';
+    const email = (req as any)?.user?.email ?? null;
+    return this.qrService.createQr({ recorridoId, idUser, email });
   }
 
-  // El front envía el token leído del QR
   @Post('validate')
   async validate(@Body() body: { content: string }, @Req() req: any) {
-    // si tenés login con JWT podés extraer req.user?.id, pero es opcional
     const currentUserId = req?.user?.id;
     return this.qrService.validateQr(body.content, currentUserId);
   }
