@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
+/*import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";*/
 import "leaflet-geosearch/dist/geosearch.css";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -11,6 +11,9 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
+import WeatherCard from "../components/clima/WeatherCard"; // ajusta la ruta según tu estructura
+
+
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
 /* ============== Íconos desde /public/images/markers ============== */
@@ -76,48 +79,6 @@ function FitToBounds({ positions, trigger }) {
   }, [positions, trigger, map]);
   return null;
 }
-function SearchControl({ onSelect }) {
-  const map = useMap();
-  const ref = useRef();
-  useEffect(() => {
-    const provider = new OpenStreetMapProvider();
-    if (!ref.current) {
-      ref.current = new GeoSearchControl({
-        provider,
-        style: "bar",
-        showMarker: true,
-        showPopup: true,
-        marker: { icon: DEST_ICON },
-        popupFormat: ({ result }) => result.label,
-        autoClose: true,
-        retainZoomLevel: false,
-        animateZoom: true,
-        keepResult: true,
-      });
-      map.addControl(ref.current);
-    }
-    const onShow = (e) => {
-      const r = e?.location;
-      if (!r) return;
-      onSelect?.({
-        id: `search-${Date.now()}`,
-        name: r.label || r.raw?.name || "Lugar",
-        address: r.label || r.raw?.display_name,
-        location: { lat: r.y, lng: r.x },
-      });
-    };
-    map.on("geosearch/showlocation", onShow);
-    return () => {
-      if (ref.current) {
-        map.removeControl(ref.current);
-        ref.current = null;
-      }
-      map.off("geosearch/showlocation", onShow);
-    };
-  }, [map, onSelect]);
-  return null;
-}
-
 /* ---------- 📍 Ubicarme: seguimiento ON/OFF + primer centrado ---------- */
 function LocateControl() {
   const map = useMap();
@@ -466,7 +427,7 @@ export default function MapView({ items = [] }) {
         {/* watchers y controles */}
         <GeoWatcher onChange={setUserPos} />
         <LocateControl />
-        <SearchControl onSelect={setSelected} />
+        {/* <SearchControl onSelect={setSelected} />*/}
         <InvalidateSizeOnce />
         <FitToBounds positions={positions} trigger={fitKey} />
 
@@ -499,9 +460,30 @@ export default function MapView({ items = [] }) {
           </Marker>
         ))}
       </MapContainer>
-    </div>
-  );
+    {/* 🌤 Clima del lugar seleccionado o destino */}
+    {(selected || routeTo) && (
+      <div
+        style={{
+          position: "absolute",
+          right: 12,
+          bottom: 12,
+          zIndex: 500,
+        }}
+      >
+        <WeatherCard
+          latitude={
+            (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) || null
+          }
+          longitude={
+            (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) || null
+          }
+        />
+      </div>
+    )}
+  </div>
+);
 }
+
 
 // estilos rápidos
 const chip = {
