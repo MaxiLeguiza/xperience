@@ -1,12 +1,11 @@
 // src/routes/RedeemPage.jsx
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import api from "../lib/api.js";
+import { useSearchParams } from "react-router-dom";
+import { validateQrContent } from "@/features/qr/useQr";
 
 export default function RedeemPage() {
-  const [params] = useSearchParams();
-  const navigate = useNavigate();
-  const content = params.get("content");
+  const [sp] = useSearchParams();
+  const content = sp.get("content");
   const [status, setStatus] = useState("Procesando…");
   const [result, setResult] = useState(null);
 
@@ -15,11 +14,20 @@ export default function RedeemPage() {
       setStatus("Falta parámetro 'content'");
       return;
     }
-    api
-      .post("/qr/validate", { content })
+
+    validateQrContent({ content })
       .then((r) => {
-        setResult(r.data);
+        setResult(r);
         setStatus("QR validado ✅");
+        // 👉 redirigir al mapa abriendo el recorrido por id
+        if (r?.recorridoId) {
+          // Si querés, acá también podrías guardar un cupón / acompañante en localStorage
+          setTimeout(() => {
+            window.location.href = `/?dest=${encodeURIComponent(
+              r.recorridoId
+            )}&fromQr=1`;
+          }, 800);
+        }
       })
       .catch((e) => {
         setStatus(
@@ -37,12 +45,6 @@ export default function RedeemPage() {
           {JSON.stringify(result, null, 2)}
         </pre>
       )}
-      <button
-        className="mt-4 px-3 py-2 rounded bg-slate-800 text-white"
-        onClick={() => navigate("/", { replace: true })}
-      >
-        Volver
-      </button>
     </div>
   );
 }
