@@ -10,6 +10,7 @@ import SearchBooking from "../components/SearchBooking";
 import Menu from "../components/Menu";
 import { Notifications } from '../components/Notifications_standalone';
 import HeaderRight from '../components/Header';
+import WeatherCard from '../components/clima/WeatherCard';
 
 
 
@@ -53,7 +54,7 @@ function Home() {
         <div className='flex items-center gap-4'>
           <Notifications />
         </div> */}
-        <HeaderRight/>
+        <HeaderRight />
       </div>
 
       {/* Centro grande: MAPA (Contenedor 4) */}

@@ -10,6 +10,7 @@ import Cart from "./components/Booking/Cart";
 import Confirmacion from "./components/Booking/Confirmacion";
 import Exito from "./components/Booking/Exito";
 import TourRecorridos from "./components/Recorridos/TourRecorridos";
+import WeatherCard from "./components/clima/WeatherCard";
 import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 
 
@@ -36,6 +37,8 @@ export default function App() {
       <Route path="/exito" element={<Exito />} /> {/* Nueva ruta */}
       {/* Página de recorridos */}
       <Route path="/recorridos" element={<TourRecorridos />} />
+      {/*Clima */}
+      <Route path = "/clima" element={<WeatherCard />} />
 
 
     </Routes>
