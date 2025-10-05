@@ -13,7 +13,6 @@ import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import WeatherCard from "../components/clima/WeatherCard"; // ajusta la ruta según tu estructura
 
-
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
 /* ============== Íconos desde /public/images/markers ============== */
@@ -399,7 +398,7 @@ export default function MapView({ items = [] }) {
                 onClick={() => setRouteTo(selected)}
                 disabled={!userPos}
               >
-                Ruta aquí
+                Ruta
               </button>
               <button style={btnGhost} onClick={() => setSelected(null)}>
                 Cerrar
@@ -453,37 +452,36 @@ export default function MapView({ items = [] }) {
                   disabled={!userPos}
                   style={{ ...btn, padding: "6px 10px" }}
                 >
-                  Ruta aquí
+                  Ruta
                 </button>
               </div>
             </Popup>
           </Marker>
         ))}
       </MapContainer>
-    {/* 🌤 Clima del lugar seleccionado o destino */}
-    {(selected || routeTo) && (
-      <div
-        style={{
-          position: "absolute",
-          right: 12,
-          bottom: 12,
-          zIndex: 500,
-        }}
-      >
-        <WeatherCard
-          latitude={
-            (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) || null
-          }
-          longitude={
-            (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) || null
-          }
-        />
-      </div>
-    )}
-  </div>
-);
+      {/* 🌤 Clima del lugar seleccionado o destino */}
+      {(selected || routeTo) && (
+        <div
+          style={{
+            position: "absolute",
+            right: 12,
+            bottom: 12,
+            zIndex: 500,
+          }}
+        >
+          <WeatherCard
+            latitude={
+              (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) || null
+            }
+            longitude={
+              (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) || null
+            }
+          />
+        </div>
+      )}
+    </div>
+  );
 }
-
 
 // estilos rápidos
 const chip = {
