@@ -88,7 +88,11 @@ function LocateControl() {
   const lastPosRef = useRef(null);
 
   useEffect(() => {
-    const control = L.control({ position: "topleft" });
+    
+    // Muevo el control de zoom a la
+    map.zoomControl.setPosition('topright');
+    
+    const control = L.control({ position: "topright" });
     control.onAdd = () => {
       const container = L.DomUtil.create("div", "leaflet-bar");
       const btn = L.DomUtil.create("a", "", container);
