@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import RoutingLayer, { iconFor } from "./RoutingLayer";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 /*import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";*/
@@ -7,62 +8,10 @@ import "leaflet-geosearch/dist/geosearch.css";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 
-// Fix íconos (Leaflet default)
-import iconUrl from "leaflet/dist/images/marker-icon.png";
-import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
-import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import WeatherCard from "../components/clima/WeatherCard"; // ajusta la ruta según tu estructura
 
 // 👇 NUEVO: modal para generar QR
 import QrRecorridoModal from "../features/qr/QrRecorridoModal";
-
-L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
-
-/* ============== Íconos desde /public/images/markers ============== */
-function makeIcon(url, size = [40, 40], anchor = [20, 40]) {
-  return L.icon({
-    iconUrl: url,
-    iconRetinaUrl: url,
-    iconSize: size,
-    iconAnchor: anchor,
-    popupAnchor: [0, -32],
-    shadowUrl,
-    shadowSize: [41, 41],
-    shadowAnchor: [12, 41],
-  });
-}
-
-const ICONS = {
-  rafting: makeIcon("/images/markers/rafting.png", [40, 40], [20, 40]),
-  cabalgata: makeIcon("/images/markers/cabalgata.svg", [44, 44], [22, 44]),
-  ciclismo: makeIcon("/images/markers/ciclismo.svg", [40, 40], [20, 40]),
-  parapente: makeIcon("/images/markers/parapente.svg", [40, 40], [20, 40]), // cambia a .png si corresponde
-  trekking: makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]),
-  insti: makeIcon("/images/markers/insti.png", [40, 40], [20, 40]),
-  default: new L.Icon.Default(),
-};
-const iconFor = (p) =>
-  p?.icon
-    ? makeIcon(p.icon)
-    : ICONS[(p?.category || "").toLowerCase()] ?? ICONS.default;
-
-/* --------- Iconos especiales --------- */
-// Icono para resultados del buscador
-const DEST_ICON = makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]);
-
-// Icono de ubicación (azul) auto-contenido (no depende de CSS)
-const LOCATE_ICON = L.divIcon({
-  className: "",
-  html: `
-    <div style="
-      width:18px;height:18px;border-radius:9999px;background:#1a73e8;
-      border:3px solid #fff;box-shadow:0 0 0 4px rgba(26,115,232,0.30);
-      transform:translate(-50%,-50%);
-    "></div>
-  `,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
 
 /* -------------------- Helpers -------------------- */
 function InvalidateSizeOnce() {
@@ -91,10 +40,10 @@ function LocateControl() {
   const lastPosRef = useRef(null);
 
   useEffect(() => {
-    
+
     // Muevo el control de zoom a la
     map.zoomControl.setPosition('topright');
-    
+
     const control = L.control({ position: "topright" });
     control.onAdd = () => {
       const container = L.DomUtil.create("div", "leaflet-bar");
@@ -194,7 +143,7 @@ function GeoWatcher({ onChange }) {
   useEffect(() => {
     map.locate({ watch: true, enableHighAccuracy: true, setView: false });
     const onFound = (e) => onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
-    const onErr = () => {};
+    const onErr = () => { };
     map.on("locationfound", onFound);
     map.on("locationerror", onErr);
     return () => {
@@ -206,49 +155,6 @@ function GeoWatcher({ onChange }) {
   return null;
 }
 
-/* ---------- RoutingLayer: dibuja la ruta con OSRM ---------- */
-function RoutingLayer({ from, to }) {
-  const map = useMap();
-  const controlRef = useRef();
-
-  useEffect(() => {
-    if (!from || !to) return;
-
-    if (controlRef.current) {
-      map.removeControl(controlRef.current);
-      controlRef.current = null;
-    }
-
-    controlRef.current = L.Routing.control({
-      waypoints: [
-        L.latLng(from.lat, from.lng),
-        L.latLng(to.location.lat, to.location.lng),
-      ],
-      router: L.Routing.osrmv1({
-        serviceUrl: "https://router.project-osrm.org/route/v1",
-      }),
-      addWaypoints: false,
-      draggableWaypoints: false,
-      routeWhileDragging: false,
-      show: false, // oculta el panel nativo
-      fitSelectedRoutes: true,
-      lineOptions: { styles: [{ color: "#1a73e8", weight: 5, opacity: 0.85 }] },
-      createMarker: (i, wp) =>
-        i === 0
-          ? L.marker(wp.latLng, { icon: LOCATE_ICON }) // origen: tu ubicación
-          : L.marker(wp.latLng, { icon: DEST_ICON }), // destino: icono de destino
-    }).addTo(map);
-
-    return () => {
-      if (controlRef.current) {
-        map.removeControl(controlRef.current);
-        controlRef.current = null;
-      }
-    };
-  }, [from, to, map]);
-
-  return null;
-}
 
 /* ----------------------------------------------- */
 
@@ -261,6 +167,8 @@ export default function MapView({ items = [] }) {
   const [difficulty, setDifficulty] = useState("all");
   const [q, setQ] = useState("");
   const [fitKey, setFitKey] = useState(0);
+  const [routeInfo, setRouteInfo] = useState(null);
+
 
   // 👇 NUEVO: modal QR
   const [openQR, setOpenQR] = useState(false);
@@ -436,7 +344,20 @@ export default function MapView({ items = [] }) {
             Seleccioná un punto para ver detalles.
           </div>
         )}
+
       </div>
+
+      {/* Info de ruta (si hay ruta activa) */}
+      {routeInfo && (
+        <span
+          className="absolute left-1/2 bottom-8 -translate-x-1/6 
+          bg-blue-500 text-white rounded-lg px-6 py-2 shadow-lg 
+          font-semibold text-base border border-blue-600 z-[1000]"
+        >
+          {Math.round(routeInfo.duration / 60)} min &nbsp;|&nbsp;
+          {(routeInfo.distance / 1000).toFixed(2)} km
+        </span>
+      )}
 
       <MapContainer
         center={center}
@@ -454,8 +375,9 @@ export default function MapView({ items = [] }) {
         <TileLayer url={TILE_URL} attribution={ATTR} />
 
         {/* Capa de ruta (si hay origen y destino) */}
-        {userPos && routeTo && <RoutingLayer from={userPos} to={routeTo} />}
-
+        {userPos && routeTo && (
+          <RoutingLayer from={userPos} to={routeTo} onRouteInfo={setRouteInfo} />
+        )}
         {filtered.map((p) => (
           <Marker
             key={p.id}
@@ -521,6 +443,7 @@ export default function MapView({ items = [] }) {
           recorridoId={recorridoId}
         />
       )}
+
     </div>
   );
 }
