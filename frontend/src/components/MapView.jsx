@@ -1,5 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  ZoomControl,
+} from "react-leaflet";
+import { useLocation } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 /*import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";*/
@@ -11,9 +19,7 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
-import WeatherCard from "../components/clima/WeatherCard"; // ajusta la ruta según tu estructura
-
-// 👇 NUEVO: modal para generar QR
+import WeatherCard from "../components/clima/WeatherCard"; // ajusta si tu ruta es distinta
 import QrRecorridoModal from "../features/qr/QrRecorridoModal";
 
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
@@ -36,7 +42,7 @@ const ICONS = {
   rafting: makeIcon("/images/markers/rafting.png", [40, 40], [20, 40]),
   cabalgata: makeIcon("/images/markers/cabalgata.svg", [44, 44], [22, 44]),
   ciclismo: makeIcon("/images/markers/ciclismo.svg", [40, 40], [20, 40]),
-  parapente: makeIcon("/images/markers/parapente.svg", [40, 40], [20, 40]), // cambia a .png si corresponde
+  parapente: makeIcon("/images/markers/parapente.svg", [40, 40], [20, 40]),
   trekking: makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]),
   insti: makeIcon("/images/markers/insti.png", [40, 40], [20, 40]),
   default: new L.Icon.Default(),
@@ -47,10 +53,8 @@ const iconFor = (p) =>
     : ICONS[(p?.category || "").toLowerCase()] ?? ICONS.default;
 
 /* --------- Iconos especiales --------- */
-// Icono para resultados del buscador
 const DEST_ICON = makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]);
 
-// Icono de ubicación (azul) auto-contenido (no depende de CSS)
 const LOCATE_ICON = L.divIcon({
   className: "",
   html: `
@@ -81,6 +85,7 @@ function FitToBounds({ positions, trigger }) {
   }, [positions, trigger, map]);
   return null;
 }
+
 /* ---------- 📍 Ubicarme: seguimiento ON/OFF + primer centrado ---------- */
 function LocateControl() {
   const map = useMap();
@@ -91,10 +96,6 @@ function LocateControl() {
   const lastPosRef = useRef(null);
 
   useEffect(() => {
-    
-    // Muevo el control de zoom a la
-    map.zoomControl.setPosition('topright');
-    
     const control = L.control({ position: "topright" });
     control.onAdd = () => {
       const container = L.DomUtil.create("div", "leaflet-bar");
@@ -113,12 +114,9 @@ function LocateControl() {
         followingRef.current = !followingRef.current;
         btn.style.background = followingRef.current ? "#e8f0fe" : "#fff";
 
-        // si ya tenemos posición, centramos al instante
         if (followingRef.current && lastPosRef.current) {
           map.panTo(lastPosRef.current, { animate: true });
         }
-
-        // si aún no hay fix, pedimos uno puntual
         if (!lastPosRef.current) {
           map.locate({
             setView: true,
@@ -143,7 +141,7 @@ function LocateControl() {
         markerRef.current.setLatLng(latlng);
       }
 
-      const RADIUS_METERS = 15; // círculo pequeño fijo
+      const RADIUS_METERS = 15;
       if (!circleRef.current) {
         circleRef.current = L.circle(latlng, {
           radius: RADIUS_METERS,
@@ -156,13 +154,11 @@ function LocateControl() {
         circleRef.current.setRadius(RADIUS_METERS);
       }
 
-      // centra automáticamente solo la primera vez
       if (!firstFixRef.current) {
         firstFixRef.current = true;
         map.setView(latlng, 16, { animate: true });
       }
 
-      // si el seguimiento está activo, seguí al usuario
       if (followingRef.current) {
         map.panTo(latlng, { animate: true });
       }
@@ -179,7 +175,6 @@ function LocateControl() {
       map.off("locationfound", onFound);
       map.off("locationerror", onError);
       map.removeControl(control);
-      // no llamamos stopLocate aquí (GeoWatcher maneja el watch global)
       if (markerRef.current) map.removeLayer(markerRef.current);
       if (circleRef.current) map.removeLayer(circleRef.current);
     };
@@ -230,13 +225,13 @@ function RoutingLayer({ from, to }) {
       addWaypoints: false,
       draggableWaypoints: false,
       routeWhileDragging: false,
-      show: false, // oculta el panel nativo
+      show: false,
       fitSelectedRoutes: true,
       lineOptions: { styles: [{ color: "#1a73e8", weight: 5, opacity: 0.85 }] },
       createMarker: (i, wp) =>
         i === 0
-          ? L.marker(wp.latLng, { icon: LOCATE_ICON }) // origen: tu ubicación
-          : L.marker(wp.latLng, { icon: DEST_ICON }), // destino: icono de destino
+          ? L.marker(wp.latLng, { icon: LOCATE_ICON })
+          : L.marker(wp.latLng, { icon: DEST_ICON }),
     }).addTo(map);
 
     return () => {
@@ -254,17 +249,22 @@ function RoutingLayer({ from, to }) {
 
 // --- Mapa principal ---
 export default function MapView({ items = [] }) {
+  const location = useLocation();
+
   const [selected, setSelected] = useState(null);
-  const [routeTo, setRouteTo] = useState(null); // destino para rutas
-  const [userPos, setUserPos] = useState(null); // tu ubicación
+  const [routeTo, setRouteTo] = useState(null);
+  const [userPos, setUserPos] = useState(null);
   const [category, setCategory] = useState("all");
   const [difficulty, setDifficulty] = useState("all");
   const [q, setQ] = useState("");
   const [fitKey, setFitKey] = useState(0);
 
-  // 👇 NUEVO: modal QR
   const [openQR, setOpenQR] = useState(false);
-  const recorridoId = selected?.id || null; // usamos el id de la actividad seleccionada
+  const recorridoId = selected?.id || null;
+
+  // Si vino desde /redeem con intención de rutear pero aún no tenemos ubicación,
+  // guardamos el destino y ruteamos apenas aparezca userPos.
+  const [pendingRoute, setPendingRoute] = useState(null);
 
   const points = useMemo(
     () =>
@@ -298,6 +298,32 @@ export default function MapView({ items = [] }) {
 
   const positions = useMemo(() => filtered.map((p) => p.pos), [filtered]);
   const center = points[0]?.pos || [-32.8895, -68.8458];
+
+  // Deep-link: ?dest=<id> [&fromQr=1]
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const destId = params.get("dest");
+    const fromQr = params.get("fromQr") === "1";
+    if (!destId || !points.length) return;
+
+    const found = points.find((p) => p.id === destId);
+    if (found) {
+      setSelected(found);
+      if (fromQr) {
+        // Si ya tenemos ubicación, ruteamos; si no, queda pendiente
+        if (userPos) setRouteTo(found);
+        else setPendingRoute(found);
+      }
+    }
+  }, [location.search, points, userPos]);
+
+  // Cuando aparece userPos y hay una ruta pendiente desde el deep-link, la trazamos
+  useEffect(() => {
+    if (userPos && pendingRoute) {
+      setRouteTo(pendingRoute);
+      setPendingRoute(null);
+    }
+  }, [userPos, pendingRoute]);
 
   // OSM fijo
   const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -412,7 +438,7 @@ export default function MapView({ items = [] }) {
                 Ruta
               </button>
 
-              {/* 🅰️ Botón QR en el panel de detalle */}
+              {/* Botón QR en el panel */}
               <button
                 style={btn}
                 onClick={() => setOpenQR(true)}
@@ -442,20 +468,18 @@ export default function MapView({ items = [] }) {
         center={center}
         zoom={12}
         scrollWheelZoom
+        zoomControl={false}
         style={{ width: "100%", height: "100%" }}
       >
-        {/* watchers y controles */}
+        <ZoomControl position="topright" />
         <GeoWatcher onChange={setUserPos} />
         <LocateControl />
-        {/* <SearchControl onSelect={setSelected} />*/}
+        {/* <SearchControl onSelect={setSelected} /> */}
         <InvalidateSizeOnce />
         <FitToBounds positions={positions} trigger={fitKey} />
-
         <TileLayer url={TILE_URL} attribution={ATTR} />
-
-        {/* Capa de ruta (si hay origen y destino) */}
+        {/* Capa de ruta */}
         {userPos && routeTo && <RoutingLayer from={userPos} to={routeTo} />}
-
         {filtered.map((p) => (
           <Marker
             key={p.id}
@@ -475,12 +499,10 @@ export default function MapView({ items = [] }) {
                 >
                   Ruta
                 </button>
-
-                {/* 🅱️ Botón QR también en el popup del marcador */}
                 <button
                   onClick={() => {
-                    setSelected(p); // aseguramos 'selected' para el panel
-                    setOpenQR(true); // abrimos modal
+                    setSelected(p);
+                    setOpenQR(true);
                   }}
                   style={{ ...btn, padding: "6px 10px" }}
                 >
@@ -492,7 +514,7 @@ export default function MapView({ items = [] }) {
         ))}
       </MapContainer>
 
-      {/* 🌤 Clima del lugar seleccionado o destino */}
+      {/* 🌤 Clima */}
       {(selected || routeTo) && (
         <div
           style={{
@@ -513,7 +535,7 @@ export default function MapView({ items = [] }) {
         </div>
       )}
 
-      {/* Modal de QR (usa el id de la actividad seleccionada) */}
+      {/* Modal QR */}
       {openQR && recorridoId && (
         <QrRecorridoModal
           open
