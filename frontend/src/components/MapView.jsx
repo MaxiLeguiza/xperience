@@ -13,6 +13,9 @@ import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import WeatherCard from "../components/clima/WeatherCard"; // ajusta la ruta según tu estructura
 
+// 👇 NUEVO: modal para generar QR
+import QrRecorridoModal from "../features/qr/QrRecorridoModal";
+
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
 /* ============== Íconos desde /public/images/markers ============== */
@@ -259,6 +262,10 @@ export default function MapView({ items = [] }) {
   const [q, setQ] = useState("");
   const [fitKey, setFitKey] = useState(0);
 
+  // 👇 NUEVO: modal QR
+  const [openQR, setOpenQR] = useState(false);
+  const recorridoId = selected?.id || null; // usamos el id de la actividad seleccionada
+
   const points = useMemo(
     () =>
       items
@@ -404,6 +411,16 @@ export default function MapView({ items = [] }) {
               >
                 Ruta
               </button>
+
+              {/* 🅰️ Botón QR en el panel de detalle */}
+              <button
+                style={btn}
+                onClick={() => setOpenQR(true)}
+                disabled={!recorridoId}
+              >
+                QR
+              </button>
+
               <button style={btnGhost} onClick={() => setSelected(null)}>
                 Cerrar
               </button>
@@ -450,7 +467,7 @@ export default function MapView({ items = [] }) {
               <b>{p.name}</b>
               <br />
               {p.address || ""}
-              <div style={{ marginTop: 8 }}>
+              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
                 <button
                   onClick={() => setRouteTo(p)}
                   disabled={!userPos}
@@ -458,11 +475,23 @@ export default function MapView({ items = [] }) {
                 >
                   Ruta
                 </button>
+
+                {/* 🅱️ Botón QR también en el popup del marcador */}
+                <button
+                  onClick={() => {
+                    setSelected(p); // aseguramos 'selected' para el panel
+                    setOpenQR(true); // abrimos modal
+                  }}
+                  style={{ ...btn, padding: "6px 10px" }}
+                >
+                  QR
+                </button>
               </div>
             </Popup>
           </Marker>
         ))}
       </MapContainer>
+
       {/* 🌤 Clima del lugar seleccionado o destino */}
       {(selected || routeTo) && (
         <div
@@ -482,6 +511,15 @@ export default function MapView({ items = [] }) {
             }
           />
         </div>
+      )}
+
+      {/* Modal de QR (usa el id de la actividad seleccionada) */}
+      {openQR && recorridoId && (
+        <QrRecorridoModal
+          open
+          onClose={() => setOpenQR(false)}
+          recorridoId={recorridoId}
+        />
       )}
     </div>
   );
