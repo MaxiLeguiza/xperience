@@ -58,7 +58,7 @@ function Home() {
       </div>
 
       {/* Derecha arriba (Contenedor 3) */}
-      <div className="div3 flex justify-between">
+      <div className="div3">
         {/* <div className="card">
           <Link to="/login">
             <button>Login</button>

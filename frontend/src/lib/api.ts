@@ -17,4 +17,13 @@ api.interceptors.response.use(
   }
 );
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token"); // o donde lo guardes
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default api;
