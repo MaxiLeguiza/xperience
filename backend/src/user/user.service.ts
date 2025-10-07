@@ -73,6 +73,7 @@ export class UserService {
       user: {
         id: user._id,
         email: user.email,
+        nombre: user.nombre
       },
     };
   }
