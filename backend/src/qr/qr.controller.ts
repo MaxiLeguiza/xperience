@@ -3,11 +3,12 @@ import {
   Controller,
   Get,
   Post,
-  Req /*, UseGuards*/,
+  Req, /*, UseGuards*/
+  UseGuards,
 } from '@nestjs/common';
 import { QrService } from './qr.service';
 import { CreateQrDto } from './create-qr.dto';
-// import { JwtAuthGuard } from 'src/user/auth.guard';
+import { JwtAuthGuard } from 'src/user/auth.guard';
 
 interface AuthRequest extends Request {
   user?: { id: string; email: string };
@@ -23,12 +24,17 @@ export class QrController {
   }
 
   @Post()
-  // @UseGuards(JwtAuthGuard)   // ⬅️ DESACTIVADO TEMPORALMENTE
+  @UseGuards(JwtAuthGuard)   // ⬅️ DESACTIVADO TEMPORALMENTE
   async saveQr(@Req() req: AuthRequest, @Body() body: CreateQrDto) {
+    if (!req.user) {
+    throw new Error('Usuario no autenticado');
+  }
+
     const { recorridoId } = body;
-    const idUser = (req as any)?.user?.id ?? 'anon';
-    const email = (req as any)?.user?.email ?? null;
-    return this.qrService.createQr({ recorridoId, idUser, email });
+    const idUser = req.user.id;
+    const email = req.user.email;
+    const data = { recorridoId, idUser, email };
+    return this.qrService.createQr(data);
   }
 
   @Post('validate')

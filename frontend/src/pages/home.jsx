@@ -28,6 +28,19 @@ function Home() {
     ]);
   }, []);
 
+  // Estado local para guardar los deportes extremos destacados
+  const [topExtremeSports, setTopExtremeSports] = useState([]);
+
+  // Simulamos obtener los deportes extremos destacados (puedes cambiarlo por un fetch a Nest)
+  useEffect(() => {
+    // Aquí podrías hacer fetch("/api/sports/top") si tu backend lo soporta
+    setTopExtremeSports([
+      { id: 1, title: "Parapente", lugar: "Cacheuta", duration: "2h 30m" },
+      { id: 2, title: "Rafting", lugar: "Río Mendoza", duration: "4h 00m" },
+      { id: 3, title: "Trekking", lugar: "Cerro Arco", duration: "1h 45m" }
+    ]);
+  }, []);
+
   return (
     <div className="parent">
       {/* Cabecera centrada (Contenedor 2) */}
@@ -45,7 +58,7 @@ function Home() {
       </div>
 
       {/* Derecha arriba (Contenedor 3) */}
-      <div className="div3 flex justify-between">
+      <div className="div3">
         {/* <div className="card">
           <Link to="/login">
             <button>Login</button>
@@ -81,7 +94,7 @@ function Home() {
           </ul>
 
           {/* Botón que lleva al componente TourRecorridosApp */}
-          <div className="mt-4 text-right">
+          <div className="mt-4 text-right ">
             {/* Usamos Link de react-router-dom para navegar sin recargar */}
             <Link to="/recorridos">
               <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
@@ -90,8 +103,27 @@ function Home() {
             </Link>
           </div>
         </div>
+
+        <div className="div5 mt-4 ">
+          <div className="card-degrade p-4 bg-gradient-to-br from-black to-red-500">
+          <h2 className="text-lg font-semibold mb-2 text-orange-500">Deportes Extremos Destacados</h2>
+
+          {/* Listado simple de los mejores recorridos */}
+          <ul className="space-y-2">
+            {topExtremeSports.map((deporte) => (
+              <li key={deporte.id} className="border border-black rounded p-2 bg-gradient-to-r from-black to-red-500">
+                <p className="font-medium text-orange-500">{deporte.title}</p>
+                <p className="text-sm text-white">Lugar: {deporte.lugar}</p>
+                <p className="text-sm text-white">Duración: {deporte.duration}</p>
+              </li>
+            ))}
+          </ul>
+
+        </div>
+        </div>
       </div>
     </div>
+    
 
   );
 }
