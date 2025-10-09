@@ -59,38 +59,24 @@ function Home() {
   // ESTRUCTURA PRINCIPAL
   // ===========================================================
   return (
-    <div className="bg-gray-100 font-display text-gray-800 min-h-screen h-screen flex flex-col">
-      {/* ====================================
-          NAVBAR SUPERIOR
-      ==================================== */}
-      <header className="bg-card-light shadow-md">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo / título */}
-          <h1 className="text-2xl font-bold text-primary">Xperience</h1>
+    <div className="parent">
+      {/* Cabecera centrada (Contenedor 2) */}
+      <div className="div2">
+        <div className="card">
+          <h1 style={{ margin: 0, textAlign: "center" }}>Xperience</h1>
+        </div>
+      </div>
 
-          {/* Menú superior (sin componente externo) */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <a
-              href="/recorridos"
-              className="text-text-light hover:text-primary text-sm font-medium"
-            >
-              Recorridos
-            </a>
-            <a
-              href="#deportes"
-              className="text-text-light hover:text-primary text-sm font-medium"
-            >
-              Deportes
-            </a>
-            <a
-              href="/influencers"
-              className="text-text-light hover:text-primary text-sm font-medium"
-            >
-              Influencers
-            </a>
-          </nav>
+      {/* Columna izquierda alta (Contenedor 1) */}
+      <div className="div1">
+        <Menu />
+        <br />
+        <SearchBooking />
+      </div>
 
-          {/* Botón de login */}
+      {/* Derecha arriba (Contenedor 3) */}
+      <div className="div3 flex justify-between">
+        {/* <div className="card">
           <Link to="/login">
             <button className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition">
               Login

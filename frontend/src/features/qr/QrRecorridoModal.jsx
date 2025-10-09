@@ -58,7 +58,7 @@ export default function QrRecorridoModal({ open, onClose, recorridoId }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold">QR de Recorrido</h3>
+          <h3 className="text-lg font-semibold">QR del Recorrido</h3>
           <button onClick={onClose} className="text-slate-500">
             ✕
           </button>
@@ -96,26 +96,6 @@ export default function QrRecorridoModal({ open, onClose, recorridoId }) {
               <code>resp.qr</code>.
             </div>
           )}
-        </div>
-
-        <div className="mt-6 border-t pt-3">
-          <div className="text-sm font-medium">
-            QR alternativo (URL a /redeem)
-          </div>
-          <p className="text-xs text-slate-500">
-            Este QR abre tu app en <code>/redeem</code> con el contenido del QR.
-            Útil para demo en celular.
-          </p>
-          <div className="mt-2 flex flex-col items-center gap-2">
-            <QRCodeCanvas value={redeemUrl} size={220} includeMargin />
-            <div className="text-xs break-all">{redeemUrl}</div>
-            <button
-              className="px-3 py-2 rounded bg-slate-900 text-white"
-              onClick={() => navigator.clipboard?.writeText(redeemUrl)}
-            >
-              Copiar enlace
-            </button>
-          </div>
         </div>
       </div>
     </div>
