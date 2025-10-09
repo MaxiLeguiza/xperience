@@ -6,32 +6,38 @@ export default function HeaderRight() {
   const { auth, logout } = useAuth();
 
   return (
-    <div className="div3 flex justify-between">
-      <div className="card">
-        {auth ? (
-          <div className="flex items-center gap-3">
+    // <div className="flex justify-between">
+    <div className="card">
+      {auth ? (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Notifications />
+          </div>
+          <div className="flex items-center gap-2">
             <span className="font-semibold">
-              Hola, {auth.nombre || auth.email?.split("@")[0]}
+              {auth.nombre || auth.email?.split("@")[0]}
             </span>
             <button
               onClick={logout}
-              className="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300"
+              className="px-3 py-1 rounded-md bg-orange-600 hover:bg-orange-400 text-white"
             >
-              Salir
+              Logout
             </button>
-
-            <div className="flex items-center gap-4">
-              <Notifications />
-            </div>
           </div>
-        ) : (
-          <Link to="/login">
-            <button className="px-3 py-1 rounded-md bg-indigo-600 text-white">
-              Login
-            </button>
-          </Link>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex justify-between">
+          <span>
+
+          </span>
+        <Link to="/login">
+          <button className="px-6 py-1 rounded-md bg-indigo-600 text-white">
+            Login
+          </button>
+        </Link>
+        </div>
+      )}
     </div>
+    // </div>
   );
 }
