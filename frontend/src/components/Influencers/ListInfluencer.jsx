@@ -109,7 +109,7 @@ const ListInfluencer = () => {
             <div className="hidden md:block">
               <nav className="flex items-center space-x-4">
                 <Link
-                  to="#"
+                  to="/recorridos"
                   className="text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Recorridos
@@ -121,7 +121,7 @@ const ListInfluencer = () => {
                   Deportes
                 </Link>
                 <Link
-                  to="#"
+                  to="/ListInfluencer"
                   className="text-primary dark:text-primary border-b-2 border-primary px-3 py-2 text-sm font-medium"
                 >
                   Influencers
