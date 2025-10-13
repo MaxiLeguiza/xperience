@@ -25,7 +25,7 @@ function InfluencerProfile() {
             {/* LINKS DE NAVEGACIÓN (solo escritorio) */}
             <nav className="hidden md:flex items-center space-x-4">
               <a
-                href="#"
+                href="/recorridos"
                 className="text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
               >
                 Recorridos
@@ -37,7 +37,6 @@ function InfluencerProfile() {
                 Deportes
               </a>
               <a
-                href="#"
                 className="text-primary dark:text-primary border-b-2 border-primary px-3 py-2 rounded-md text-sm font-medium"
               >
                 Influencers
