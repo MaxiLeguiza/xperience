@@ -120,7 +120,7 @@ export const Notifications = () => {
   }
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       {/* Botón de campana */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -138,10 +138,10 @@ export const Notifications = () => {
       {isOpen && (
         <>
           {/* Overlay para cerrar */}
-          <div className="fixed inset-0 z-50" onClick={() => setIsOpen(false)} />
+          <div className="fixed inset-0" onClick={() => setIsOpen(false)} />
 
           {/* Panel */}
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999]">
             {/* Header */}
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">

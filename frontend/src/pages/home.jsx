@@ -10,6 +10,8 @@ import { Link } from "react-router-dom";
 import MapView from "../components/MapView";
 import SearchBooking from "../components/SearchBooking";
 import activities from "../data/activities.json";
+import { useAuth } from "../hooks/useAuth";
+import AuthSection from "../components/AuthSection";
 
 function Home() {
   // -------------------------------
@@ -18,6 +20,7 @@ function Home() {
   const [topTours, setTopTours] = useState([]);
   const [topExtremeSports, setTopExtremeSports] = useState([]);
   const [topInfluencers, setTopInfluencers] = useState([]);
+  const { auth, logout } = useAuth();
 
   useEffect(() => {
     // Simulación de datos desde backend
@@ -63,7 +66,7 @@ function Home() {
       {/* ====================================
           NAVBAR SUPERIOR
       ==================================== */}
-      <header className="bg-card-light shadow-md">
+      <header className="bg-card-light shadow-md z-40">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo / título */}
           <h1 className="text-2xl font-bold text-primary">Xperience</h1>
@@ -91,11 +94,12 @@ function Home() {
           </nav>
 
           {/* Botón de login */}
-          <Link to="/login">
-            <button className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition">
+          <div >
+          <AuthSection/>
+            {/* <button className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition">
               Login
-            </button>
-          </Link>
+            </button> */}
+          </div>
         </div>
       </header>
 
