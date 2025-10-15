@@ -65,8 +65,9 @@ function Home() {
     <div className="bg-gray-100 font-display text-gray-800 min-h-screen h-screen flex flex-col">
       {/* ====================================
           NAVBAR SUPERIOR
-      ==================================== */}
-      <header className="bg-card-light shadow-md z-40">
+          relative z-40
+          ==================================== */}
+          <header className="bg-card-light shadow-md"> 
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo / título */}
           <h1 className="text-2xl font-bold text-primary">Xperience</h1>
@@ -155,7 +156,7 @@ function Home() {
               MAPA CENTRAL
           ======================= */}
           <section className="lg:col-span-7">
-            <div className="h-[86vh] w-full bg-white rounded-lg shadow-md overflow-hidden relative">
+            <div className="h-[86vh] w-full bg-white rounded-lg shadow-md overflow-hidden relative z-10">
               <MapView items={activities} />
 
               {/* Indicador */}
