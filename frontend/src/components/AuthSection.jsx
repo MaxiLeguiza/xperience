@@ -7,11 +7,12 @@ export default function AuthSection() {
 
   return (
     // <div className="flex justify-between">
-    <div>{/*esto le dava otra forama -> className="card"*/}
+    <div>
+      {/*esto le dava otra forama -> className="card"*/}
       {auth ? (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 w-12">
-            <Notifications />
+            <Notifications/>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-semibold">
@@ -27,14 +28,12 @@ export default function AuthSection() {
         </div>
       ) : (
         <div className="flex justify-between">
-          <span>
-
-          </span>
-        <Link to="/login">
-          <button className="px-6 py-1 rounded-md bg-indigo-600 text-white">
-            Login
-          </button>
-        </Link>
+          <span></span>
+          <Link to="/login">
+            <button className="px-6 py-1 rounded-md bg-indigo-600 text-white">
+              Login
+            </button>
+          </Link>
         </div>
       )}
     </div>
