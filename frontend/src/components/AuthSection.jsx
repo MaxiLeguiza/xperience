@@ -2,15 +2,15 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Notifications } from "./Notifications_standalone";
 
-export default function HeaderRight() {
+export default function AuthSection() {
   const { auth, logout } = useAuth();
 
   return (
     // <div className="flex justify-between">
-    <div className="card">
+    <div>{/*esto le dava otra forama -> className="card"*/}
       {auth ? (
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-12">
             <Notifications />
           </div>
           <div className="flex items-center gap-2">
