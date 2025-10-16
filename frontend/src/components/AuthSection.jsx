@@ -6,16 +6,14 @@ export default function AuthSection() {
   const { auth, logout } = useAuth();
 
   return (
-    // <div className="flex justify-between">
-    <div>
-      {/*esto le dava otra forama -> className="card"*/}
+    <div className="w-52">
       {auth ? (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between justify-end">
           <div className="flex items-center gap-4 w-12">
             <Notifications/>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-semibold">
+            <span className="text-white">
               {auth.nombre || auth.email?.split("@")[0]}
             </span>
             <button
@@ -37,6 +35,5 @@ export default function AuthSection() {
         </div>
       )}
     </div>
-    // </div>
   );
 }
