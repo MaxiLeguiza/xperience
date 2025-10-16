@@ -11,6 +11,7 @@ import {
   Sun,
   CloudRain,
   Cloud,
+  Lightbulb,
 } from "lucide-react";
 import { useIPLocation } from "../hooks/useIPLocation";
 
@@ -18,7 +19,6 @@ import { useIPLocation } from "../hooks/useIPLocation";
 // Asegúrate de que este archivo (o el código) está accesible.
 
 // --- Lógica Auxiliar de Clima (para convertir código a texto) ---
-// (Esta lógica debería estar definida en alguna parte)
 const convertWeatherCodeToCondition = (code) => {
   // Ejemplo de conversión de códigos de Open-Meteo
   if (code >= 51 && code <= 82)
@@ -68,6 +68,17 @@ export const Notifications = () => {
   useEffect(() => {
     const sampleNotifications = [
       // 🚨 NOTIFICACIÓN DE CLIMA DE EJEMPLO 🚨
+      // 💡 RECOMENDACIÓN (DEMO)
+      {
+        id: "rec-1",
+        type: "recommendation",
+        title: "Sugerencia para hoy",
+        message: "Explorá los recorridos más cercanos según tu ubicación.",
+        ctaLabel: "Ver recorridos",
+        ctaUrl: "/recorridos", // o un link externo
+        timestamp: new Date(Date.now() - 10 * 60 * 1000),
+        read: false,
+      },
       {
         id: "0",
         type: "success",
@@ -84,7 +95,6 @@ export const Notifications = () => {
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
         read: false,
       },
-      // ... (otras notificaciones)
     ];
     setNotifications(sampleNotifications);
   }, []);
@@ -113,7 +123,7 @@ export const Notifications = () => {
 
           // 3. CREAR Y AÑADIR LA NOTIFICACIÓN DE CLIMA
           const weatherNotification = {
-            id: 'weather-alert',
+            id: "weather-alert",
             type: "weather",
             location: data.timezone.split("/")[1], // Obtiene el nombre de la ciudad
             temperature: Math.round(currentWeather.temperature),
@@ -156,8 +166,6 @@ export const Notifications = () => {
     setNotifications([]);
   };
 
-  // NOTE: Se elimina la función addNotification si ya no se usa el bloque de botones de prueba
-
   // ------------------------------------------------------------------
   // ⚡ LÓGICA DE RENDERIZADO CONDICIONAL ⚡
   // ------------------------------------------------------------------
@@ -178,7 +186,12 @@ export const Notifications = () => {
 
       return (
         <div key={id} className="p-4">
-          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-md">
+          <div
+            className="relative overflow-hidden rounded-xl p-4 text-white shadow-md bg-transparent"
+            style={{
+              background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)",
+            }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {getWeatherIcon(condition)}
@@ -195,6 +208,63 @@ export const Notifications = () => {
                   deleteNotification(id);
                 }}
                 className="p-1 text-white opacity-70 hover:opacity-100 transition-opacity"
+                title="Eliminar"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- DISEÑO DE RECOMENDACIONES (RECOMMENDATION CARD) ---
+    if (notification.type === "recommendation") {
+      const { id, title, message, ctaLabel, ctaUrl } = notification;
+      return (
+        <div key={id} className="p-4">
+          <div
+            className="
+             relative overflow-hidden rounded-xl p-4 text-white shadow-md bg-transparent
+           "
+            // Fallback inline (por si Tailwind no tiene gradientes activos)
+            // Fallback inline (por si Tailwind no tiene gradientes activos)
+            style={{
+              background: "linear-gradient(90deg, #F97316 0%, #FBBF24 100%)",
+            }} // orange-500 → amber-400
+          >
+            {/* Fondo con utilidades Tailwind si están disponibles */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-400" />
+
+            <div className="relative flex items-start justify-between gap-3">
+              <div className="flex items-start gap-4">
+                <div className="mt-0.5">
+                  <Lightbulb className="w-7 h-7 text-white" />
+                </div>
+                <div className="max-w-[70%]">
+                  <p className="text-sm/5 opacity-90 font-semibold">
+                    {title || "Recomendación"}
+                  </p>
+                  <p className="text-sm opacity-90 mt-0.5">{message}</p>
+                  {ctaUrl && (
+                    <a
+                      href={ctaUrl}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center mt-2 text-sm px-3 py-1.5 rounded-md bg-white/15 hover:bg-white/25 transition-colors"
+                    >
+                      {ctaLabel || "Ver"}
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Cerrar */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteNotification(id);
+                }}
+                className="p-1 text-white/80 hover:text-white transition-colors"
                 title="Eliminar"
               >
                 <X size={16} />

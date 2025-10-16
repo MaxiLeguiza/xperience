@@ -2,9 +2,12 @@ import { React, useEffect, useState } from 'react'
 import Login from '../../pages/Login'
 import Home from '../../pages/home';
 import { Link } from "react-router-dom";
-
+import { useAuth } from "../../hooks/useAuth";
+import AuthSection from '../AuthSection';
 
 function Nav() {
+    const { auth, logout } = useAuth();
+
     useEffect(() => {
         // Cargar Tailwind dinámicamente con plugins y color personalizado
         const script = document.createElement("script");
@@ -66,14 +69,14 @@ function Nav() {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* LOGO */}
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-[100px]">
                         <Link to="/">
                             <h1 className="text-3xl font-bold shadow-white-md text-primary ">Xperience</h1>
                         
                         </Link>
                     </div>
                     {/* LINKS DE NAVEGACIÓN */}
-                    <nav className="hidden md:flex items-center space-x-4">
+                    <nav className="hidden md:flex items-center space-x-4 mx-auto w-auto">
                         {links.map((link) => (
                             <a
                                 key={link.label}
@@ -90,13 +93,8 @@ function Nav() {
                     </nav>
 
                     {/* BOTÓN DE LOGIN */}
-                    <div className="flex items-center">
-
-                        <Link to="/Login">
-                            <button className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition">
-                                Login
-                            </button>
-                        </Link>
+                    <div className='min-w-[100px]'>
+                            <AuthSection/>
                     </div>
                 </div>
             </div>
