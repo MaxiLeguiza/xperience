@@ -1,132 +1,281 @@
-import React, { useState, useEffect } from "react"
-import { Bell, CheckCircle, AlertTriangle, XCircle, Info, X, Trash2, Check } from "lucide-react"
+import { useState, useEffect } from "react";
+import {
+  Bell,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  Info,
+  X,
+  Trash2,
+  Check,
+  Sun,
+  CloudRain,
+  Cloud,
+} from "lucide-react";
+import { useIPLocation } from "../hooks/useIPLocation";
+
+// 🚨 IMPORTAR EL HOOK DE UBICACIÓN 🚨
+// Asegúrate de que este archivo (o el código) está accesible.
+
+// --- Lógica Auxiliar de Clima (para convertir código a texto) ---
+// (Esta lógica debería estar definida en alguna parte)
+const convertWeatherCodeToCondition = (code) => {
+  // Ejemplo de conversión de códigos de Open-Meteo
+  if (code >= 51 && code <= 82)
+    return { condition: "Lluvioso", iconType: "CloudRain" };
+  if (code >= 1 && code <= 3)
+    return { condition: "Nublado", iconType: "Cloud" };
+  return { condition: "Soleado", iconType: "Sun" };
+};
 
 // Componente para el ícono de notificación
-export const NotificationIcon = ({ type }) => {
-  const iconProps = { size: 16 }
+const NotificationIcon = ({ type }) => {
+  const iconProps = { size: 16 };
 
   switch (type) {
     case "success":
-      return <CheckCircle {...iconProps} className="text-green-500" />
+      return <CheckCircle {...iconProps} className="text-green-500" />;
     case "warning":
-      return <AlertTriangle {...iconProps} className="text-yellow-500" />
+      return <AlertTriangle {...iconProps} className="text-yellow-500" />;
     case "error":
-      return <XCircle {...iconProps} className="text-red-500" />
+      return <XCircle {...iconProps} className="text-red-500" />;
     case "info":
-      return <Info {...iconProps} className="text-blue-500" />
+      return <Info {...iconProps} className="text-blue-500" />;
+    case "weather": // Asegúrate de incluir el tipo 'weather' si no estaba
+      return <Sun {...iconProps} className="text-yellow-500" />;
     default:
-      return <Info {...iconProps} className="text-blue-500" />
+      return <Info {...iconProps} className="text-blue-500" />;
   }
-}
+};
 
 // Función para formatear el tiempo
 const formatTimeAgo = (date) => {
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return "Ahora"
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`
-  return `${Math.floor(diffInSeconds / 86400)}d`
-}
+  if (diffInSeconds < 60) return "Ahora";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
+  return `${Math.floor(diffInSeconds / 86400)}d`;
+};
 
 // Componente principal de notificaciones
 export const Notifications = () => {
-  const [notifications, setNotifications] = useState([])
-  const [isOpen, setIsOpen] = useState(false)
+  const [notifications, setNotifications] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Generar notificaciones de ejemplo al inicio
   useEffect(() => {
     const sampleNotifications = [
+      // 🚨 NOTIFICACIÓN DE CLIMA DE EJEMPLO 🚨
       {
-        id: "1",
+        id: "0",
         type: "success",
         title: "Operación exitosa",
-        message: "Los datos se guardaron correctamente",
+        message: "Se resgistro correctamente el usuario",
         timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutos atrás
         read: false,
       },
       {
-        id: "2",
+        id: "1",
         type: "warning",
         title: "Advertencia del sistema",
-        message: "El espacio de almacenamiento está llegando al límite",
+        message: "Mantega la ubicación activada para mejor precisión",
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
         read: false,
       },
-      {
-        id: "3",
-        type: "error",
-        title: "Error de conexión",
-        message: "No se pudo conectar con el servidor",
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 día atrás
-        read: true,
-      },
-      {
-        id: "4",
-        type: "info",
-        title: "Nueva actualización",
-        message: "Hay una nueva versión disponible",
-        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 días atrás
-        read: false,
-      },
-    ]
-    setNotifications(sampleNotifications)
-  }, [])
+      // ... (otras notificaciones)
+    ];
+    setNotifications(sampleNotifications);
+  }, []);
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  // 1. 💡 OBTENER UBICACIÓN DENTRO DE ESTE COMPONENTE
+  const { latitude, longitude } = useIPLocation();
+
+  // 2. 💡 EFECTO PARA LLAMAR AL CLIMA (Solo se ejecuta si hay lat/lng)
+  useEffect(() => {
+    if (latitude && longitude) {
+      const fetchWeather = async () => {
+        try {
+          const res = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`
+          );
+          const data = await res.json();
+
+          if (!res.ok || !data.current_weather) {
+            throw new Error("No data");
+          }
+
+          const currentWeather = data.current_weather;
+          const { condition, iconType } = convertWeatherCodeToCondition(
+            currentWeather.weathercode
+          );
+
+          // 3. CREAR Y AÑADIR LA NOTIFICACIÓN DE CLIMA
+          const weatherNotification = {
+            id: 'weather-alert',
+            type: "weather",
+            location: data.timezone.split("/")[1], // Obtiene el nombre de la ciudad
+            temperature: Math.round(currentWeather.temperature),
+            condition: condition,
+            iconType: iconType,
+            timestamp: new Date(),
+            read: false,
+          };
+
+          // Añadir la notificación de clima al inicio
+          setNotifications((prev) => [
+            weatherNotification,
+            ...prev.filter((n) => n.type !== "weather"), // Asegura que solo hay 1 notificación de clima
+          ]);
+        } catch (err) {
+          console.error("Error al obtener clima para notificación.");
+        }
+      };
+      fetchWeather();
+    }
+  }, [latitude, longitude]); // Se dispara cuando las coordenadas son cargadas
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
 
   const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-  }
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
 
   const deleteNotification = (id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
-  }
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
 
   const clearAll = () => {
-    setNotifications([])
-  }
+    setNotifications([]);
+  };
 
-  const addNotification = (type) => {
-    const titles = {
-      success: "Operación completada",
-      warning: "Atención requerida",
-      error: "Error detectado",
-      info: "Nueva información",
+  // NOTE: Se elimina la función addNotification si ya no se usa el bloque de botones de prueba
+
+  // ------------------------------------------------------------------
+  // ⚡ LÓGICA DE RENDERIZADO CONDICIONAL ⚡
+  // ------------------------------------------------------------------
+  const renderNotificationCard = (notification) => {
+    // Función auxiliar para los iconos de clima
+    const getWeatherIcon = (condition) => {
+      const conditionLower = condition?.toLowerCase();
+      if (conditionLower?.includes("sol"))
+        return <Sun className="w-7 h-7 text-white" />;
+      if (conditionLower?.includes("lluv"))
+        return <CloudRain className="w-7 h-7 text-white" />;
+      return <Cloud className="w-7 h-7 text-white" />;
+    };
+
+    // --- DISEÑO DE CLIMA (WEATHER CARD) ---
+    if (notification.type === "weather") {
+      const { location, temperature, condition, id } = notification;
+
+      return (
+        <div key={id} className="p-4">
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl p-4 text-white shadow-md">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {getWeatherIcon(condition)}
+                <div>
+                  <p className="text-sm opacity-90">{location}</p>
+                  <p className="text-2xl font-bold">{temperature}°C</p>
+                  <p className="text-sm opacity-90">{condition}</p>
+                </div>
+              </div>
+              {/* Botón de cierre para la Card de clima */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteNotification(id);
+                }}
+                className="p-1 text-white opacity-70 hover:opacity-100 transition-opacity"
+                title="Eliminar"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
     }
 
-    const messages = {
-      success: "La acción se realizó correctamente",
-      warning: "Revisa la configuración del sistema",
-      error: "Se produjo un error inesperado",
-      info: "Tienes nuevas actualizaciones disponibles",
-    }
+    // --- DISEÑO ESTÁNDAR (Resto de tipos: success, error, info) ---
+    return (
+      <div
+        key={notification.id}
+        className={`p-4 hover:bg-gray-100 transition-colors ${
+          !notification.read ? "bg-blue-50" : "bg-white"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 mt-0.5">
+            <NotificationIcon type={notification.type} />
+          </div>
 
-    const newNotification = {
-      id: Date.now().toString(),
-      type,
-      title: titles[type],
-      message: messages[type],
-      timestamp: new Date(),
-      read: false,
-    }
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <p className="font-medium text-sm text-gray-900">
+                  {notification.title}
+                </p>
+                {/* Texto más oscuro para legibilidad */}
+                <p className="text-sm text-gray-700 mt-1">
+                  {notification.message}
+                </p>
+                {/* Tiempo */}
+                <p className="text-xs text-gray-600 mt-2">
+                  {formatTimeAgo(notification.timestamp)}
+                </p>
+              </div>
 
-    setNotifications((prev) => [newNotification, ...prev])
-  }
+              <div className="flex items-center gap-1">
+                {/* Botón Marcar como leída */}
+                {!notification.read && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markAsRead(notification.id);
+                    }}
+                    className="p-1 hover:bg-gray-100 rounded"
+                    title="Marcar como leída"
+                  >
+                    <Check size={12} className="text-green-600" />
+                  </button>
+                )}
+                {/* Botón Eliminar */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNotification(notification.id);
+                  }}
+                  className="p-1 hover:bg-gray-100 rounded"
+                  title="Eliminar"
+                >
+                  <X size={12} className="text-gray-500" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  // ------------------------------------------------------------------
 
   return (
-    <div className="relative">
-      {/* Botón de campana */}
+    <div className="relative z-50">
+      {/* Botón de campana (se mantiene) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
       >
-        <Bell size={20} className="text-gray-600 dark:text-gray-300" />
+        <Bell size={20} className="text-gray-600" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -137,27 +286,31 @@ export const Notifications = () => {
       {/* Panel de notificaciones */}
       {isOpen && (
         <>
-          {/* Overlay para cerrar */}
-          <div className="fixed inset-0 z-50" onClick={() => setIsOpen(false)} />
+          {/* Overlay y Panel principal (se mantienen los z-index altos) */}
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={() => setIsOpen(false)}
+          />
 
-          {/* Panel */}
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]">
+            {/* 1. Header (se mantiene) */}
+            <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-gray-900">Notificaciones</h3>
                 <div className="flex items-center gap-2">
+                  {/* Botón Marcar todas como leídas */}
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                      className="text-xs text-blue-600 hover:text-blue-700"
                     >
                       Marcar todas como leídas
                     </button>
                   )}
+                  {/* Botón de Cerrar */}
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    className="p-1 hover:bg-gray-100 rounded"
                   >
                     <X size={16} className="text-gray-500" />
                   </button>
@@ -165,101 +318,25 @@ export const Notifications = () => {
               </div>
             </div>
 
-            {/* Botones para agregar notificaciones de prueba */}
-            <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-750">
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Agregar notificación:</p>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => addNotification("success")}
-                  className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
-                >
-                  Éxito
-                </button>
-                <button
-                  onClick={() => addNotification("warning")}
-                  className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200"
-                >
-                  Advertencia
-                </button>
-                <button
-                  onClick={() => addNotification("error")}
-                  className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
-                >
-                  Error
-                </button>
-                <button
-                  onClick={() => addNotification("info")}
-                  className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                >
-                  Info
-                </button>
-              </div>
-            </div>
-
-            {/* Lista de notificaciones */}
-            <div className="max-h-96 overflow-y-auto">
+            {/* 2. Lista de notificaciones */}
+            <div className="max-h-96 overflow-y-auto divide-y divide-gray-200">
               {notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                <div className="p-8 text-center text-gray-500">
                   <Bell size={32} className="mx-auto mb-2 opacity-50" />
                   <p>No hay notificaciones</p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors ${
-                        !notification.read ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-0.5">
-                          <NotificationIcon type={notification.type} />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <p className="font-medium text-sm text-gray-900">{notification.title}</p>
-                              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                {formatTimeAgo(notification.timestamp)}
-                              </p>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                              {!notification.read && (
-                                <button
-                                  onClick={() => markAsRead(notification.id)}
-                                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
-                                  title="Marcar como leída"
-                                >
-                                  <Check size={12} className="text-green-600" />
-                                </button>
-                              )}
-                              <button
-                                onClick={() => deleteNotification(notification.id)}
-                                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
-                                title="Eliminar"
-                              >
-                                <X size={12} className="text-gray-500" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                // Llama a la función condicional para renderizar
+                notifications.map(renderNotificationCard)
               )}
             </div>
 
-            {/* Footer */}
+            {/* 3. Footer */}
             {notifications.length > 0 && (
-              <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="p-3 border-t border-gray-200">
                 <button
                   onClick={clearAll}
-                  className="w-full text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center justify-center gap-2"
+                  className="w-full text-sm text-red-600 hover:text-red-700 flex items-center justify-center gap-2"
                 >
                   <Trash2 size={14} />
                   Eliminar todas
@@ -270,5 +347,5 @@ export const Notifications = () => {
         </>
       )}
     </div>
-  )
-}
+  );
+};

@@ -15,12 +15,15 @@ import RedeemPage from "./routes/RedeemPage";
 import InfluencerProfile from "./components/Influencers/InfluencerProfile";
 import { Routes, Route } from "react-router-dom";
 import ListInfluencer from "./components/Influencers/ListInfluencer";
+import Nav from "./components/Navbar/Nav";
 
 export default function App() {
   return (
     <Routes>
       {/* Home */}
       <Route path="/" element={<Home />} />
+      {/* Navbar */}
+      <Route path="/nav" element={<Nav />} />
 
       {/* Auth */}
       <Route path="/login" element={<Login />} />
