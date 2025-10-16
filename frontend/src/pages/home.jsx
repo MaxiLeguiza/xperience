@@ -10,6 +10,8 @@ import { Link } from "react-router-dom";
 import MapView from "../components/MapView";
 import SearchBooking from "../components/SearchBooking";
 import activities from "../data/activities.json";
+import AuthSection from "../components/AuthSection";
+import Nav from "../components/Navbar/Nav";
 
 function Home() {
   // -------------------------------
@@ -61,53 +63,19 @@ function Home() {
   return (
     <div className="bg-gray-100 font-display text-gray-800 min-h-screen h-screen flex flex-col">
       {/* ====================================
-          NAVBAR SUPERIOR
-      ==================================== */}
-      <header className="bg-card-light shadow-md">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo / título */}
-          <h1 className="text-2xl font-bold text-primary">Xperience</h1>
-
-          {/* Menú superior (sin componente externo) */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <a
-              href="/recorridos"
-              className="text-text-light hover:text-primary text-sm font-medium"
-            >
-              Recorridos
-            </a>
-            <a
-              href="#deportes"
-              className="text-text-light hover:text-primary text-sm font-medium"
-            >
-              Deportes
-            </a>
-            <a
-              href="/influencers"
-              className="text-text-light hover:text-primary text-sm font-medium"
-            >
-              Influencers
-            </a>
-          </nav>
-
-          {/* Botón de login */}
-          <Link to="/login">
-            <button className="bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition">
-              Login
-            </button>
-          </Link>
-        </div>
-      </header>
+          NAVBAR SUPERIOR 
+          ==================================== */}
+          <Nav />
 
       {/* ====================================
           CONTENIDO PRINCIPAL
       ==================================== */}
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
+      <main className="flex-grow w-full px-9 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[86vh] items-stretch">
           {/* =======================
               COLUMNA IZQUIERDA (buscador + influencers)
           ======================= */}
-          <aside className="lg:col-span-3 flex flex-col justify-between space-y-8">
+          <div className="lg:col-span-3 flex flex-col justify-between space-y-3 h-full">
             {/* ---------- Buscador ---------- */}
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold mb-4 text-gray-900">
@@ -117,13 +85,13 @@ function Home() {
             </div>
 
             {/* ---------- Influencers ---------- */}
-            <div id="influencers" className="bg-white p-6 rounded-lg shadow-md flex-1">
-              <h3 className="text-xl font-semibold mb-4 text-gray-900">Influencers</h3>
-              <div className="space-y-4">
+            <div id="influencers" className="bg-white p-3 rounded-lg shadow-md flex-1 ">
+              <h3 className="text-xl font-semibold mb-8 text-gray-900 text-center">Influencers</h3>
+              <div className="space-y-6">
                 {topInfluencers.map((inf) => (
                   <div
                     key={inf.id}
-                    className="flex items-center space-x-4 bg-white text-gray-900 p-3 rounded-lg shadow-sm border"
+                    className="flex items-center space-x-4 bg-white text-gray-900 p-6 rounded-lg shadow-sm border"
                   >
                     <img
                       src={inf.img}
@@ -136,22 +104,20 @@ function Home() {
                     </div>
                   </div>
                 ))}
-                 
-                
                 <Link to="/ListInfluencer" >
-                <button className="w-full text-orange-600 hover:underline text-sm font-medium">
+                <button className="w-full text-orange-600 hover:underline text-sm font-medium mt-6">
                   Ver más
                 </button>
-                 </Link>
+                </Link>
               </div>
             </div>
-          </aside>
+          </div>
 
           {/* =======================
               MAPA CENTRAL
           ======================= */}
-          <section className="lg:col-span-7">
-            <div className="h-[86vh] w-full bg-white rounded-lg shadow-md overflow-hidden relative">
+          <section className="lg:col-span-7 h-full">
+            <div className="w-full h-full bg-white rounded-lg shadow-md overflow-hidden relative z-10">
               <MapView items={activities} />
 
               {/* Indicador */}
@@ -164,7 +130,7 @@ function Home() {
           {/* =======================
               COLUMNA DERECHA (recorridos + deportes)
           ======================= */}
-          <aside className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 h-full">
             {/* ---------- Mejores recorridos ---------- */}
             <div id="recorridos" className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-semibold mb-4 text-gray-900">Mejores recorridos</h3>
@@ -211,7 +177,7 @@ function Home() {
                 ))}
               </div>
             </div>
-          </aside>
+          </div>
         </div>
       </main>
     </div>
