@@ -12,7 +12,9 @@ import Exito from "./components/Booking/Exito";
 import TourRecorridos from "./components/Recorridos/TourRecorridos";
 import WeatherCard from "./components/clima/WeatherCard";
 import RedeemPage from "./routes/RedeemPage";
+import InfluencerProfile from "./components/Influencers/InfluencerProfile";
 import { Routes, Route } from "react-router-dom";
+import ListInfluencer from "./components/Influencers/ListInfluencer";
 
 export default function App() {
   return (
@@ -40,6 +42,12 @@ export default function App() {
 
       {/* ✅ Ruta del QR */}
       <Route path="/redeem" element={<RedeemPage />} />
+       {/*Listado influencer*/}
+      <Route path="/ListInfluencer" element={<ListInfluencer />} />
+        {/*Perfil influencer*/}
+      <Route path="/Influencers" element={<InfluencerProfile />} />
+      
+
     </Routes>
   );
 }
