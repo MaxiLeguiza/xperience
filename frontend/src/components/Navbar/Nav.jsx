@@ -19,7 +19,7 @@ function Nav() {
                     theme: {
                         extend: {
                             colors: {
-                                miColor: "#d86015", // Cambia esto por tu color
+                                'miColor': "#d86015", // Cambia esto por tu color
                                 background: {
                                     light: "#f2f4f7",
                                     dark: "#1a1a1a",
@@ -57,7 +57,7 @@ function Nav() {
 
     const links = [
         { label: "Recorridos", href: "/recorridos" },
-        { label: "Deportes", href: "#" },
+        { label: "Proximamente", href: "#" },
         { label: "Influencers", href: "/ListInfluencer" },
     ];
 
@@ -68,7 +68,8 @@ function Nav() {
                     {/* LOGO */}
                     <div className="flex items-center">
                         <Link to="/">
-                            <h1 className="text-2xl font-bold text-primary">Xperience</h1>
+                            <h1 className="text-3xl font-bold shadow-white-md text-primary ">Xperience</h1>
+                        
                         </Link>
                     </div>
                     {/* LINKS DE NAVEGACIÓN */}
