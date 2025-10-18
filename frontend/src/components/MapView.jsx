@@ -11,16 +11,10 @@ import RoutingLayer, { iconFor } from "./RoutingLayer";
 import { useLocation } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-/*import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";*/
-import "leaflet-geosearch/dist/geosearch.css";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
-
-
-import WeatherCard from "../components/clima/WeatherCard"; // ajusta si tu ruta es distinta
+import WeatherCard from "../components/clima/WeatherCard";
 import QrRecorridoModal from "../features/qr/QrRecorridoModal";
-
-
 
 /* -------------------- Helpers -------------------- */
 function InvalidateSizeOnce() {
@@ -30,6 +24,7 @@ function InvalidateSizeOnce() {
   }, [map]);
   return null;
 }
+
 function FitToBounds({ positions, trigger }) {
   const map = useMap();
   useEffect(() => {
@@ -40,22 +35,15 @@ function FitToBounds({ positions, trigger }) {
   return null;
 }
 
-/* ---------- 📍 Ubicarme: seguimiento ON/OFF + primer centrado ---------- */
+/* ---------- 📍 Control de ubicación ---------- */
 function LocateControl() {
   const map = useMap();
   const markerRef = useRef(null);
   const circleRef = useRef(null);
   const followingRef = useRef(false);
   const firstFixRef = useRef(false);
-  const lastPosRef = useRef(null);
-  
-  useEffect(() => {
-    
-    // Muevo el control de zoom a la
-    if (!map.zoomControl) {
-    L.control.zoom({ position: "topright" }).setPosition(map);
-  }
 
+  useEffect(() => {
     const control = L.control({ position: "topright" });
     control.onAdd = () => {
       const container = L.DomUtil.create("div", "leaflet-bar");
@@ -68,26 +56,20 @@ function LocateControl() {
       btn.style.lineHeight = "30px";
       btn.style.textAlign = "center";
       btn.style.background = "#fff";
+      btn.style.fontSize = "20px";
+      btn.style.cursor = "pointer";
+      btn.style.borderRadius = "4px";
 
       L.DomEvent.on(btn, "click", (e) => {
         L.DomEvent.stop(e);
         followingRef.current = !followingRef.current;
         btn.style.background = followingRef.current ? "#e8f0fe" : "#fff";
-
-        // si ya tenemos posición, centramos al instante
-        if (followingRef.current && lastPosRef.current) {
-          map.panTo(lastPosRef.current, { animate: true });
-        }
-
-        // si aún no hay fix, pedimos uno puntual
-        if (!lastPosRef.current) {
-          map.locate({
-            setView: true,
-            enableHighAccuracy: true,
-            watch: false,
-            maxZoom: 17,
-          });
-        }
+        map.locate({
+          watch: true,
+          enableHighAccuracy: true,
+          setView: true,
+          maxZoom: 17,
+        });
       });
 
       return container;
@@ -95,42 +77,50 @@ function LocateControl() {
     control.addTo(map);
 
     const onFound = (e) => {
-      const { latlng } = e;
-      lastPosRef.current = latlng;
+      const { latlng, accuracy } = e;
 
       if (!markerRef.current) {
-        markerRef.current = L.marker(latlng, { icon: LOCATE_ICON }).addTo(map);
+        markerRef.current = L.marker(latlng, {
+          icon: L.divIcon({
+            className: "",
+            html: `<div style="width:18px;height:18px;border-radius:9999px;background:#1a73e8;
+                    border:3px solid #fff;box-shadow:0 0 0 4px rgba(26,115,232,0.30);
+                    transform:translate(-50%,-50%);"></div>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+          }),
+        }).addTo(map);
       } else {
         markerRef.current.setLatLng(latlng);
       }
 
-      const RADIUS_METERS = 15;
+      const radius = Math.min(accuracy || 30, 50);
       if (!circleRef.current) {
         circleRef.current = L.circle(latlng, {
-          radius: RADIUS_METERS,
+          radius,
           color: "#1a73e8",
-          weight: 1,
-          fillOpacity: 0.2,
+          weight: 2,
+          fillOpacity: 0.25,
         }).addTo(map);
       } else {
         circleRef.current.setLatLng(latlng);
-        circleRef.current.setRadius(RADIUS_METERS);
+        circleRef.current.setRadius(radius);
       }
 
-      // centra automáticamente solo la primera vez
       if (!firstFixRef.current) {
         firstFixRef.current = true;
-        map.setView(latlng, 16, { animate: true });
+        map.setView(latlng, 15);
       }
 
-      // si el seguimiento está activo, seguí al usuario
-      if (followingRef.current) {
-        map.panTo(latlng, { animate: true });
-      }
+      if (followingRef.current) map.panTo(latlng);
     };
 
     const onError = () => {
-      alert("No se pudo obtener tu ubicación. Revisá permisos del navegador.");
+      alert("No se pudo obtener tu ubicación exacta. Mostrando Mendoza.");
+      const fallback = L.latLng(-32.8895, -68.8458);
+      map.setView(fallback, 13);
+      if (!markerRef.current)
+        markerRef.current = L.marker(fallback).addTo(map);
     };
 
     map.on("locationfound", onFound);
@@ -140,7 +130,6 @@ function LocateControl() {
       map.off("locationfound", onFound);
       map.off("locationerror", onError);
       map.removeControl(control);
-      // no llamamos stopLocate aquí (GeoWatcher maneja el watch global)
       if (markerRef.current) map.removeLayer(markerRef.current);
       if (circleRef.current) map.removeLayer(circleRef.current);
     };
@@ -149,48 +138,42 @@ function LocateControl() {
   return null;
 }
 
-/* ---------- GeoWatcher: guarda tu posición para rutas (no recentra) ---------- */
+/* ---------- GeoWatcher ---------- */
 function GeoWatcher({ onChange }) {
   const map = useMap();
   useEffect(() => {
     map.locate({ watch: true, enableHighAccuracy: true, setView: false });
     const onFound = (e) => onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
-    const onErr = () => { };
     map.on("locationfound", onFound);
-    map.on("locationerror", onErr);
     return () => {
       map.off("locationfound", onFound);
-      map.off("locationerror", onErr);
       map.stopLocate();
     };
   }, [map, onChange]);
   return null;
 }
 
-
 /* ----------------------------------------------- */
 
-// --- Mapa principal ---
 export default function MapView({ items = [] }) {
   const location = useLocation();
-
   const [selected, setSelected] = useState(null);
   const [routeTo, setRouteTo] = useState(null);
   const [userPos, setUserPos] = useState(null);
-  const [category, setCategory] = useState("all");
-  const [difficulty, setDifficulty] = useState("all");
+  const [filters, setFilters] = useState({
+    dificultad: "cualquiera",
+    temporada: "cualquiera",
+    deporte: "cualquiera",
+    edad: "cualquiera",
+    calificacion: 0,
+  });
   const [q, setQ] = useState("");
   const [fitKey, setFitKey] = useState(0);
   const [routeInfo, setRouteInfo] = useState(null);
-
-
-  // 👇 NUEVO: modal QR
+  const [showFilters, setShowFilters] = useState(false);
   const [openQR, setOpenQR] = useState(false);
-  const recorridoId = selected?.id || null;
 
-  // Si vino desde /redeem con intención de rutear pero aún no tenemos ubicación,
-  // guardamos el destino y ruteamos apenas aparezca userPos.
-  const [pendingRoute, setPendingRoute] = useState(null);
+  const recorridoId = selected?.id || null;
 
   const points = useMemo(
     () =>
@@ -204,205 +187,194 @@ export default function MapView({ items = [] }) {
     [items]
   );
 
-  const categories = useMemo(
-    () => Array.from(new Set(points.map((p) => p.category))).filter(Boolean),
-    [points]
-  );
-  const difficulties = useMemo(
-    () => Array.from(new Set(points.map((p) => p.difficulty))).filter(Boolean),
-    [points]
-  );
-
   const filtered = useMemo(() => {
     return points.filter((p) => {
-      if (category !== "all" && p.category !== category) return false;
-      if (difficulty !== "all" && p.difficulty !== difficulty) return false;
+      if (
+        filters.dificultad !== "cualquiera" &&
+        p.difficulty?.toLowerCase() !== filters.dificultad
+      )
+        return false;
+      if (
+        filters.temporada !== "cualquiera" &&
+        p.season?.toLowerCase() !== filters.temporada
+      )
+        return false;
+      if (
+        filters.deporte !== "cualquiera" &&
+        p.category?.toLowerCase() !== filters.deporte
+      )
+        return false;
+      if (filters.edad !== "cualquiera" && p.ageGroup !== filters.edad)
+        return false;
+      if (filters.calificacion > 0 && p.rating < filters.calificacion)
+        return false;
       if (q && !p.name.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
-  }, [points, category, difficulty, q]);
+  }, [points, filters, q]);
 
-  const positions = useMemo(() => filtered.map((p) => p.pos), [filtered]);
+  const positions = filtered.map((p) => p.pos);
   const center = points[0]?.pos || [-32.8895, -68.8458];
-
-  // Deep-link: ?dest=<id> [&fromQr=1]
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const destId = params.get("dest");
-    const fromQr = params.get("fromQr") === "1";
-    if (!destId || !points.length) return;
-
-    const found = points.find((p) => p.id === destId);
-    if (found) {
-      setSelected(found);
-      if (fromQr) {
-        // Si ya tenemos ubicación, ruteamos; si no, queda pendiente
-        if (userPos) setRouteTo(found);
-        else setPendingRoute(found);
-      }
-    }
-  }, [location.search, points, userPos]);
-
-  // Cuando aparece userPos y hay una ruta pendiente desde el deep-link, la trazamos
-  useEffect(() => {
-    if (userPos && pendingRoute) {
-      setRouteTo(pendingRoute);
-      setPendingRoute(null);
-    }
-  }, [userPos, pendingRoute]);
-
-  // OSM fijo
   const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
   const ATTR = "&copy; OpenStreetMap contributors";
 
+  const handleFilterChange = (key, value) =>
+    setFilters((prev) => ({ ...prev, [key]: value }));
+
+  const handleApplyFilters = () => setShowFilters(false);
+  const handleReset = () =>
+    setFilters({
+      dificultad: "cualquiera",
+      temporada: "cualquiera",
+      deporte: "cualquiera",
+      edad: "cualquiera",
+      calificacion: 0,
+    });
+
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      {/* Filtros + acciones */}
-      <div
-        style={{
-          position: "absolute",
-          left: 12,
-          top: 12,
-          zIndex: 500,
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 8,
-          boxShadow: "0 8px 24px -12px rgba(0,0,0,.25)",
-          display: "grid",
-          gap: 6,
-          minWidth: 260,
-        }}
+      {/* Botón para abrir filtros */}
+      <button
+        onClick={() => setShowFilters((v) => !v)}
+        className="absolute top-3 right-15 z-[2000] bg-white shadow-md px-4 py-2 rounded-full font-semibold text-sm text-gray-800 hover:bg-orange-50 border border-gray-200 flex items-center gap-2"
       >
-        <div style={{ display: "flex", gap: 6 }}>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            style={chip}
-          >
-            <option value="all">Todas</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-            style={chip}
-          >
-            <option value="all">Todas</option>
-            {difficulties.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
-        </div>
-        <input
-          placeholder="Buscar por nombre…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          style={{ ...chip, width: "100%" }}
-        />
-        <div style={{ display: "flex", gap: 6 }}>
-          <button style={btn} onClick={() => setFitKey((k) => k + 1)}>
-            Ajustar vista ({filtered.length})
-          </button>
-          <button
-            style={btnGhost}
-            onClick={() => {
-              setCategory("all");
-              setDifficulty("all");
-              setQ("");
-              setRouteTo(null);
-            }}
-          >
-            Reset
-          </button>
-        </div>
-        {routeTo && (
-          <div style={{ display: "flex", gap: 6 }}>
-            <button style={btnGhost} onClick={() => setRouteTo(null)}>
-              🗺️ Limpiar ruta
+        <span role="img" aria-label="filtro">
+          🔍
+        </span>
+        Filtros
+      </button>
+
+      {/* Panel de filtros */}
+      {showFilters && (
+        <div className="absolute top-3 right-[50%] bg-white shadow-2xl rounded-2xl w-[70%] max-w-sm p-5 z-[2000] animate-slide-down border border-gray-200">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-base font-bold text-gray-800">
+              Filtros Avanzados
+            </h2>
+            <button
+              onClick={() => setShowFilters(false)}
+              className="text-gray-500 hover:text-orange-500 text-lg font-bold"
+            >
+              ✕
             </button>
           </div>
-        )}
-      </div>
 
-      {/* Panel de detalle */}
-      <div
-        style={{
-          position: "absolute",
-          left: 12,
-          bottom: 12,
-          zIndex: 500,
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 12,
-          boxShadow: "0 8px 24px -12px rgba(0,0,0,.25)",
-          minWidth: 260,
-          maxWidth: 320,
-        }}
-      >
-        {selected ? (
-          <>
-            <div style={{ fontWeight: 700 }}>{selected.name}</div>
-            {selected.address && (
-              <div style={{ color: "#555", fontSize: 13 }}>
-                {selected.address}
-              </div>
-            )}
-            <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-              <button
-                style={btn}
-                onClick={() => setRouteTo(selected)}
-                disabled={!userPos}
-              >
-                Ruta
-              </button>
-
-              {/* Botón QR en el panel */}
-              <button
-                style={btn}
-                onClick={() => setOpenQR(true)}
-                disabled={!recorridoId}
-              >
-                QR
-              </button>
-
-              <button style={btnGhost} onClick={() => setSelected(null)}>
-                Cerrar
-              </button>
-            </div>
-            {!userPos && (
-              <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                Tip: tocá 📍 para permitir ubicación.
-              </div>
-            )}
-          </>
-        ) : (
-          <div style={{ color: "#6b7280" }}>
-            Seleccioná un punto para ver detalles.
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              placeholder="Buscar lugares o actividades..."
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              className="flex-1 border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-400"
+            />
+            <button
+              onClick={() => setFitKey((k) => k + 1)}
+              className="bg-orange-500 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-orange-600 transition"
+            >
+              Ajustar Vista
+            </button>
           </div>
-        )}
 
-      </div>
+          <div className="space-y-2">
+            {[
+              {
+                key: "dificultad",
+                label: "Dificultad",
+                options: ["Cualquiera", "Fácil", "Media", "Difícil"],
+              },
+              {
+                key: "temporada",
+                label: "Temporada",
+                options: [
+                  "Cualquiera",
+                  "Verano",
+                  "Invierno",
+                  "Primavera",
+                  "Otoño",
+                ],
+              },
+              {
+                key: "deporte",
+                label: "Deporte",
+                options: [
+                  "Cualquiera",
+                  "Rafting",
+                  "Trekking",
+                  "Escalada",
+                  "Ciclismo",
+                ],
+              },
+              {
+                key: "edad",
+                label: "Edad",
+                options: ["Cualquiera", "Niños", "Adultos", "Mayores"],
+              },
+            ].map(({ key, label, options }) => (
+              <div key={key}>
+                <label className="block text-xs font-semibold mb-1 text-gray-700">
+                  {label}
+                </label>
+                <select
+                  value={filters[key]}
+                  onChange={(e) =>
+                    handleFilterChange(key, e.target.value.toLowerCase())
+                  }
+                  className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-400"
+                >
+                  {options.map((opt) => (
+                    <option key={opt} value={opt.toLowerCase()}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
 
-      {/* Info de ruta (si hay ruta activa) */}
-      {routeInfo && (
-        <span
-          className="absolute left-1/2 bottom-8 -translate-x-1/6 
-          bg-blue-500 text-white rounded-lg px-6 py-2 shadow-lg 
-          font-semibold text-base border border-blue-600 z-[1000]"
-        >
-          {Math.round(routeInfo.duration / 60)} min &nbsp;|&nbsp;
-          {(routeInfo.distance / 1000).toFixed(2)} km
-        </span>
+            <div>
+              <label className="block text-xs font-semibold mb-1 text-gray-700">
+                Calificaciones
+              </label>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => handleFilterChange("calificacion", star)}
+                    className={`cursor-pointer text-xl ${
+                      star <= filters.calificacion
+                        ? "text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </span>
+                ))}
+                <span className="text-gray-600 text-xs ml-1">
+                  {filters.calificacion > 0
+                    ? `${filters.calificacion} y más`
+                    : "Cualquiera"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={handleReset}
+              className="border border-gray-300 text-gray-700 px-3 py-2 text-sm rounded-lg hover:bg-gray-100 transition"
+            >
+              Reiniciar
+            </button>
+            <button
+              onClick={handleApplyFilters}
+              className="bg-orange-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition"
+            >
+              Aplicar
+            </button>
+          </div>
+        </div>
       )}
 
+      {/* MAPA */}
       <MapContainer
         center={center}
         zoom={12}
@@ -413,12 +385,10 @@ export default function MapView({ items = [] }) {
         <ZoomControl position="topright" />
         <GeoWatcher onChange={setUserPos} />
         <LocateControl />
-        {/* <SearchControl onSelect={setSelected} /> */}
         <InvalidateSizeOnce />
         <FitToBounds positions={positions} trigger={fitKey} />
         <TileLayer url={TILE_URL} attribution={ATTR} />
 
-        {/* Capa de ruta (si hay origen y destino) */}
         {userPos && routeTo && (
           <RoutingLayer from={userPos} to={routeTo} onRouteInfo={setRouteInfo} />
         )}
@@ -437,18 +407,30 @@ export default function MapView({ items = [] }) {
                 <button
                   onClick={() => setRouteTo(p)}
                   disabled={!userPos}
-                  style={{ ...btn, padding: "6px 10px" }}
+                  style={{
+                    background: "#1a73e8",
+                    color: "#fff",
+                    padding: "6px 10px",
+                    borderRadius: "6px",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
                   Ruta
                 </button>
-
-                {/* 🅱️ Botón QR también en el popup del marcador */}
                 <button
                   onClick={() => {
                     setSelected(p);
                     setOpenQR(true);
                   }}
-                  style={{ ...btn, padding: "6px 10px" }}
+                  style={{
+                    background: "#1a73e8",
+                    color: "#fff",
+                    padding: "6px 10px",
+                    borderRadius: "6px",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
                   QR
                 </button>
@@ -458,7 +440,6 @@ export default function MapView({ items = [] }) {
         ))}
       </MapContainer>
 
-      {/* 🌤 Clima */}
       {(selected || routeTo) && (
         <div
           style={{
@@ -479,7 +460,6 @@ export default function MapView({ items = [] }) {
         </div>
       )}
 
-      {/* Modal QR */}
       {openQR && recorridoId && (
         <QrRecorridoModal
           open
@@ -487,32 +467,18 @@ export default function MapView({ items = [] }) {
           recorridoId={recorridoId}
         />
       )}
-
     </div>
   );
 }
 
-// estilos rápidos
-const chip = {
-  border: "1px solid #e5e7eb",
-  background: "#fff",
-  color: "#111",
-  padding: "8px 10px",
-  borderRadius: 10,
-  fontWeight: 600,
-  fontSize: 12,
-};
-const btn = {
-  ...chip,
-  background: "#1a73e8",
-  color: "#fff",
-  border: "1px solid #1a73e8",
-  cursor: "pointer",
-};
-const btnGhost = {
-  ...chip,
-  background: "#fff",
-  color: "#111",
-  border: "1px solid #e5e7eb",
-  cursor: "pointer",
-};
+/* Animación suave */
+const style = document.createElement("style");
+style.innerHTML = `
+@keyframes slide-down {
+  from { transform: translateY(-15px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-down {
+  animation: slide-down 0.25s ease-out;
+}`;
+document.head.appendChild(style);
