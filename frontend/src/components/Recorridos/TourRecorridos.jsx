@@ -66,13 +66,13 @@ function TourDetailModal({ tour, onClose, onReserve }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-2xl shadow-xl max-w-2xl w-full relative"
+        className="bg-orange-200 p-6 rounded-2xl shadow-xl max-w-2xl w-full relative"
         onClick={(e) => e.stopPropagation()}
-      >
+      > {/*Fondo de tarjeta */ */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl"
@@ -80,14 +80,14 @@ function TourDetailModal({ tour, onClose, onReserve }) {
           ✕
         </button>
 
-        <h2 className="text-2xl font-bold mb-2">{tour.title}</h2>
-        <p className="text-gray-500 mb-1">Autor: {tour.author}</p>
-        <p className="text-gray-500 mb-1">
+        <h1 className="text-6xl font-bold mb-9">{tour.title}</h1>
+        <p className="text-gray-500 mb-1">Autor: {tour.author}</p> 
+        <p className="text-gray-500 mb-5">
           Duración: {tour.durationMinutes} min · {tour.distanceKm} km
         </p>
-        <p className="text-gray-800 font-semibold mb-3">💲 {tour.price} ARS</p>
+        <p className="text-gray-800 font-semibold mb-9">💲 {tour.price} ARS</p>
 
-        {/* Carrusel simple de imágenes mock */}
+        {/* Carrusel simple de imágenes mock: Aca tendriamos que ver que IA puede traer iamgenes del lugar*/}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
           <img
             src={tour.image || "https://picsum.photos/600/300"}
@@ -100,7 +100,7 @@ function TourDetailModal({ tour, onClose, onReserve }) {
             className="w-full h-40 object-cover rounded-lg"
           />
         </div>
-
+        <h3 className="text-black mt-5 mb-5 font-bold">Descripción:</h3>
         <p className="text-gray-600 mb-4">{tour.description}</p>
 
         <div className="flex gap-2 items-center mb-3">
@@ -155,7 +155,7 @@ export default function TourRecorridos() {
         durationMinutes: 120,
         distanceKm: 10,
         price: 5000,
-        description: "Recorre los puntos más icónicos de la ciudad.",
+        description: "lorem ipsum dolor sit amet, consectetur adipiscing elit.",
         image: "https://picsum.photos/id/1018/1000/600/",
         image2: "https://picsum.photos/id/1015/1000/600/",
         influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://yt3.googleusercontent.com/ytc/AIdro_nyXrAAt-FJ5azOAUoNd5Iw0aGQb-_b-SLSOkW0B_N2md4=s160-c-k-c0x00ffffff-no-rj", social: "@luisitocomunica" },
@@ -236,7 +236,7 @@ export default function TourRecorridos() {
       <header className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">📋 Gestor de Recorridos</h1>
         <button
-          className="px-4 py-2 bg-indigo-600 text-white rounded-xl"
+          className="px-4 py-2 bg-orange-600 text-white rounded-xl"
           onClick={() => setCreateOpen(true)}
         >
           + Nuevo recorrido

@@ -3,56 +3,64 @@
 // Usa TailwindCSS para mantener el estilo moderno, responsive y coherente con el resto del proyecto.
 
 import React from "react";
-
+import { useEffect } from "react";
+import Nav from "../Navbar/Nav";
 // Íconos de Google (material-icons) — asegúrate de incluir el link en tu index.html
 // <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 function InfluencerProfile() {
+    useEffect(() => {
+    // Cargar Tailwind dinámicamente con plugins y color personalizado
+    const script = document.createElement("script");
+    script.src =
+      "https://cdn.tailwindcss.com?plugins=forms,typography,container-queries";
+    script.async = true;
+
+    script.onload = () => {
+      // Extender Tailwind con tu color personalizado
+      if (window.tailwind) {
+        window.tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                miColor: "#d86015", // Cambia esto por tu color
+                background: {
+                  light: "#f2f4f7",
+                  dark: "#1a1a1a",
+                },
+                text: {
+                  light: "#111827",
+                  dark: "#f9fafb",
+                },
+                primary: "#d86015",
+                secondary: "#16697A",
+                card: {
+                  light: "#ffffff",
+                  dark: "#111827",
+                },
+                border: {
+                  light: "#e5e7eb",
+                  dark: "#374151",
+                },
+              },
+            },
+          },
+          darkMode: "class",
+        };
+      }
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
       {/* ======================== NAVBAR SUPERIOR ======================== */}
-      <header className="bg-card-light dark:bg-card-dark shadow-md sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* LOGO + BOTÓN MENU (solo móvil) */}
-            <div className="flex items-center">
-              <button className="text-text-light dark:text-text-dark mr-4 md:hidden">
-                <span className="material-icons">menu</span>
-              </button>
-              <h1 className="text-2xl font-bold text-primary">Xperience</h1>
-            </div>
-
-            {/* LINKS DE NAVEGACIÓN (solo escritorio) */}
-            <nav className="hidden md:flex items-center space-x-4">
-              <a
-                href="#"
-                className="text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Recorridos
-              </a>
-              <a
-                href="#"
-                className="text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Deportes
-              </a>
-              <a
-                href="#"
-                className="text-primary dark:text-primary border-b-2 border-primary px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Influencers
-              </a>
-            </nav>
-
-            {/* BOTÓN DE LOGIN */}
-            <div className="flex items-center">
-              <button className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-opacity-90">
-                Login
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+     <Nav />
 
       {/* ======================== CONTENIDO PRINCIPAL ======================== */}
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">

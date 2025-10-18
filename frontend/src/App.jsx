@@ -15,12 +15,16 @@ import RedeemPage from "./routes/RedeemPage";
 import InfluencerProfile from "./components/Influencers/InfluencerProfile";
 import { Routes, Route } from "react-router-dom";
 import ListInfluencer from "./components/Influencers/ListInfluencer";
+import Nav from "./components/Navbar/Nav";
+import InfluencerCard from "./components/Influencers/InfluencerCard";
 
 export default function App() {
   return (
     <Routes>
       {/* Home */}
       <Route path="/" element={<Home />} />
+      {/* Navbar */}
+      <Route path="/nav" element={<Nav />} />
 
       {/* Auth */}
       <Route path="/login" element={<Login />} />
@@ -42,11 +46,12 @@ export default function App() {
 
       {/* ✅ Ruta del QR */}
       <Route path="/redeem" element={<RedeemPage />} />
-       {/*Listado influencer*/}
+      {/*Listado influencer*/}
       <Route path="/ListInfluencer" element={<ListInfluencer />} />
-        {/*Perfil influencer*/}
+      {/*Perfil influencer*/}
       <Route path="/Influencers" element={<InfluencerProfile />} />
-      
+      <Route path="/InfluencerCard" element={<InfluencerCard />} />
+
 
     </Routes>
   );
