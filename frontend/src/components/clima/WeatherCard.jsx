@@ -37,7 +37,7 @@ export default function WeatherCard({ latitude, longitude }) {
       // Ejecutamos la función que obtiene el clima
       fetchWeather();
     }
-  // Dependencias: se vuelve a ejecutar si cambian latitud o longitud
+    // Dependencias: se vuelve a ejecutar si cambian latitud o longitud
   }, [latitude, longitude]);
 
   // Si está cargando, mostramos un indicador visual (nubes animadas)
@@ -71,7 +71,7 @@ export default function WeatherCard({ latitude, longitude }) {
 
   // Si hay datos, mostramos la tarjeta con la información del clima
   return (
-    <div className="m-2 p-3 rounded-2xl shadow-lg bg-gradient-to-br from-orange-500 text-white max-w-xs mx-auto">
+    <div className="m-2 p-3 rounded-2xl shadow-lg bg-gradient-to-br from-orange-500 via-orange-500 to-orange-600 text-white max-w-xs mx-auto">
       <h2 className="text-xl font-semibold mb-2">Clima Actual</h2>
       {/* Mostramos la temperatura actual, truncando decimales */}
       <p className="text-4xl font-bold">
@@ -80,7 +80,7 @@ export default function WeatherCard({ latitude, longitude }) {
       {/* Mostramos la velocidad del viento */}
       <p className="text-sm mt-1">Viento: {Math.trunc(weather.windspeed)} km/h</p>
       {/* Mostramos la hora de la última actualización */}
-     {/*<p className="text-xs mt-2 opacity-80">
+      {/*<p className="text-xs mt-2 opacity-80">
         Última actualización: {new Date(weather.time).toLocaleTimeString()}
       </p>*/}
     </div>

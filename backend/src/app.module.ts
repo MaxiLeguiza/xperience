@@ -9,6 +9,7 @@ import { SocketConfig } from './events/socketConfig';
 import { QrModule } from './qr/qr.module';
 
 
+
 @Module({
   imports: [
     NotificationsModule,

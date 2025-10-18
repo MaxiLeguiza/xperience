@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 // Importamos el buscador reutilizable
 import SearchBooking from "../SearchBooking";
 
+
 const SearchResults = () => {
   const navigate = useNavigate(); // Para navegar a otra página (ej: carrito)
   const location = useLocation(); // Para obtener filtros enviados desde otra página
@@ -98,6 +99,7 @@ const SearchResults = () => {
     setSelectedItems(selectedItems.filter((i) => i.id !== item.id));
 
   return (
+   
     // Grid principal: buscador a la izquierda, resultados a la derecha
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
 
