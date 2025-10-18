@@ -3,9 +3,9 @@
 // Usa TailwindCSS para mantener el estilo moderno, responsive y coherente con el resto del proyecto.
 
 import React from "react";
+
 // Íconos de Google (material-icons) — asegúrate de incluir el link en tu index.html
 // <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
 
 function InfluencerProfile() {
   return (
@@ -25,7 +25,7 @@ function InfluencerProfile() {
             {/* LINKS DE NAVEGACIÓN (solo escritorio) */}
             <nav className="hidden md:flex items-center space-x-4">
               <a
-                href="/recorridos"
+                href="#"
                 className="text-text-light dark:text-text-dark hover:text-primary dark:hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
               >
                 Recorridos
@@ -37,6 +37,7 @@ function InfluencerProfile() {
                 Deportes
               </a>
               <a
+                href="#"
                 className="text-primary dark:text-primary border-b-2 border-primary px-3 py-2 rounded-md text-sm font-medium"
               >
                 Influencers
@@ -122,9 +123,7 @@ function InfluencerProfile() {
 
           {/* ----------- COLUMNA DERECHA: PUBLICACIONES DESTACADAS ----------- */}
           <section className="lg:col-span-8">
-            <h3 className="text-2xl font-bold mb-6">
-              Publicaciones Destacadas
-            </h3>
+            <h3 className="text-2xl font-bold mb-6">Publicaciones Destacadas</h3>
 
             {/* GRID DE PUBLICACIONES */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
