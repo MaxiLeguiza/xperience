@@ -9,12 +9,11 @@ import { SocketConfig } from './events/socketConfig';
 import { QrModule } from './qr/qr.module';
 
 
-
 @Module({
   imports: [
     NotificationsModule,
     UserModule,
-    MongooseModule.forRoot('mongodb://localhost:27017/nest-xperience'),
+    MongooseModule.forRoot(process.env.MONGO_URI_WEB || 'mongodb://localhost:27017/nest-xperience',),
     CommonModule,
     ReservaModule,
     NotificationsModule,

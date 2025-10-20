@@ -3,7 +3,7 @@ import Login from '../../pages/Login'
 import Home from '../../pages/home';
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import AuthSection from '../AuthSection';
+import AuthSection from '../Autenticacion/AuthSection';
 
 function Nav() {
     const { auth, logout } = useAuth();

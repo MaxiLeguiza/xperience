@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -52,16 +53,19 @@ export class UserService {
   async login(loginAuthDto: LoginAuthDto) {
     const { email, password } = loginAuthDto;
 
+    // Normalizar email
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Buscar usuario
-    const user = await this.userModel.findOne({ email });
+    const user = await this.userModel.findOne({ email: normalizedEmail });
     if (!user) {
-      throw new HttpException('USER NOT FOUND', 404);
+      throw new UnauthorizedException('Usuario no registrado');
     }
 
     // Verificar contraseña
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) {
-      throw new HttpException('PASSWORD_INCORRECT', 403);
+      throw new UnauthorizedException('Contraseña incorrecta');
     }
 
     // Crear payload y token JWT
@@ -73,7 +77,7 @@ export class UserService {
       user: {
         id: user._id,
         email: user.email,
-        nombre: user.nombre
+        nombre: user.nombre,
       },
     };
   }
