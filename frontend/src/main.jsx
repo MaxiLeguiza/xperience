@@ -6,7 +6,7 @@ import "./index.css";
 import "leaflet/dist/leaflet.css";
 
 import App from "./App.jsx";
-import RedeemPage from "./routes/RedeemPage.jsx"; // ← asegúrate que existe
+import RedeemPage from "./routes/RedeemPage.jsx"; 
 import { AuthProvider } from "./context/AuthProvider.jsx";
 
 createRoot(document.getElementById("root")).render(

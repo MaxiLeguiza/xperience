@@ -10,7 +10,7 @@ export default function AuthSection() {
       {auth ? (
         <div className="flex items-center justify-between justify-end">
           <div className="flex items-center gap-4 w-12">
-            <Notifications/>
+            <Notifications />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-white">
@@ -20,7 +20,7 @@ export default function AuthSection() {
               onClick={logout}
               className="px-3 py-1 rounded-md bg-orange-600 hover:bg-orange-400 text-white"
             >
-              Logout
+              Cerrar sesión
             </button>
           </div>
         </div>
@@ -29,7 +29,7 @@ export default function AuthSection() {
           <span></span>
           <Link to="/login">
             <button className="px-6 py-1 rounded-md bg-indigo-600 text-white">
-              Login
+              Iniciar sesión
             </button>
           </Link>
         </div>
