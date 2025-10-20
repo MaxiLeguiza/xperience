@@ -13,7 +13,7 @@ import {
   Cloud,
   Lightbulb,
 } from "lucide-react";
-import { useIPLocation } from "../hooks/useIPLocation";
+import { useIPLocation } from "../../hooks/useIPLocation";
 
 // 🚨 IMPORTAR EL HOOK DE UBICACIÓN 🚨
 // Asegúrate de que este archivo (o el código) está accesible.
@@ -66,6 +66,7 @@ export const Notifications = () => {
 
   // Generar notificaciones de ejemplo al inicio
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user")); 
     const sampleNotifications = [
       // 🚨 NOTIFICACIÓN DE CLIMA DE EJEMPLO 🚨
       // 💡 RECOMENDACIÓN (DEMO)
@@ -83,7 +84,7 @@ export const Notifications = () => {
         id: "0",
         type: "success",
         title: "Operación exitosa",
-        message: "Se resgistro correctamente el usuario",
+        message: `¡Bienvenido ${user?.nombre || user?.email}! Tu registro fue exitoso.`,
         timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutos atrás
         read: false,
       },
@@ -107,6 +108,8 @@ export const Notifications = () => {
     if (latitude && longitude) {
       const fetchWeather = async () => {
         try {
+          await new Promise((resolve) => setTimeout(resolve, 3000)); // Simula retardo de 3 segundos
+
           const res = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`
           );
@@ -125,7 +128,7 @@ export const Notifications = () => {
           const weatherNotification = {
             id: "weather-alert",
             type: "weather",
-            location: data.timezone.split("/")[1], // Obtiene el nombre de la ciudad
+            location: "Maipu, Mendoza", // Obtiene el nombre de la ciudad
             temperature: Math.round(currentWeather.temperature),
             condition: condition,
             iconType: iconType,

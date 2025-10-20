@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import MapView from "../components/MapView";
 import SearchBooking from "../components/SearchBooking";
 import activities from "../data/activities.json";
-import AuthSection from "../components/AuthSection";
+import AuthSection from "../components/Autenticacion/AuthSection";
 import Nav from "../components/Navbar/Nav";
 import DeportesExtremos from "../components/DeportesExtremos/DeportesExtremos";
 import InfluencerCard from "../components/Influencers/InfluencerCard";
