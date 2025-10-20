@@ -392,6 +392,31 @@ export default function MapView({ items = [] }) {
         {userPos && routeTo && (
           <RoutingLayer from={userPos} to={routeTo} onRouteInfo={setRouteInfo} />
         )}
+
+        {routeInfo && (
+        <span
+          className="absolute left-1/2 top-8 -translate-x-1/5 z-[1000] 
+          bg-blue-500 text-white rounded-lg px-6 py-2 shadow-lg 
+          font-semibold text-base border border-blue-600"
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: 30,
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            borderRadius: 8,
+            padding: "6px 16px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+            fontWeight: 500,
+            fontSize: 15,
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          Duración: {Math.round(routeInfo.duration / 60)} min &nbsp;|&nbsp; 
+          Distancia: {(routeInfo.distance / 1000).toFixed(2)} km
+        </span>
+      )}
+
         {filtered.map((p) => (
           <Marker
             key={p.id}

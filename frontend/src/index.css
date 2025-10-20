@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 html, body {
-  overflow: hidden; /* evita el scroll global */
+  overflow: auto; /* evita el scroll global */
 }
 .div1 {
   grid-row: span 5 / span 5;

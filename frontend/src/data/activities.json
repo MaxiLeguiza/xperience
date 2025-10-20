@@ -13,7 +13,7 @@
     "name": "Cabalgata en Uspallata",
     "category": "cabalgata",
     "difficulty": "baja",
-    "rating": 4.6,
+    "rating": 3.6,
     "address": "Uspallata, Mendoza",
     "location": { "lat": -32.980079889761065, "lng": -68.89297353927822 }
   },
@@ -45,12 +45,39 @@
     "location": { "lat": -32.845648192366575, "lng": -68.93390411878813 }
   },
   {
-    "id": "a6",
-    "name": "Instituto (Desarrollo de Software)",
-    "category": "insti",
-    "difficulty": null,
-    "rating": 5.0,
+    "id": "a7",
+    "name": "Escalada en Cerro de la Gloria",
+    "category": "trekking",
+    "difficulty": "media",
+    "rating": 3.4,
+    "address": "Parque General San Martín, Ciudad de Mendoza",
+    "location": { "lat": -32.885320, "lng": -68.871250 }
+  },
+  {
+    "id": "a8",
+    "name": "Kayak en Potrerillos",
+    "category": "kayak",
+    "difficulty": "media",
+    "rating": 4.7,
+    "address": "Dique Potrerillos, Mendoza",
+    "location": { "lat": -33.021470, "lng": -69.109320 }
+  },
+  {
+    "id": "a9",
+    "name": "Observación de Aves en Laguna de Llancanelo",
+    "category": "astronomo",
+    "difficulty": "baja",
+    "rating": 2.5,
+    "address": "Laguna de Llancanelo, Malargüe, Mendoza",
+    "location": { "lat": -35.050000, "lng": -68.750000 }
+  },
+  {
+    "id": "a10",
+    "name": "Paseo en Globo Aerostático",
+    "category": "globo_aerostatico",
+    "difficulty": "baja",
+    "rating": 4.9,
     "address": "Ciudad de Mendoza",
-    "location": { "lat": -32.97177, "lng": -68.79116 }
+    "location": { "lat": -32.890840, "lng": -68.827170 }
   }
 ]
