@@ -44,7 +44,7 @@ function Home() {
       {/* ====================================
           CONTENIDO PRINCIPAL
       ==================================== */}
-      <main className="flex-grow w-full px-9 py 0"> {/* Se modifica  py de 8 a o para poder reducir margen entre el nav y el cuerpo-*/ }
+      <main className="flex-grow w-full px-9 py-3"> {/* Se modifica  py de 8 a o para poder reducir margen entre el nav y el cuerpo-*/ }
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[86vh] items-stretch">
           {/* =======================
               COLUMNA IZQUIERDA (buscador + influencers)
