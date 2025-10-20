@@ -29,6 +29,10 @@ const ICONS = {
   parapente: makeIcon("/images/markers/parapente.svg", [40, 40], [20, 40]),
   trekking: makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]),
   insti: makeIcon("/images/markers/insti.png", [40, 40], [20, 40]),
+  kayak: makeIcon("/images/markers/kayak.svg", [40, 40], [20, 40]),
+  running: makeIcon("/images/markers/running.svg", [40, 40], [20, 40]),
+  astronomo: makeIcon("/images/markers/astronomo.png", [40, 40], [20, 40]),
+  globo_aerostatico: makeIcon("/images/markers/globo_aerostatico.png", [40, 40], [20, 40]),
   default: new L.Icon.Default(),
 };
 
