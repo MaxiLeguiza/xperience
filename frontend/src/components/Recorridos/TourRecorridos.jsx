@@ -11,6 +11,7 @@ import TourCard from "./TourCard"; // Asumo que ya lo tenés en tu proyecto
 import Filters from "./Filters"; // Asumo que ya lo tenés
 import CreateTourModal from "./CreateTourModal"; // Asumo que ya lo tenés
 import RecommendedPackages from "./RecommendedPackages"; // Asumo que ya lo tenés
+import Nav from "../Navbar/Nav";
 
 /* ------------------------------------------------------------------
    Componente interno: RecommendedInfluencers
@@ -28,10 +29,11 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
           <button
             key={inf.id}
             onClick={() => onSelect(inf)}
-            className={`flex-shrink-0 w-40 p-3 rounded-xl border transition-transform transform hover:scale-[1.02] text-left flex gap-3 items-center ${selectedId === inf.id
+            className={`flex-shrink-0 w-40 p-3 rounded-xl border transition-transform transform hover:scale-[1.02] text-left flex gap-3 items-center ${
+              selectedId === inf.id
                 ? "ring-2 ring-indigo-400 border-indigo-200"
                 : "border-gray-200"
-              }`}
+            }`}
           >
             <img
               src={inf.avatar}
@@ -54,7 +56,6 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
         </button>
       </div>
     </div>
-
   );
 }
 
@@ -92,11 +93,12 @@ function TourDetailModal({ tour, onClose, onReserve }) {
 
   // Calcular la puntuación promedio
   const averageRating =
-    comments.reduce((sum, comment) => sum + comment.rating, 0) / comments.length;
+    comments.reduce((sum, comment) => sum + comment.rating, 0) /
+    comments.length;
 
   // Calcular el porcentaje de cada calificación
-  const ratingCounts = [1, 2, 3, 4, 5].map((rating) =>
-    comments.filter((comment) => comment.rating === rating).length
+  const ratingCounts = [1, 2, 3, 4, 5].map(
+    (rating) => comments.filter((comment) => comment.rating === rating).length
   );
 
   const totalVotes = comments.length;
@@ -141,11 +143,15 @@ function TourDetailModal({ tour, onClose, onReserve }) {
 
           {/* Sección de Comentarios y Puntuaciones */}
           <div className="border-t pt-6 mt-6">
-            <h3 className="text-lg font-semibold">Comentarios y Puntuaciones</h3>
+            <h3 className="text-lg font-semibold">
+              Comentarios y Puntuaciones
+            </h3>
 
             {/* Puntuación promedio */}
             <div className="mt-4 flex items-center gap-2">
-              <span className="text-2xl font-semibold">Puntuación promedio:</span>
+              <span className="text-2xl font-semibold">
+                Puntuación promedio:
+              </span>
               <span className="text-xl text-yellow-500">
                 {averageRating.toFixed(1)} ★
               </span>
@@ -153,12 +159,18 @@ function TourDetailModal({ tour, onClose, onReserve }) {
 
             {/* Distribución porcentual de las calificaciones */}
             <div className="mt-6">
-              <h4 className="font-semibold">Distribución de las calificaciones</h4>
+              <h4 className="font-semibold">
+                Distribución de las calificaciones
+              </h4>
               <div className="space-y-2">
                 {[5, 4, 3, 2, 1].map((rating) => {
-                  const percentage = (ratingCounts[rating - 1] / totalVotes) * 100;
+                  const percentage =
+                    (ratingCounts[rating - 1] / totalVotes) * 100;
                   return (
-                    <div key={rating} className="flex items-center justify-between">
+                    <div
+                      key={rating}
+                      className="flex items-center justify-between"
+                    >
                       <span>{rating} Estrella(s)</span>
                       <div className="flex-1 bg-gray-200 h-2 rounded-full mx-2">
                         <div
@@ -193,7 +205,10 @@ function TourDetailModal({ tour, onClose, onReserve }) {
                           value={rating}
                           hidden
                         />
-                        <label htmlFor={`star${rating}`} className="cursor-pointer">
+                        <label
+                          htmlFor={`star${rating}`}
+                          className="cursor-pointer"
+                        >
                           ★
                         </label>
                       </React.Fragment>
@@ -237,7 +252,6 @@ function TourDetailModal({ tour, onClose, onReserve }) {
     </div>
   );
 }
-
 
 /* ------------------------------------------------------------------
    Componente principal
@@ -414,106 +428,113 @@ export default function TourRecorridos() {
   }, [filters, tours, selectedInfluencerId]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Gestor de Recorridos
-            </h1>
-            <button
-              className="btn-primary px-4 py-2 rounded-md text-sm font-medium flex items-center bg-[#FF4500] text-white hover:bg-[#E03E00]"
-              onClick={() => setCreateOpen(true)}
-            >
-              <span className="material-icons mr-2">add</span>+ Nuevo recorrido
-            </button>
+    <>
+      <Nav />{/* AGREGE EL NAV ACA */}
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        {/* Header */}
+        <header className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Gestor de Recorridos
+              </h1>
+              <button
+                className="btn-primary px-4 py-2 rounded-md text-sm font-medium flex items-center bg-[#FF4500] text-white hover:bg-[#E03E00]"
+                onClick={() => setCreateOpen(true)}
+              >
+                <span className="material-icons mr-2">add</span>+ Nuevo
+                recorrido
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Layout general */}
-      <div className="flex-grow max-w-full mx-auto px-4 sm:px-6 lg:px-1q py-2 w-full">
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
-          {/* Columna izquierda: filtros + paquetes + influencers (re-sumado) */}
-          <div className="flex flex-col  space-y-8 overflow-y-auto">
+        {/* Layout general */}
+        <div className="flex-grow max-w-full mx-auto px-4 sm:px-6 lg:px-1q py-2 w-full">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
+            {/* Columna izquierda: filtros + paquetes + influencers (re-sumado) */}
+            <div className="flex flex-col  space-y-8 overflow-y-auto">
+              <Filters
+                filters={filters}
+                setFilters={setFilters}
+                applyFilters={applyFilters}
+              />
 
-            <Filters
-              filters={filters}
-              setFilters={setFilters}
-              applyFilters={applyFilters}
-            />
+              <RecommendedPackages
+                packages={packages}
+                onSelect={(p) => console.log("Paquete seleccionado", p)}
+              />
 
-            <RecommendedPackages
-              packages={packages}
-              onSelect={(p) => console.log("Paquete seleccionado", p)}
-            />
+              {/* Influencers: componente inline */}
+              <RecommendedInfluencers
+                influencers={influencers}
+                onSelect={(inf) => setSelectedInfluencerId(inf ? inf.id : null)}
+                selectedId={selectedInfluencerId}
+              />
+            </div>
 
-            {/* Influencers: componente inline */}
-            <RecommendedInfluencers
-              influencers={influencers}
-              onSelect={(inf) => setSelectedInfluencerId(inf ? inf.id : null)}
-              selectedId={selectedInfluencerId}
-            />
-          </div>
-
-          {/* Columna derecha: listado de tours
+            {/* Columna derecha: listado de tours
             - Con esto puedo space-y-6 h-[calc(100vh-8rem)] hacer scroll en el listado unicamente 
           */}
-          <main className="md:col-span-2 space-y-6 h-[calc(100vh-8rem)]  overflow-y-auto">
-            <div className="grid grid-cols-1 gap-4">
-              {filteredTours.length > 0 ? (
-                filteredTours.map((t) => (
-                  <div key={t.id} className="relative">
-                    <div
-                      className={`${t.influencer?.id === selectedInfluencerId
-                          ? "ring-2 ring-indigo-300 rounded-xl p-1"
-                          : ""
+            <main className="md:col-span-2 space-y-6 h-[calc(100vh-8rem)]  overflow-y-auto">
+              <div className="grid grid-cols-1 gap-4">
+                {filteredTours.length > 0 ? (
+                  filteredTours.map((t) => (
+                    <div key={t.id} className="relative">
+                      <div
+                        className={`${
+                          t.influencer?.id === selectedInfluencerId
+                            ? "ring-2 ring-indigo-300 rounded-xl p-1"
+                            : ""
                         }`}
-                    >
-                      <TourCard tour={t} onSelect={() => setSelectedTour(t)} />
+                      >
+                        <TourCard
+                          tour={t}
+                          onSelect={() => setSelectedTour(t)}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-center py-8">
-                  ⚠️ No se encontraron recorridos con estos filtros
-                </p>
-              )}
-            </div>
-          </main>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-8">
+                    ⚠️ No se encontraron recorridos con estos filtros
+                  </p>
+                )}
+              </div>
+            </main>
+          </div>
         </div>
+
+        {/* Modal: crear tour */}
+        <CreateTourModal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          onCreated={(newTour) => {
+            setTours((t) => {
+              const updated = [newTour, ...t];
+              setFilteredTours(updated);
+              return updated;
+            });
+          }}
+          packages={packages}
+        />
+
+        {/* Modal de detalle */}
+        <TourDetailModal
+          tour={selectedTour}
+          onClose={() => setSelectedTour(null)}
+          onReserve={(tour) => {
+            setSelectedTour(null);
+            setReservation(tour);
+
+            // Mock: confirmación visual
+            setTimeout(() => {
+              alert(`✅ Reserva confirmada para: ${tour.title}`);
+              setReservation(null);
+            }, 500);
+          }}
+        />
       </div>
-
-      {/* Modal: crear tour */}
-      <CreateTourModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onCreated={(newTour) => {
-          setTours((t) => {
-            const updated = [newTour, ...t];
-            setFilteredTours(updated);
-            return updated;
-          });
-        }}
-        packages={packages}
-      />
-
-      {/* Modal de detalle */}
-      <TourDetailModal
-        tour={selectedTour}
-        onClose={() => setSelectedTour(null)}
-        onReserve={(tour) => {
-          setSelectedTour(null);
-          setReservation(tour);
-
-          // Mock: confirmación visual
-          setTimeout(() => {
-            alert(`✅ Reserva confirmada para: ${tour.title}`);
-            setReservation(null);
-          }, 500);
-        }}
-      />
-    </div>
+    </>
   );
 }
