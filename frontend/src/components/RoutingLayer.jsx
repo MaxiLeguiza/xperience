@@ -34,6 +34,8 @@ const ICONS = {
   astronomo: makeIcon("/images/markers/astronomo.png", [40, 40], [20, 40]),
   globo_aerostatico: makeIcon("/images/markers/globo_aerostatico.png", [40, 40], [20, 40]),
   mountain_bike: makeIcon("/images/markers/mountain_bike.png", [40, 40], [20, 40]),
+  cuatriciclos: makeIcon("/images/markers/cuatriciclo.png", [40, 40], [20, 40]),
+  tirolesa: makeIcon("/images/markers/tirolesa.png", [40, 40], [20, 40]),
   default: new L.Icon.Default(),
 };
 

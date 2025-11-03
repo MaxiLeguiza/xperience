@@ -82,7 +82,7 @@ export default function Home() {
 
           <section className="lg:col-span-7">
             {/* dar una altura concreta para que MapContainer (height:100%) tenga referencia */}
-            <div className="w-full h-[70vh] bg-white rounded-lg shadow-md overflow-hidden relative z-10">
+            <div className="w-full h-[80vh] lg:h-[85vh] bg-white rounded-lg shadow-md overflow-hidden relative z-10">
               <MapView items={recorridos} />
 
               {loading && (
