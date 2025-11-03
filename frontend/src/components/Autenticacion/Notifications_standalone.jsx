@@ -11,6 +11,7 @@ import {
   Sun,
   CloudRain,
   Cloud,
+  CloudSun,
   Lightbulb,
 } from "lucide-react";
 import { useIPLocation } from "../../hooks/useIPLocation";
@@ -23,28 +24,36 @@ import CardUi from "./ui/card";
 
 // --- Lógica Auxiliar de Clima (para convertir código a texto) ---
 const convertWeatherCodeToCondition = (code) => {
-  // Ejemplo de conversión de códigos de Open-Meteo
-  if (code >= 51 && code <= 82)
+  // 🟡 Caso 1: Soleado o mayormente soleado (códigos 0, 1, 2)
+  if (code >= 0 && code <= 2) {
+    return {
+      condition: "Soleado",
+      iconType: "Sun",
+      suggestion:
+        "Hace buen día: ideal para disfrutar actividades al aire libre como ciclismo o rafting.",
+    };
+  }
+
+  // ☁️ Caso 2: Nublado (código 3)
+  if (code === 3) {
+    return {
+      condition: "Parcialmente nublado",
+      iconType: "Cloud",
+      suggestion:
+        "Solado con algo de nubes: perfecto para una caminata tranquila o explorar un mirador sin mucho sol.",
+    };
+  }
+
+  // 🌧️ Caso 3: Lluvioso o mal clima (códigos 51–82, 95–99)
+  if ((code >= 51 && code <= 82) || (code >= 95 && code <= 99)) {
     return {
       condition: "Lluvioso",
-      suggestion:
-        "Clima fresco: perfecto para una escalada al Cerro de la Gloria.",
       iconType: "CloudRain",
-    };
-  if (code >= 1 && code <= 3)
-    return {
-      condition: "Nublado",
       suggestion:
-        "Clima nublado: perfecto para una escalada al Cerro de la Gloria.",
-      iconType: "Cloud",
+        "Está lloviendo: buscá actividades bajo techo o prepará tu equipo impermeable.",
     };
-  return {
-    condition: "Soleado",
-    suggestion:
-      "Hace calor y está soleado: ¡ideal para hacer rafting en el río Mendoza!",
-    iconType: "Sun",
-  };
-};
+  }
+}
 
 // Componente para el ícono de notificación
 const NotificationIcon = ({ type }) => {
@@ -129,7 +138,7 @@ export const Notifications = () => {
       const fetchWeather = async () => {
         try {
           await new Promise((resolve) => setTimeout(resolve, 3000)); // Simula retardo de 3 segundos
-
+          console.log('latid ssda', latitude, longitude)
           const res = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`
           );
@@ -140,8 +149,7 @@ export const Notifications = () => {
           }
 
           const currentWeather = data.current_weather;
-          const { condition, iconType, suggestion } =
-            convertWeatherCodeToCondition(currentWeather.weathercode);
+          const { condition, iconType, suggestion } = convertWeatherCodeToCondition(currentWeather.weathercode);
 
           // 3. CREAR Y AÑADIR LA NOTIFICACIÓN DE CLIMA
           const weatherNotification = {

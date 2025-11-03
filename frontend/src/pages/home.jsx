@@ -13,12 +13,13 @@ import AuthSection from "../components/Autenticacion/AuthSection";
 import Nav from "../components/Navbar/Nav";
 import DeportesExtremos from "../components/DeportesExtremos/DeportesExtremos";
 import InfluencerCard from "../components/Influencers/InfluencerCard";
+import recorridos from "../data/recorridos.json";
 
 const API = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 export default function Home() {
   const [topTours, setTopTours] = useState([]);
-  const [recorridos, setRecorridos] = useState([]);
+  // const [recorridos, setRecorridos] = useState([]);//Ahora no esta en el backend
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
