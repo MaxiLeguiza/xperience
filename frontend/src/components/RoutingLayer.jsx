@@ -33,6 +33,7 @@ const ICONS = {
   running: makeIcon("/images/markers/running.svg", [40, 40], [20, 40]),
   astronomo: makeIcon("/images/markers/astronomo.png", [40, 40], [20, 40]),
   globo_aerostatico: makeIcon("/images/markers/globo_aerostatico.png", [40, 40], [20, 40]),
+  mountain_bike: makeIcon("/images/markers/mountain_bike.png", [40, 40], [20, 40]),
   default: new L.Icon.Default(),
 };
 
