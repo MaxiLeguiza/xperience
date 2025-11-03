@@ -7,13 +7,17 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { RecorridoModule } from './recorrido/recorrido.module';
 import { SocketConfig } from './events/socketConfig';
 import { QrModule } from './qr/qr.module';
+import { ConfigModule } from '@nestjs/config';
 
 
 @Module({
   imports: [
+
+    ConfigModule.forRoot(),
+    MongooseModule.forRoot(process.env.MONGO_DB_DATABASE || 'mongodb://localhost:27017/nest-xperience',),
+
     NotificationsModule,
     UserModule,
-    MongooseModule.forRoot(process.env.MONGO_URI_WEB || 'mongodb://localhost:27017/nest-xperience',),
     CommonModule,
     ReservaModule,
     NotificationsModule,
