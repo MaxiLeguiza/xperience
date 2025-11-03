@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useIPLocation } from "../../hooks/useIPLocation";
 import { Link } from "react-router-dom";
+import Card from "./ui/card";
+import CardUi from "./ui/card";
 
 // 🚨 IMPORTAR EL HOOK DE UBICACIÓN 🚨
 // Asegúrate de que este archivo (o el código) está accesible.
@@ -206,7 +208,7 @@ export const Notifications = () => {
       const { location, temperature, condition, suggestion, id } = notification;
 
       return (
-        <div key={id} className="">
+        <div key={id} className="p-4">
           <div
             className="relative overflow-hidden rounded-xl p-4 text-white shadow-md bg-transparent"
             style={{
@@ -243,53 +245,8 @@ export const Notifications = () => {
     // --- DISEÑO DE RECOMENDACIONES (RECOMMENDATION CARD) ---
     if (notification.type === "recommendation") {
       const { id } = notification;
-
-      // Item que enviaremos al carrito
-      const recorrido = {
-        id: "recorrido-chacras-bici",
-        nombre: "Ciclismo en Chacras de Coria",
-        capacidad: 1,
-        precio: "$12000",
-      };
       return (
-        // Contenedor principal: Mantiene los bordes redondeados (rounded-xl)
-        <div className="h-auto w-full max-w-sm md:max-w-4xl bg-white flex flex-col rounded-xl shadow-xl overflow-hidden mx-auto my-8">
-          {/* Sección izquierda: Título del Tour */}
-          <div className="w-full p-6 md:p-8 text-white bg-red-500 flex flex-col justify-between md:w-[300px] md:h-auto">
-            <div>
-              <p className="text-xs tracking-widest text-red-200 font-semibold mb-2">
-                DESTINO RECOMENDADO
-              </p>
-              <h1 className="text-3xl font-bold leading-tight">
-                Ciclismo en Chacras de Coria
-              </h1>
-              <p className="mt-2 text-sm text-red-200">
-                Chacras de Coria, Mendoza
-              </p>
-            </div>
-
-            <h4 className="text-sm pt-4 text-red-200 cursor-pointer hover:text-white transition duration-300 flex items-center">
-              Detalles del recorrido:
-              <i className="fa-solid fa-chevron-right ml-2 text-xs"></i>
-            </h4>
-            {/* Descripción corta */}
-            <p className="text-xc mt-2 mb-6">
-              Ruta tranquila entre viñedos, con vistas únicas y guía local con
-              tips
-            </p>
-
-            {/* Botón de acción */}
-            <div className="flex justify-start md:justify-end mt-4">
-              <Link
-                to="/carrito"
-                state={{ selectedItems: [recorrido] }}
-                className="h-9 px-4 inline-flex items-center justify-center bg-blue-700 text-white font-semibold rounded-full tracking-wide hover:bg-blue-900 transition duration-200 shadow"
-              >
-                Reservar ahora
-              </Link>
-            </div>
-          </div>
-        </div>
+        <CardUi/>
       );
     }
 
