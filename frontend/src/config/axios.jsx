@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const clienteAxios = axios.create({
-    baseURL: import.meta.env.VITE_MAPTILER_KEY,//'http://localhost:3000',
+    baseURL: 'http://localhost:3000', //Falta el de qr y tambien del de recoridos local de render:https://xperience-h650.onrender.com/
     withCredentials: true,
 })
 
