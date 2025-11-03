@@ -1,16 +1,32 @@
-import { IsString, IsNumber } from "class-validator";
+import { IsString, IsNumber, IsOptional, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
+
+class LocationDto {
+  @IsNumber()
+  lat: number;
+
+  @IsNumber()
+  lng: number;
+}
 
 export class CreateRecorridoDto {
+  @IsString()
+  name: string;
 
-    @IsString()
-    nombre: string;
+  @IsString()
+  category: string;
 
-    @IsString()
-    autor: string;
+  @IsString()
+  difficulty: string;
 
-    @IsNumber()
-    precio: number;
+  @IsNumber()
+  rating: number;
 
-    @IsNumber()
-    duracion: number;
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ValidateNested()
+  @Type(() => LocationDto)
+  location: LocationDto;
 }

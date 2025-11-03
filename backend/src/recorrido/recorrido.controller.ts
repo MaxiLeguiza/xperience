@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { RecorridoService } from './recorrido.service';
-import { CreateRecorridoDto } from './dto/create-recorrido.dto';
-import { UpdateRecorridoDto } from './dto/update-recorrido.dto';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import { RecorridoService } from "./recorrido.service";
+import { CreateRecorridoDto } from "./dto/create-recorrido.dto";
+import { UpdateRecorridoDto } from "./dto/update-recorrido.dto";
 
-@Controller('recorrido')
+@Controller("recorrido")
 export class RecorridoController {
   constructor(private readonly recorridoService: RecorridoService) {}
 
@@ -17,18 +17,18 @@ export class RecorridoController {
     return this.recorridoService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.recorridoService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRecorridoDto: UpdateRecorridoDto) {
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateRecorridoDto: UpdateRecorridoDto) {
     return this.recorridoService.update(id, updateRecorridoDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.recorridoService.remove(id);
   }
 }
