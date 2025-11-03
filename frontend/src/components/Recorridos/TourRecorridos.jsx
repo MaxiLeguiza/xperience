@@ -20,41 +20,40 @@ import RecommendedPackages from "./RecommendedPackages"; // Asumo que ya lo ten�
    ------------------------------------------------------------------ */
 function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
   return (
-   <div className="bg-white p-6 rounded-2xl shadow"> 
-  <h3 className="text-lg font-semibold mb-3">Influencers recomendados</h3>
+    <div className="bg-white p-6 rounded-2xl shadow">
+      <h3 className="text-lg font-semibold mb-3">Influencers recomendados</h3>
 
-  <div className="flex items-center gap-3 overflow-x-auto p-2 pr-6">
-    {influencers.map((inf) => (
-      <button
-        key={inf.id}
-        onClick={() => onSelect(inf)}
-        className={`flex-shrink-0 w-40 p-3 rounded-xl border transition-transform transform hover:scale-[1.02] text-left flex gap-3 items-center ${
-          selectedId === inf.id
-            ? "ring-2 ring-indigo-400 border-indigo-200"
-            : "border-gray-200"
-        }`}
-      >
-        <img
-          src={inf.avatar}
-          alt={inf.name}
-          className="w-12 h-12 rounded-full object-cover"
-        />
-        <div className="flex-1 overflow-hidden">
-          <p className="text-sm font-medium truncate">{inf.name}</p>
-          <p className="text-xs text-gray-400 truncate">{inf.social}</p>
-        </div>
-      </button>
-    ))}
+      <div className="flex items-center gap-3 overflow-x-auto p-2 pr-6">
+        {influencers.map((inf) => (
+          <button
+            key={inf.id}
+            onClick={() => onSelect(inf)}
+            className={`flex-shrink-0 w-40 p-3 rounded-xl border transition-transform transform hover:scale-[1.02] text-left flex gap-3 items-center ${selectedId === inf.id
+                ? "ring-2 ring-indigo-400 border-indigo-200"
+                : "border-gray-200"
+              }`}
+          >
+            <img
+              src={inf.avatar}
+              alt={inf.name}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-medium truncate">{inf.name}</p>
+              <p className="text-xs text-gray-400 truncate">{inf.social}</p>
+            </div>
+          </button>
+        ))}
 
-    {/* Botón para borrar filtro */}
-    <button
-      onClick={() => onSelect(null)}
-      className="flex-shrink-0 px-3 py-2 bg-gray-100 rounded-full text-sm font-medium"
-    >
-      Mostrar todos
-    </button>
-  </div>
-</div>
+        {/* Botón para borrar filtro */}
+        <button
+          onClick={() => onSelect(null)}
+          className="flex-shrink-0 px-3 py-2 bg-gray-100 rounded-full text-sm font-medium"
+        >
+          Mostrar todos
+        </button>
+      </div>
+    </div>
 
   );
 }
@@ -67,65 +66,178 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
 function TourDetailModal({ tour, onClose, onReserve }) {
   if (!tour) return null;
 
+  // Datos de ejemplo para comentarios y puntuaciones
+  const comments = [
+    {
+      user: "Carlos A.",
+      rating: 4,
+      text: "¡Una experiencia increíble! Muy recomendable.",
+    },
+    {
+      user: "Ana L.",
+      rating: 5,
+      text: "Todo estuvo excelente, me encantó el recorrido.",
+    },
+    {
+      user: "Juan P.",
+      rating: 2,
+      text: "No fue lo que esperaba, el guía no estaba tan preparado.",
+    },
+    {
+      user: "Lucía M.",
+      rating: 3,
+      text: "Estuvo bien, pero podría mejorar en algunos aspectos.",
+    },
+  ];
+
+  // Calcular la puntuación promedio
+  const averageRating =
+    comments.reduce((sum, comment) => sum + comment.rating, 0) / comments.length;
+
+  // Calcular el porcentaje de cada calificación
+  const ratingCounts = [1, 2, 3, 4, 5].map((rating) =>
+    comments.filter((comment) => comment.rating === rating).length
+  );
+
+  const totalVotes = comments.length;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-orange-200 p-6 rounded-2xl shadow-xl max-w-2xl w-full relative"
+        className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {" "}
-        {/*Fondo de tarjeta */}
+        {/* Botón de cierre */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl"
+          className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl z-10"
         >
           ✕
         </button>
-        <h1 className="text-6xl font-bold mb-9">{tour.title}</h1>
-        <p className="text-gray-500 mb-1">Autor: {tour.author}</p>
-        <p className="text-gray-500 mb-5">
-          Duración: {tour.durationMinutes} min · {tour.distanceKm} km
-        </p>
-        <p className="text-gray-800 font-semibold mb-9">💲 {tour.price} ARS</p>
-        {/* Carrusel simple de imágenes mock: Aca tendriamos que ver que IA puede traer iamgenes del lugar*/}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          <img
-            src={tour.image || "https://picsum.photos/600/300"}
-            alt="imagen recorrido"
-            className="w-full h-40 object-cover rounded-lg"
-          />
-          <img
-            src={tour.image2 || "https://picsum.photos/601/300"}
-            alt="imagen recorrido 2"
-            className="w-full h-40 object-cover rounded-lg"
-          />
-        </div>
-        <h3 className="text-black mt-5 mb-5 font-bold">Descripción:</h3>
-        <p className="text-gray-600 mb-4">{tour.description}</p>
-        <div className="flex gap-2 items-center mb-3">
-          <img
-            src={tour.influencer?.avatar || "https://via.placeholder.com/40"}
-            alt={tour.influencer?.name}
-            className="w-10 h-10 rounded-full"
-          />
-          <div>
-            <p className="text-sm font-medium">{tour.influencer?.name}</p>
-            <p className="text-xs text-gray-400">{tour.influencer?.social}</p>
+
+        {/* Contenido scrollable */}
+        <div className="p-6 overflow-y-auto mt-10 mb-4 px-6 space-y-6">
+          <h1 className="text-4xl font-bold">{tour.title}</h1>
+          <p className="text-gray-500">Autor: {tour.author}</p>
+          <p className="text-gray-500">
+            Duración: {tour.durationMinutes} min · {tour.distanceKm} km
+          </p>
+          <p className="text-gray-800 font-semibold">💲 {tour.price} ARS</p>
+
+          {/* Carrusel de imágenes */}
+          {/* Aquí iría el carrusel como te lo pasé antes */}
+
+          <h3 className="text-black font-bold">Descripción:</h3>
+          <p className="text-gray-600">{tour.description}</p>
+
+          {/* Influencer */}
+          {/* Aquí iría la sección de influencer */}
+
+          {/* BOTÓN Reservar */}
+          {/* Aquí iría el botón de reserva */}
+
+          {/* Sección de Comentarios y Puntuaciones */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold">Comentarios y Puntuaciones</h3>
+
+            {/* Puntuación promedio */}
+            <div className="mt-4 flex items-center gap-2">
+              <span className="text-2xl font-semibold">Puntuación promedio:</span>
+              <span className="text-xl text-yellow-500">
+                {averageRating.toFixed(1)} ★
+              </span>
+            </div>
+
+            {/* Distribución porcentual de las calificaciones */}
+            <div className="mt-6">
+              <h4 className="font-semibold">Distribución de las calificaciones</h4>
+              <div className="space-y-2">
+                {[5, 4, 3, 2, 1].map((rating) => {
+                  const percentage = (ratingCounts[rating - 1] / totalVotes) * 100;
+                  return (
+                    <div key={rating} className="flex items-center justify-between">
+                      <span>{rating} Estrella(s)</span>
+                      <div className="flex-1 bg-gray-200 h-2 rounded-full mx-2">
+                        <div
+                          style={{ width: `${percentage}%` }}
+                          className="bg-yellow-500 h-full rounded-full"
+                        ></div>
+                      </div>
+                      <span>{percentage.toFixed(1)}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Formulario de comentarios */}
+            <form className="space-y-4 mt-6">
+              <textarea
+                className="w-full p-3 border border-gray-300 rounded-md"
+                placeholder="Escribe aquí tu experiencia..."
+                rows="3"
+              ></textarea>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center">
+                  <label className="mr-2 text-sm">Calificación</label>
+                  <div className="flex flex-row-reverse gap-1 text-2xl text-gray-300">
+                    {[5, 4, 3, 2, 1].map((rating) => (
+                      <React.Fragment key={rating}>
+                        <input
+                          id={`star${rating}`}
+                          type="radio"
+                          name="rating"
+                          value={rating}
+                          hidden
+                        />
+                        <label htmlFor={`star${rating}`} className="cursor-pointer">
+                          ★
+                        </label>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90"
+                >
+                  Enviar
+                </button>
+              </div>
+            </form>
+
+            {/* Comentarios existentes */}
+            <div className="mt-6 space-y-4 max-h-60 overflow-y-auto pr-2">
+              {comments.map((comment, index) => (
+                <div key={index} className="flex gap-3">
+                  <img
+                    src="https://via.placeholder.com/40"
+                    className="w-10 h-10 rounded-full"
+                    alt="Usuario"
+                  />
+                  <div>
+                    <div className="flex justify-between items-center">
+                      <p className="font-semibold">{comment.user}</p>
+                      <span className="text-yellow-500 text-sm">
+                        {"★".repeat(comment.rating)}{" "}
+                        {"☆".repeat(5 - comment.rating)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700">{comment.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <button
-          onClick={() => onReserve(tour)}
-          className="w-full bg-green-600 text-white py-2 px-4 rounded-xl hover:bg-green-700 transition"
-        >
-          Reservar este recorrido
-        </button>
       </div>
     </div>
   );
 }
+
 
 /* ------------------------------------------------------------------
    Componente principal
@@ -325,7 +437,7 @@ export default function TourRecorridos() {
         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
           {/* Columna izquierda: filtros + paquetes + influencers (re-sumado) */}
           <div className="flex flex-col  space-y-8 overflow-y-auto">
-           
+
             <Filters
               filters={filters}
               setFilters={setFilters}
@@ -348,17 +460,16 @@ export default function TourRecorridos() {
           {/* Columna derecha: listado de tours
             - Con esto puedo space-y-6 h-[calc(100vh-8rem)] hacer scroll en el listado unicamente 
           */}
-          <main className="md:col-span-2 space-y-6 h-[calc(100vh-8rem)]  overflow-y-auto"> 
+          <main className="md:col-span-2 space-y-6 h-[calc(100vh-8rem)]  overflow-y-auto">
             <div className="grid grid-cols-1 gap-4">
               {filteredTours.length > 0 ? (
                 filteredTours.map((t) => (
                   <div key={t.id} className="relative">
                     <div
-                      className={`${
-                        t.influencer?.id === selectedInfluencerId
+                      className={`${t.influencer?.id === selectedInfluencerId
                           ? "ring-2 ring-indigo-300 rounded-xl p-1"
                           : ""
-                      }`}
+                        }`}
                     >
                       <TourCard tour={t} onSelect={() => setSelectedTour(t)} />
                     </div>
