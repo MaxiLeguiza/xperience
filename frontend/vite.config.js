@@ -21,4 +21,6 @@ export default defineConfig({
     https: true, // ✅ activa HTTPS (requerido para geolocalización exacta)
     allowedHosts: [".trycloudflare.com"],
   },
+  
+
 });
