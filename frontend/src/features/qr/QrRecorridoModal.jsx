@@ -1,9 +1,7 @@
 // src/features/qr/QrRecorridoModal.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { QRCodeCanvas } from "qrcode.react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createQr } from "./useQr";
 
-// Utilidad para descargar un dataURL
 function downloadDataUrl(dataUrl, filename = "qr.png") {
   const a = document.createElement("a");
   a.href = dataUrl;
@@ -13,29 +11,29 @@ function downloadDataUrl(dataUrl, filename = "qr.png") {
 
 export default function QrRecorridoModal({ open, onClose, recorridoId }) {
   const [loading, setLoading] = useState(false);
-  const [qrBase64, setQrBase64] = useState(null); // imagen devuelta por el backend
+  const [qrBase64, setQrBase64] = useState(null);
   const appBase = typeof window !== "undefined" ? window.location.origin : "";
 
-  // Contenido mínimo compatible con tu /qr/validate (usa recorridoId)
   const qrContentJson = useMemo(
     () => JSON.stringify({ recorridoId }),
     [recorridoId]
   );
 
-  // URL conveniente para que, al escanear, abra tu app y dispare la validación
   const redeemUrl = useMemo(
-    () => `${appBase}/redeem?content=${encodeURIComponent(qrContentJson)}`,
-    [appBase, qrContentJson]
-  );
+  () =>
+    `${appBase}/redeem?content=${encodeURIComponent(
+      qrContentJson
+    )}&fromQr=1`,
+  [appBase, qrContentJson]
+);
+
 
   useEffect(() => {
-    if (!open) return;
-    if (!recorridoId) return;
+    if (!open || !recorridoId) return;
     (async () => {
       try {
         setLoading(true);
         const resp = await createQr({ recorridoId });
-        // resp.qr es el PNG base64 generado por tu servicio
         if (resp?.qr?.startsWith("data:image")) setQrBase64(resp.qr);
         else setQrBase64(null);
       } catch (e) {
@@ -88,8 +86,24 @@ export default function QrRecorridoModal({ open, onClose, recorridoId }) {
                   Descargar PNG
                 </button>
               </div>
+
+              {/* 🔗 Nuevo: enlace directo */}
+              <div className="mt-3 text-center">
+                <p className="text-gray-600 text-sm mb-1">
+                  También podés acceder con este enlace:
+                </p>
+                <a
+                  href={redeemUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800 break-all"
+                >
+                  {redeemUrl}
+                </a>
+              </div>
             </div>
           )}
+
           {!loading && !qrBase64 && (
             <div className="mt-2 text-sm text-rose-600">
               El backend no devolvió una imagen base64 válida en{" "}

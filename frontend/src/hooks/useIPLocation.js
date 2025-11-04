@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const IP_API_URL = 'http://ip-api.com/json/';
+const IP_API_URL = 'https://ip-api.com/json/';
 const FALLBACK_LAT = -32.8895;
 const FALLBACK_LNG = -68.8458;
 
