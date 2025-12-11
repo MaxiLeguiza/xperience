@@ -8,13 +8,14 @@ import {
   ZoomControl,
 } from "react-leaflet";
 import RoutingLayer, { iconFor } from "./RoutingLayer";
-import { useLocation } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import WeatherCard from "../components/clima/WeatherCard";
 import QrRecorridoModal from "../features/qr/QrRecorridoModal";
+
+import "./MapView.css";
 
 /* -------------------- Helpers -------------------- */
 function InvalidateSizeOnce() {
@@ -82,6 +83,7 @@ function LocateControl() {
     const control = L.control({ position: "topright" });
     control.onAdd = () => {
       const container = L.DomUtil.create("div", "leaflet-bar");
+
       const btn = L.DomUtil.create("a", "", container);
       btn.href = "#";
       btn.title = "Ubicarme";
@@ -131,7 +133,11 @@ function LocateControl() {
           (pos) => {
             const { latitude, longitude, accuracy } = pos.coords;
             const latlng = L.latLng(latitude, longitude);
-            console.log(`✅ Fix inicial: ${latitude}, ${longitude} (±${Math.round(accuracy)} m)`);
+            console.log(
+              `✅ Fix inicial: ${latitude}, ${longitude} (±${Math.round(
+                accuracy
+              )} m)`
+            );
             setVisualPos(latlng, accuracy);
             if (!firstFixRef.current) {
               firstFixRef.current = true;
@@ -158,9 +164,12 @@ function LocateControl() {
           (err) => {
             console.warn("getCurrentPosition error:", err);
             let msg = "No se pudo obtener tu ubicación precisa.";
-            if (err.code === 1) msg = "Permiso denegado. Revisa los permisos del navegador para Ubicación.";
-            if (err.code === 2) msg = "Posición no disponible. Verifica VPN/GPS/Red.";
-            if (err.code === 3) msg = "Tiempo agotado intentando obtener tu posición.";
+            if (err.code === 1)
+              msg = "Permiso denegado. Revisa los permisos del navegador.";
+            if (err.code === 2)
+              msg = "Posición no disponible. Verifica VPN/GPS/Red.";
+            if (err.code === 3)
+              msg = "Tiempo agotado intentando obtener tu posición.";
             alert(`${msg}\nSe mostrará Mendoza.`);
             const fallback = L.latLng(-32.8895, -68.8458);
             setVisualPos(fallback, 200);
@@ -204,7 +213,6 @@ function LocateControl() {
   return null;
 }
 
-
 /* ---------- GeoWatcher ---------- */
 function GeoWatcher({ onChange }) {
   const map = useMap();
@@ -223,7 +231,6 @@ function GeoWatcher({ onChange }) {
 /* ----------------------------------------------- */
 
 export default function MapView({ items = [] }) {
-  const location = useLocation();
   const [selected, setSelected] = useState(null);
   const [routeTo, setRouteTo] = useState(null);
   const [userPos, setUserPos] = useState(null);
@@ -283,7 +290,7 @@ export default function MapView({ items = [] }) {
   const positions = filtered.map((p) => p.pos);
   const center = points[0]?.pos || [-32.8895, -68.8458];
   const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-  const ATTR = "&copy; OpenStreetMap contributors";
+  const ATTR = "© OpenStreetMap contributors";
 
   const handleFilterChange = (key, value) =>
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -298,267 +305,370 @@ export default function MapView({ items = [] }) {
       calificacion: 0,
     });
 
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filters.dificultad !== "cualquiera") count++;
+    if (filters.temporada !== "cualquiera") count++;
+    if (filters.deporte !== "cualquiera") count++;
+    if (filters.edad !== "cualquiera") count++;
+    if (filters.calificacion > 0) count++;
+    if (q.trim()) count++;
+    return count;
+  }, [filters, q]);
+
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      {/* Botón para abrir filtros */}
-      <button
-        onClick={() => setShowFilters((v) => !v)}
-        className="absolute top-3 right-15 z-[2000] bg-white shadow-md px-4 py-2 rounded-full font-semibold text-sm text-gray-800 hover:bg-orange-50 border border-gray-200 flex items-center gap-2"
-      >
-        <span role="img" aria-label="filtro">
-          🔍
-        </span>
-        Filtros
-      </button>
-
-      {/* Panel de filtros */}
-      {showFilters && (
-        <div className="absolute top-3 right-[50%] bg-white shadow-2xl rounded-2xl w-[70%] max-w-sm p-5 z-[2000] animate-slide-down border border-gray-200">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-base font-bold text-gray-800">
-              Filtros Avanzados
-            </h2>
-            <button
-              onClick={() => setShowFilters(false)}
-              className="text-gray-500 hover:text-orange-500 text-lg font-bold"
-            >
-              ✕
-            </button>
+    <div className="x-map-wrapper">
+      <div className="x-map-card">
+        {/* Botón flotante de filtros */}
+        <button
+          onClick={() => setShowFilters((v) => !v)}
+          className="absolute top-4 left-5 z-[2000] bg-white/95 px-3 py-2 rounded-full shadow-lg border border-white/60
+                   flex items-center gap-3 hover:bg-orange-50 hover:border-orange-200 transition backdrop-blur-md"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-md text-lg">
+            🧭
+          </span>
+          <div className="text-left">
+            <span className="block text-[11px] uppercase tracking-wide text-orange-600 font-semibold">
+              Filtros
+            </span>
+            <span className="block text-[11px] text-gray-500 leading-tight">
+              {activeFiltersCount > 0
+                ? `${activeFiltersCount} activo${
+                    activeFiltersCount > 1 ? "s" : ""
+                  }`
+                : "Busca tus aventuras"}
+            </span>
           </div>
+          <span className="ml-1 text-gray-400 text-xs">▾</span>
+        </button>
 
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              placeholder="Buscar lugares o actividades..."
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="flex-1 border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-400"
-            />
-            <button
-              onClick={() => setFitKey((k) => k + 1)}
-              className="bg-orange-500 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-orange-600 transition"
-            >
-              Ajustar Vista
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            {[
-              {
-                key: "dificultad",
-                label: "Dificultad",
-                options: ["Cualquiera", "Fácil", "Media", "Difícil"],
-              },
-              {
-                key: "temporada",
-                label: "Temporada",
-                options: [
-                  "Cualquiera",
-                  "Verano",
-                  "Invierno",
-                  "Primavera",
-                  "Otoño",
-                ],
-              },
-              {
-                key: "deporte",
-                label: "Deporte",
-                options: [
-                  "Cualquiera",
-                  "Rafting",
-                  "Trekking",
-                  "Escalada",
-                  "Ciclismo",
-                ],
-              },
-              {
-                key: "edad",
-                label: "Edad",
-                options: ["Cualquiera", "Niños", "Adultos", "Mayores"],
-              },
-            ].map(({ key, label, options }) => (
-              <div key={key}>
-                <label className="block text-xs font-semibold mb-1 text-gray-700">
-                  {label}
-                </label>
-                <select
-                  value={filters[key]}
-                  onChange={(e) =>
-                    handleFilterChange(key, e.target.value.toLowerCase())
-                  }
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-400"
+        {/* Panel de filtros “glass” */}
+        {showFilters && (
+          <div
+            className="absolute top-16 left-5 w-[340px] max-w-[90vw] z-[2000]
+                        rounded-2xl border border-white/40 bg-white/90 shadow-2xl
+                        backdrop-blur-xl animate-slide-down"
+          >
+            <div className="px-5 pt-4 pb-3 border-b border-white/60 bg-gradient-to-r from-white/90 via-white/80 to-orange-50/70 rounded-t-2xl">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-orange-500 font-semibold">
+                    Explora Mendoza
+                  </p>
+                  <h2 className="text-sm font-bold text-gray-900">
+                    Filtros de aventura
+                  </h2>
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    Combina dificultad, temporada y deporte para encontrar tu
+                    proxima Xperience.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="text-gray-400 hover:text-orange-500 text-lg font-bold leading-none"
                 >
-                  {options.map((opt) => (
-                    <option key={opt} value={opt.toLowerCase()}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-
-            <div>
-              <label className="block text-xs font-semibold mb-1 text-gray-700">
-                Calificaciones
-              </label>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <span
-                    key={star}
-                    onClick={() => handleFilterChange("calificacion", star)}
-                    className={`cursor-pointer text-xl ${
-                      star <= filters.calificacion
-                        ? "text-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                  >
-                    ★
-                  </span>
-                ))}
-                <span className="text-gray-600 text-xs ml-1">
-                  {filters.calificacion > 0
-                    ? `${filters.calificacion} y más`
-                    : "Cualquiera"}
-                </span>
+                  ×
+                </button>
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-between mt-4">
-            <button
-              onClick={handleReset}
-              className="border border-gray-300 text-gray-700 px-3 py-2 text-sm rounded-lg hover:bg-gray-100 transition"
-            >
-              Reiniciar
-            </button>
-            <button
-              onClick={handleApplyFilters}
-              className="bg-orange-500 text-white px-4 py-2 text-sm rounded-lg hover:bg-orange-600 transition"
-            >
-              Aplicar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* MAPA */}
-      <MapContainer
-        center={center}
-        zoom={12}
-        scrollWheelZoom
-        zoomControl={false}
-        style={{ width: "100%", height: "100%" }}
-      >
-        <ZoomControl position="topright" />
-        <GeoWatcher onChange={setUserPos} />
-        <LocateControl />
-        <InvalidateSizeOnce />
-        <FitToBounds positions={positions} trigger={fitKey} />
-        <TileLayer url={TILE_URL} attribution={ATTR} />
-
-        {userPos && routeTo && (
-          <RoutingLayer from={userPos} to={routeTo} onRouteInfo={setRouteInfo} />
-        )}
-
-        {routeInfo && (
-        <span
-          className="absolute left-1/2 top-8 -translate-x-1/5 z-[1000] 
-          bg-blue-500 text-white rounded-lg px-6 py-2 shadow-lg 
-          font-semibold text-base border border-blue-600"
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: 30,
-            transform: "translateX(-50%)",
-            zIndex: 1000,
-            borderRadius: 8,
-            padding: "6px 16px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-            fontWeight: 500,
-            fontSize: 15,
-            border: "1px solid #e5e7eb",
-          }}
-        >
-          Duración: {Math.round(routeInfo.duration / 60)} min &nbsp;|&nbsp; 
-          Distancia: {(routeInfo.distance / 1000).toFixed(2)} km
-        </span>
-      )}
-
-        {filtered.map((p) => (
-          <Marker
-            key={p.id}
-            position={p.pos}
-            icon={iconFor(p)}
-            eventHandlers={{ click: () => setSelected(p) }}
-          >
-            <Popup>
-              <b>{p.name}</b>
-              <br />
-              {p.address || ""}
-              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+            <div className="px-5 py-4 space-y-3">
+              {/* Buscador + ajustar vista */}
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Buscar lugares o actividades..."
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    className="w-full pl-7 pr-3 py-2 text-xs rounded-lg border border-gray-200
+                             focus:outline-none focus:ring-2 focus:ring-orange-400/70 focus:border-orange-400
+                             placeholder:text-gray-400"
+                  />
+                </div>
                 <button
-                  onClick={() => setRouteTo(p)}
-                  disabled={!userPos}
-                  style={{
-                    background: "#1a73e8",
-                    color: "#fff",
-                    padding: "6px 10px",
-                    borderRadius: "6px",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
+                  onClick={() => setFitKey((k) => k + 1)}
+                  className="bg-orange-500 text-white px-3 py-2 rounded-lg text-[11px] font-semibold 
+                           hover:bg-orange-600 transition shadow-md"
                 >
-                  Ruta
-                </button>
-                <button
-                  onClick={() => {
-                    setSelected(p);
-                    setOpenQR(true);
-                  }}
-                  style={{
-                    background: "#1a73e8",
-                    color: "#fff",
-                    padding: "6px 10px",
-                    borderRadius: "6px",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  QR
+                  Centrar Vista
                 </button>
               </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
 
-      {(selected || routeTo) && (
-        <div
-          style={{
-            position: "absolute",
-            right: 12,
-            bottom: 12,
-            zIndex: 500,
-          }}
+              {/* Filtros en grilla */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Dificultad */}
+                <div className="col-span-2">
+                  <label className="block text-[11px] font-semibold mb-1 text-gray-700 uppercase tracking-wide">
+                    Dificultad
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {["cualquiera", "fácil", "media", "difícil"].map(
+                      (value) => {
+                        const active = filters.dificultad === value;
+                        const label =
+                          value === "cualquiera"
+                            ? "Todas"
+                            : value.charAt(0).toUpperCase() + value.slice(1);
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              handleFilterChange("dificultad", value)
+                            }
+                            className={`px-3 py-1 rounded-full text-[11px] font-medium border transition
+                          ${
+                            active
+                              ? "bg-orange-500 text-white border-orange-500 shadow-md"
+                              : "bg-white text-gray-700 border-gray-200 hover:border-orange-400"
+                          }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
+
+                {/* Temporada */}
+                <div>
+                  <label className="block text-[11px] font-semibold mb-1 text-gray-700 uppercase tracking-wide">
+                    Temporada
+                  </label>
+                  <select
+                    value={filters.temporada}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "temporada",
+                        e.target.value.toLowerCase()
+                      )
+                    }
+                    className="w-full border border-gray-200 rounded-lg p-2 text-[12px]
+                             bg-white focus:ring-2 focus:ring-orange-400/70 focus:border-orange-400"
+                  >
+                    {[
+                      "Cualquiera",
+                      "Verano",
+                      "Invierno",
+                      "Primavera",
+                      "Otoño",
+                    ].map((opt) => (
+                      <option key={opt} value={opt.toLowerCase()}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Deporte */}
+                <div>
+                  <label className="block text-[11px] font-semibold mb-1 text-gray-700 uppercase tracking-wide">
+                    Deporte
+                  </label>
+                  <select
+                    value={filters.deporte}
+                    onChange={(e) =>
+                      handleFilterChange("deporte", e.target.value.toLowerCase())
+                    }
+                    className="w-full border border-gray-200 rounded-lg p-2 text-[12px]
+                             bg-white focus:ring-2 focus:ring-orange-400/70 focus:border-orange-400"
+                  >
+                    {[
+                      "Cualquiera",
+                      "Rafting",
+                      "Trekking",
+                      "Escalada",
+                      "Ciclismo",
+                    ].map((opt) => (
+                      <option key={opt} value={opt.toLowerCase()}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Edad */}
+                <div>
+                  <label className="block text-[11px] font-semibold mb-1 text-gray-700 uppercase tracking-wide">
+                    Edad
+                  </label>
+                  <select
+                    value={filters.edad}
+                    onChange={(e) =>
+                      handleFilterChange("edad", e.target.value.toLowerCase())
+                    }
+                    className="w-full border border-gray-200 rounded-lg p-2 text-[12px]
+                             bg-white focus:ring-2 focus:ring-orange-400/70 focus:border-orange-400"
+                  >
+                    {["Cualquiera", "Niños", "Adultos", "Mayores"].map(
+                      (opt) => (
+                        <option key={opt} value={opt.toLowerCase()}>
+                          {opt}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+
+                {/* Calificación */}
+                <div>
+                  <label className="block text-[11px] font-semibold mb-1 text-gray-700 uppercase tracking-wide">
+                    Rating
+                  </label>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        onClick={() =>
+                          handleFilterChange("calificacion", star)
+                        }
+                        className={`cursor-pointer text-lg ${
+                          star <= filters.calificacion
+                            ? "text-yellow-400"
+                            : "text-gray-300"
+                        }`}
+                      >
+                        ★
+                      </span>
+                    ))}
+                    <span className="text-gray-500 text-[11px] ml-1">
+                      {filters.calificacion > 0
+                        ? `${filters.calificacion}+`
+                        : "Cualquiera"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Botones inferiores */}
+            <div className="px-5 py-3 border-t border-white/70 flex justify-between items-center bg-white/80 rounded-b-2xl">
+              <button
+                onClick={handleReset}
+                className="text-[12px] px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 transition"
+              >
+                Reiniciar
+              </button>
+              <button
+                onClick={handleApplyFilters}
+                className="text-[12px] px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-white font-semibold shadow-md hover:brightness-110 transition"
+              >
+                Ver resultados
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* MAPA */}
+        <MapContainer
+          center={center}
+          zoom={12}
+          scrollWheelZoom
+          zoomControl={false}
+          className="x-map-leaflet"
         >
-          <WeatherCard
-            latitude={
-              (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) || null
-            }
-            longitude={
-              (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) || null
-            }
-          />
-        </div>
-      )}
+          <ZoomControl position="topright" />
+          <GeoWatcher onChange={setUserPos} />
+          <LocateControl />
+          <InvalidateSizeOnce />
+          <FitToBounds positions={positions} trigger={fitKey} />
+          <TileLayer url={TILE_URL} attribution={ATTR} />
 
-      {openQR && recorridoId && (
-        <QrRecorridoModal
-          open
-          onClose={() => setOpenQR(false)}
-          recorridoId={recorridoId}
-        />
-      )}
+          {userPos && routeTo && (
+            <RoutingLayer
+              from={userPos}
+              to={routeTo}
+              onRouteInfo={setRouteInfo}
+            />
+          )}
+
+          {filtered.map((p) => (
+            <Marker
+              key={p.id}
+              position={p.pos}
+              icon={iconFor(p)}
+              eventHandlers={{ click: () => setSelected(p) }}
+            >
+              <Popup>
+                <b>{p.name}</b>
+                <br />
+                {p.address || ""}
+                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => setRouteTo(p)}
+                    disabled={!userPos}
+                    style={{
+                      background: "#1a73e8",
+                      color: "#fff",
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Ruta
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelected(p);
+                      setOpenQR(true);
+                    }}
+                    style={{
+                      background: "#1a73e8",
+                      color: "#fff",
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    QR
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+
+        {routeInfo && (
+          <span
+            className="absolute left-1/2 top-5 -translate-x-1/2 z-[1000] 
+              bg-white/95 text-gray-900 rounded-lg px-6 py-2 shadow-lg 
+              font-semibold text-sm border border-gray-200 backdrop-blur-sm"
+          >
+            Duración: {Math.round(routeInfo.duration / 60)} min &nbsp;|&nbsp;
+            Distancia: {(routeInfo.distance / 1000).toFixed(2)} km
+          </span>
+        )}
+
+        {(selected || routeTo) && (
+          <div className="absolute right-4 bottom-4 z-[500]">
+            <WeatherCard
+              latitude={
+                (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) ||
+                null
+              }
+              longitude={
+                (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) ||
+                null
+              }
+            />
+          </div>
+        )}
+
+        {openQR && recorridoId && (
+          <QrRecorridoModal
+            open
+            onClose={() => setOpenQR(false)}
+            recorridoId={recorridoId}
+          />
+        )}
+      </div>
     </div>
   );
 }
