@@ -18,6 +18,7 @@ const Cart = () => {
   const [couponCode, setCouponCode] = useState("");
   const [coupon, setCoupon] = useState(null);
   const [error, setError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("credito");
 
   // 🎯 Catálogo de cupones válidos
   const coupons = [
@@ -155,6 +156,37 @@ const Cart = () => {
               </p>
             </div>
 
+            {/* Metodo de pago */}
+            <div className="mt-4">
+              <p className="font-semibold text-black mb-2">Metodo de pago</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {[
+                  { id: "debito", label: "Tarjeta debito" },
+                  { id: "credito", label: "Tarjeta credito" },
+                  { id: "mercadopago", label: "Mercado Pago" },
+                ].map((opt) => (
+                  <label
+                    key={opt.id}
+                    className={`border rounded-lg px-3 py-2 cursor-pointer text-sm ${
+                      paymentMethod === opt.id
+                        ? "border-orange-500 bg-orange-50 text-orange-700"
+                        : "border-gray-200 hover:border-orange-300"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      value={opt.id}
+                      checked={paymentMethod === opt.id}
+                      onChange={() => setPaymentMethod(opt.id)}
+                      className="mr-2 accent-orange-500"
+                    />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
             {/* Botones */}
             <div className="flex justify-between mt-6">
               <button
@@ -167,7 +199,7 @@ const Cart = () => {
               <button
                 onClick={() =>
                   navigate("/confirmacion", {
-                    state: { selectedItems, total, coupon },
+                    state: { selectedItems, total, coupon, paymentMethod },
                   })
                 }
                 className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition"

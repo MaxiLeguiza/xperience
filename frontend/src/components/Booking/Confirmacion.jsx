@@ -3,8 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const Confirmacion = () => {
   const location = useLocation(); // Para recibir datos enviados desde Cart
-  const navigate = useNavigate(); // Para navegar a la página de éxito
-  const { selectedItems = [], total = 0 } = location.state || {}; // Items y total del carrito
+  const navigate = useNavigate(); // Para navegar a la pagina de exito
+  const { selectedItems = [], total = 0, paymentMethod = "credito" } =
+    location.state || {}; // Items, total y metodo de pago
 
   // Estado para guardar los datos del formulario del cliente
   const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ const Confirmacion = () => {
     // Mostrar en consola los datos por ahora
     console.log("Reserva enviada:", { formData, selectedItems, total });
 
-    // 🔗 Aquí puedes enviar los datos al backend
+    // Aqui puedes enviar los datos al backend
     /*
     fetch("http://localhost:27017/reserva", {
       method: "POST",
@@ -38,12 +39,12 @@ const Confirmacion = () => {
       .then((res) => res.json())
       .then((data) => {
         console.log("Reserva confirmada:", data);
-        navigate("/exito"); // Redirige a la página de éxito
+        navigate("/exito"); // Redirige a la pagina de exito
       })
       .catch((err) => console.error(err));
     */
 
-    // Para pruebas sin backend, navegamos directamente a la página de éxito
+    // Para pruebas sin backend, navegamos directamente a la pagina de exito
     navigate("/exito");
   };
 
@@ -51,7 +52,7 @@ const Confirmacion = () => {
     <div className="p-6 flex flex-col items-center">
       <div className="bg-white w-full max-w-3xl p-6 rounded-2xl shadow-xl">
         
-        {/* Título */}
+        {/* Titulo */}
         <h2 className="text-2xl font-bold text-center mb-6 text-black">
           Confirmar tu reserva
         </h2>
@@ -65,6 +66,16 @@ const Confirmacion = () => {
             </p>
           ))}
           <p className="mt-2 font-bold text-green-600">Total: ${total}</p>
+          <p className="text-gray-700 mt-1 text-sm">
+            Metodo de pago:{" "}
+            <span className="font-semibold capitalize">
+              {paymentMethod === "mercadopago"
+                ? "Mercado Pago"
+                : paymentMethod === "debito"
+                  ? "Tarjeta debito"
+                  : "Tarjeta credito"}
+            </span>
+          </p>
         </div>
 
         {/* Formulario de reserva */}

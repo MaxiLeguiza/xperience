@@ -1,11 +1,12 @@
 [
   {
     "id": "a1",
-    "name": "Rafting Río Mendoza",
+    "name": "Rafting Rio Mendoza",
     "category": "rafting",
     "difficulty": "media",
+    "price": 18000,
     "rating": 4.7,
-    "address": "Potrerillos, Luján de Cuyo, Mendoza",
+    "address": "Potrerillos, Lujan de Cuyo, Mendoza",
     "location": { "lat": -33.03601461365326, "lng": -69.02376745907407 }
   },
   {
@@ -13,6 +14,7 @@
     "name": "Cabalgata en Uspallata",
     "category": "cabalgata",
     "difficulty": "baja",
+    "price": 14000,
     "rating": 3.6,
     "address": "Uspallata, Mendoza",
     "location": { "lat": -32.980079889761065, "lng": -68.89297353927822 }
@@ -22,6 +24,7 @@
     "name": "Ciclismo en Chacras de Coria",
     "category": "ciclismo",
     "difficulty": "media",
+    "price": 12000,
     "rating": 4.4,
     "address": "Chacras de Coria, Mendoza",
     "location": { "lat": -32.96628927915576, "lng": -68.90426253860052 }
@@ -31,6 +34,7 @@
     "name": "Parapente en Cacheuta",
     "category": "parapente",
     "difficulty": "alta",
+    "price": 35000,
     "rating": 4.8,
     "address": "Cacheuta, Mendoza",
     "location": { "lat": -32.84863693133508, "lng": -68.90136278118 }
@@ -40,6 +44,7 @@
     "name": "Trekking Cerro Arco",
     "category": "trekking",
     "difficulty": "baja",
+    "price": 9000,
     "rating": 4.5,
     "address": "El Challao, Mendoza",
     "location": { "lat": -32.845648192366575, "lng": -68.93390411878813 }
@@ -49,35 +54,39 @@
     "name": "Escalada en Cerro de la Gloria",
     "category": "trekking",
     "difficulty": "media",
+    "price": 11000,
     "rating": 3.4,
-    "address": "Parque General San Martín, Ciudad de Mendoza",
-    "location": { "lat": -32.885320, "lng": -68.871250 }
+    "address": "Parque General San Martin, Ciudad de Mendoza",
+    "location": { "lat": -32.88532, "lng": -68.87125 }
   },
   {
     "id": "a8",
     "name": "Kayak en Potrerillos",
     "category": "kayak",
     "difficulty": "media",
+    "price": 22000,
     "rating": 4.7,
     "address": "Dique Potrerillos, Mendoza",
-    "location": { "lat": -33.021470, "lng": -69.109320 }
+    "location": { "lat": -33.02147, "lng": -69.10932 }
   },
   {
     "id": "a9",
-    "name": "Observación de Aves en Laguna de Llancanelo",
+    "name": "Observacion de Aves en Laguna de Llancanelo",
     "category": "astronomo",
     "difficulty": "baja",
+    "price": 8000,
     "rating": 2.5,
-    "address": "Laguna de Llancanelo, Malargüe, Mendoza",
-    "location": { "lat": -35.050000, "lng": -68.750000 }
+    "address": "Laguna de Llancanelo, Malargue, Mendoza",
+    "location": { "lat": -35.05, "lng": -68.75 }
   },
   {
     "id": "a10",
-    "name": "Paseo en Globo Aerostático",
+    "name": "Paseo en Globo Aerostatico",
     "category": "globo_aerostatico",
     "difficulty": "baja",
+    "price": 45000,
     "rating": 4.9,
     "address": "Ciudad de Mendoza",
-    "location": { "lat": -32.890840, "lng": -68.827170 }
+    "location": { "lat": -32.89084, "lng": -68.82717 }
   }
 ]

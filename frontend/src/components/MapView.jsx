@@ -7,6 +7,7 @@ import {
   useMap,
   ZoomControl,
 } from "react-leaflet";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import RoutingLayer, { iconFor } from "./RoutingLayer";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -36,7 +37,7 @@ function FitToBounds({ positions, trigger }) {
   return null;
 }
 
-/* ---------- 📍 Control de ubicación (con diagnóstico + fallback) ---------- */
+/* ---------- Control de ubicacion (con diagnostico + fallback) ---------- */
 function LocateControl() {
   const map = useMap();
   const markerRef = useRef(null);
@@ -64,7 +65,7 @@ function LocateControl() {
     } else {
       markerRef.current.setLatLng(latlng);
     }
-    // círculo
+    // circulo
     const radius = Math.min(accuracy || 30, 80);
     if (!circleRef.current) {
       circleRef.current = L.circle(latlng, {
@@ -100,7 +101,7 @@ function LocateControl() {
         boxShadow: "0 2px 6px rgba(0,0,0,.25)",
       });
 
-      // Botón secundario: ingresar lat,lng manualmente (fallback)
+      // Boton secundario: ingresar lat,lng manualmente (fallback)
       const manual = L.DomUtil.create("a", "", container);
       manual.href = "#";
       manual.title = "Ingresar coordenadas (fallback)";
@@ -124,7 +125,7 @@ function LocateControl() {
         btn.style.background = followingRef.current ? "#e8f0fe" : "#fff";
 
         if (!("geolocation" in navigator)) {
-          alert("Este navegador no soporta geolocalización.");
+          alert("Este navegador no soporta geolocalizacion.");
           return;
         }
 
@@ -163,14 +164,14 @@ function LocateControl() {
           },
           (err) => {
             console.warn("getCurrentPosition error:", err);
-            let msg = "No se pudo obtener tu ubicación precisa.";
+            let msg = "No se pudo obtener tu ubicacion precisa.";
             if (err.code === 1)
               msg = "Permiso denegado. Revisa los permisos del navegador.";
             if (err.code === 2)
-              msg = "Posición no disponible. Verifica VPN/GPS/Red.";
+              msg = "Posicion no disponible. Verifica VPN/GPS/Red.";
             if (err.code === 3)
-              msg = "Tiempo agotado intentando obtener tu posición.";
-            alert(`${msg}\nSe mostrará Mendoza.`);
+              msg = "Tiempo agotado intentando obtener tu posicion.";
+            alert(`${msg}\nSe mostrara Mendoza.`);
             const fallback = L.latLng(-32.8895, -68.8458);
             setVisualPos(fallback, 200);
             map.setView(fallback, 12);
@@ -195,7 +196,7 @@ function LocateControl() {
           followingRef.current = false;
           btn.style.background = "#fff";
         } else {
-          alert("Formato inválido. Usa lat,lng");
+          alert("Formato invalido. Usa lat,lng");
         }
       });
 
@@ -231,6 +232,8 @@ function GeoWatcher({ onChange }) {
 /* ----------------------------------------------- */
 
 export default function MapView({ items = [] }) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [selected, setSelected] = useState(null);
   const [routeTo, setRouteTo] = useState(null);
   const [userPos, setUserPos] = useState(null);
@@ -246,6 +249,7 @@ export default function MapView({ items = [] }) {
   const [routeInfo, setRouteInfo] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [openQR, setOpenQR] = useState(false);
+  const [pendingDest, setPendingDest] = useState(null);
 
   const recorridoId = selected?.id || null;
 
@@ -296,7 +300,7 @@ export default function MapView({ items = [] }) {
     setFilters((prev) => ({ ...prev, [key]: value }));
 
   const handleApplyFilters = () => setShowFilters(false);
-  const handleReset = () =>
+  const handleReset = () => {
     setFilters({
       dificultad: "cualquiera",
       temporada: "cualquiera",
@@ -304,6 +308,84 @@ export default function MapView({ items = [] }) {
       edad: "cualquiera",
       calificacion: 0,
     });
+    setQ("");
+    setRouteTo(null);
+    setSelected(null);
+    setRouteInfo(null);
+  };
+
+  const priceFallback = useMemo(
+    () => ({
+      a1: 18000,
+      a2: 14000,
+      a3: 12000,
+      a4: 35000,
+      a5: 9000,
+      a7: 11000,
+      a8: 22000,
+      a9: 8000,
+      a10: 45000,
+    }),
+    []
+  );
+
+  const resolvePrice = (p) => {
+    if (typeof p?.price === "number") return p.price;
+    if (typeof p?.precio === "number") return p.precio;
+    if (typeof p?.price === "string") {
+      const parsed = Number(p.price.replace(/[^0-9.]/g, ""));
+      if (!Number.isNaN(parsed)) return parsed;
+    }
+    if (priceFallback[p?.id]) return priceFallback[p.id];
+    return 15000;
+  };
+
+  const formatDisplayPrice = (value) =>
+    new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      maximumFractionDigits: 0,
+    }).format(value);
+
+  const formatRating = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n.toFixed(1) : "N/A";
+  };
+
+  const buildCartItem = (p) => {
+    const priceValue = resolvePrice(p);
+    return {
+      id: p.id,
+      nombre: p.name,
+      capacidad: p.capacity || p.capacidad || 1,
+      precio: `$${Math.round(priceValue)}`,
+    };
+  };
+
+  const handleReserve = (p) => {
+    const item = buildCartItem(p);
+    navigate("/carrito", { state: { selectedItems: [item] } });
+  };
+
+  // Si llegamos desde un QR con ?dest=ID, seleccionamos y activamos ruta
+  useEffect(() => {
+    const dest = searchParams.get("dest");
+    if (dest) setPendingDest(dest);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!pendingDest || !points.length) return;
+    const found =
+      points.find((p) => String(p.id) === String(pendingDest)) || null;
+    if (!found) {
+      setPendingDest(null);
+      return;
+    }
+    setSelected(found);
+    setRouteTo(found);
+    setFitKey((k) => k + 1);
+    setPendingDest(null);
+  }, [pendingDest, points]);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -319,7 +401,7 @@ export default function MapView({ items = [] }) {
   return (
     <div className="x-map-wrapper">
       <div className="x-map-card">
-        {/* Botón flotante de filtros */}
+        {/* Boton flotante de filtros */}
         <button
           onClick={() => setShowFilters((v) => !v)}
           className="absolute top-4 left-5 z-[2000] bg-white/95 px-3 py-2 rounded-full shadow-lg border border-white/60
@@ -406,7 +488,7 @@ export default function MapView({ items = [] }) {
                     Dificultad
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {["cualquiera", "fácil", "media", "difícil"].map(
+                    {["cualquiera", "facil", "media", "dificil"].map(
                       (value) => {
                         const active = filters.dificultad === value;
                         const label =
@@ -456,7 +538,7 @@ export default function MapView({ items = [] }) {
                       "Verano",
                       "Invierno",
                       "Primavera",
-                      "Otoño",
+                      "Otonio",
                     ].map((opt) => (
                       <option key={opt} value={opt.toLowerCase()}>
                         {opt}
@@ -505,7 +587,7 @@ export default function MapView({ items = [] }) {
                     className="w-full border border-gray-200 rounded-lg p-2 text-[12px]
                              bg-white focus:ring-2 focus:ring-orange-400/70 focus:border-orange-400"
                   >
-                    {["Cualquiera", "Niños", "Adultos", "Mayores"].map(
+                    {["Cualquiera", "Ninos", "Adultos", "Mayores"].map(
                       (opt) => (
                         <option key={opt} value={opt.toLowerCase()}>
                           {opt}
@@ -515,7 +597,7 @@ export default function MapView({ items = [] }) {
                   </select>
                 </div>
 
-                {/* Calificación */}
+                {/* Calificacion */}
                 <div>
                   <label className="block text-[11px] font-semibold mb-1 text-gray-700 uppercase tracking-wide">
                     Rating
@@ -595,40 +677,67 @@ export default function MapView({ items = [] }) {
               eventHandlers={{ click: () => setSelected(p) }}
             >
               <Popup>
-                <b>{p.name}</b>
-                <br />
-                {p.address || ""}
-                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                  <button
-                    onClick={() => setRouteTo(p)}
-                    disabled={!userPos}
-                    style={{
-                      background: "#1a73e8",
-                      color: "#fff",
-                      padding: "6px 10px",
-                      borderRadius: "6px",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Ruta
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelected(p);
-                      setOpenQR(true);
-                    }}
-                    style={{
-                      background: "#1a73e8",
-                      color: "#fff",
-                      padding: "6px 10px",
-                      borderRadius: "6px",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    QR
-                  </button>
+                <div className="min-w-[240px] space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-orange-500 font-semibold">
+                        {(p.category || "Aventura").replace(/_/g, " ")}
+                      </p>
+                      <h3 className="text-sm font-bold text-gray-900 leading-tight">
+                        {p.name}
+                      </h3>
+                      <p className="text-[11px] text-gray-600">
+                        {p.address || "Mendoza"}
+                      </p>
+                    </div>
+                    <span className="text-xs bg-gray-100 text-gray-700 font-semibold px-2 py-1 rounded-lg">
+                      ★ {formatRating(p.rating)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-orange-600">
+                      {formatDisplayPrice(resolvePrice(p))}
+                    </span>
+                    <span className="text-[11px] text-gray-500">
+                      Dificultad:{" "}
+                      {p.difficulty
+                        ? p.difficulty.charAt(0).toUpperCase() +
+                          p.difficulty.slice(1)
+                        : "—"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => setRouteTo(p)}
+                      disabled={!userPos}
+                      className="text-[12px] px-3 py-2 rounded-lg font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{
+                        background: "linear-gradient(90deg,#0ea5e9,#2563eb)",
+                      }}
+                    >
+                      Ruta
+                    </button>
+                    <button
+                      onClick={() => handleReserve(p)}
+                      className="text-[12px] px-3 py-2 rounded-lg font-semibold text-white shadow-sm hover:brightness-110"
+                      style={{
+                        background: "linear-gradient(90deg,#f97316,#ec4899)",
+                      }}
+                    >
+                      Reservar
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelected(p);
+                        setOpenQR(true);
+                      }}
+                      className="text-[12px] px-3 py-2 rounded-lg font-semibold text-white bg-gray-800 hover:bg-gray-900 shadow-sm"
+                    >
+                      QR
+                    </button>
+                  </div>
                 </div>
               </Popup>
             </Marker>
@@ -641,7 +750,7 @@ export default function MapView({ items = [] }) {
               bg-white/95 text-gray-900 rounded-lg px-6 py-2 shadow-lg 
               font-semibold text-sm border border-gray-200 backdrop-blur-sm"
           >
-            Duración: {Math.round(routeInfo.duration / 60)} min &nbsp;|&nbsp;
+            Duracion: {Math.round(routeInfo.duration / 60)} min &nbsp;|&nbsp;
             Distancia: {(routeInfo.distance / 1000).toFixed(2)} km
           </span>
         )}
@@ -673,7 +782,7 @@ export default function MapView({ items = [] }) {
   );
 }
 
-/* Animación suave */
+/* Animacion suave */
 const style = document.createElement("style");
 style.innerHTML = `
 @keyframes slide-down {
