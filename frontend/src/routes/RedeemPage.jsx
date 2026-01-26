@@ -6,39 +6,35 @@ import { validateQrContent } from "@/features/qr/useQr";
 export default function RedeemPage() {
   const [sp] = useSearchParams();
   const content = sp.get("content");
-  const [status, setStatus] = useState("Procesando…");
+  const [status, setStatus] = useState("Procesando...");
   const [result, setResult] = useState(null);
 
   useEffect(() => {
     if (!content) {
-      setStatus("Falta parámetro 'content'");
+      setStatus("Falta parametro 'content'");
       return;
     }
 
     validateQrContent({ content })
       .then((r) => {
         setResult(r);
-        setStatus("QR validado ✅");
-        // 👉 redirigir al mapa abriendo el recorrido por id
+        setStatus("QR validado. Redirigiendo...");
         if (r?.recorridoId) {
-          // Si querés, acá también podrías guardar un cupón / acompañante en localStorage
           setTimeout(() => {
             window.location.href = `/?dest=${encodeURIComponent(
               r.recorridoId
             )}&fromQr=1`;
-          }, 800);
+          }, 200);
         }
       })
       .catch((e) => {
-        setStatus(
-          e?.response?.data?.message || "QR inválido o ya utilizado ❌"
-        );
+        setStatus(e?.response?.data?.message || "QR invalido o ya utilizado");
       });
   }, [content]);
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold">Validación de QR</h1>
+      <h1 className="text-2xl font-bold">Validacion de QR</h1>
       <div className="mt-2 text-slate-700">{status}</div>
       {result && (
         <pre className="mt-4 p-3 bg-slate-100 rounded-lg overflow-auto text-xs">
