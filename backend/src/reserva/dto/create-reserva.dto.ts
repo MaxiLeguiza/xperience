@@ -1,15 +1,19 @@
-import { IsString, IsDateString, IsNumber } from "class-validator";
+import { IsString, IsDateString, IsNumber, IsEmail, IsOptional } from "class-validator";
 
 export class CreateReservaDto {
+
+    @IsEmail({}, { message: 'El formato del correo es inválido' })
+    @IsOptional()
+    email?: string;
 
     @IsString()
     descripcion: string;
 
     @IsDateString()
-    fechaLlegada: Date;
+    fechaLlegada: string;
 
     @IsDateString()
-    fechaSalida: Date;
+    fechaSalida: string;
 
     @IsNumber()
     cantidadPersonas: number;

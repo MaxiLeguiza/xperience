@@ -3,6 +3,11 @@ import { Document } from "mongoose";
 
 @Schema()
 export class Reserva extends Document {
+    @Prop({ 
+        required: true,
+        index: true 
+    })
+    email: string;
 
     @Prop({
         required: true,
