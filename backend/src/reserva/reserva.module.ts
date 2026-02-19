@@ -4,13 +4,14 @@ import { ReservaController } from './reserva.controller';
 import { Reserva, ReservaSchema } from './entities/reserva.entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   controllers: [ReservaController],
   providers: [ReservaService],
   imports: [
     NotificationsModule,
-    MongooseModule.forFeature([{ name: Reserva.name, schema: ReservaSchema }]),
+    MongooseModule.forFeature([{ name: Reserva.name, schema: ReservaSchema }]),MailModule
   ],
 })
 export class ReservaModule {}

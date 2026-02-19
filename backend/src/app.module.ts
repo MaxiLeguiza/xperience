@@ -8,6 +8,7 @@ import { RecorridoModule } from './recorrido/recorrido.module';
 import { SocketConfig } from './events/socketConfig';
 import { QrModule } from './qr/qr.module';
 import { ConfigModule } from '@nestjs/config';
+import { MailModule } from './mail/mail.module';
 
 
 @Module({
@@ -23,7 +24,8 @@ import { ConfigModule } from '@nestjs/config';
     NotificationsModule,
     RecorridoModule,
     SocketConfig,
-    QrModule 
+    QrModule,
+    MailModule 
   ],
 })
 export class AppModule {}
