@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import clienteAxios from "../../config/axios";
 
 const Confirmacion = () => {
   const location = useLocation(); // Para recibir datos enviados desde Cart
@@ -23,29 +24,29 @@ const Confirmacion = () => {
   };
 
   // Función que se ejecuta al enviar el formulario
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Mostrar en consola los datos por ahora
     console.log("Reserva enviada:", { formData, selectedItems, total });
 
-    // Aqui puedes enviar los datos al backend
-    /*
-    fetch("http://localhost:27017/reserva", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ formData, selectedItems, total }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Reserva confirmada:", data);
-        navigate("/exito"); // Redirige a la pagina de exito
-      })
-      .catch((err) => console.error(err));
-    */
+    try {
+      await clienteAxios.post("/api/reserva", {
+        nombre: formData.nombre,
+        email: formData.email,
+        telefono: formData.telefono,
+        fecha: formData.fecha,
+        notas: formData.notas,
+        items: selectedItems,
+        total,
+        paymentMethod,
+      });
 
-    // Para pruebas sin backend, navegamos directamente a la pagina de exito
-    navigate("/exito");
+      navigate("/exito");
+    } catch (err) {
+      console.error("Error enviando reserva:", err);
+      alert("No se pudo registrar la reserva. Intentá nuevamente.");
+    }
   };
 
   return (
