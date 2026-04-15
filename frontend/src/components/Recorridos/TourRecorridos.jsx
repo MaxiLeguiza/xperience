@@ -6,12 +6,13 @@
 // - TourCard sigue abriendo el modal de detalle y permite reservar
 // -------------------------------------------------------------
 
-import React, { useEffect, useState } from "react";
-import TourCard from "./TourCard"; // Asumo que ya lo tenés en tu proyecto
-import Filters from "./Filters"; // Asumo que ya lo tenés
-import CreateTourModal from "./CreateTourModal"; // Asumo que ya lo tenés
-import RecommendedPackages from "./RecommendedPackages"; // Asumo que ya lo tenés
+import React, { useEffect, useMemo, useState } from "react";
+import TourCard from "./TourCard"; // Asumo que ya lo tenes en tu proyecto
+import Filters from "./Filters"; // Asumo que ya lo tenes
+import CreateTourModal from "./CreateTourModal"; // Asumo que ya lo tenes
+import RecommendedPackages from "./RecommendedPackages"; // Asumo que ya lo tenes
 import Nav from "../Navbar/Nav";
+import useAuth from "../../hooks/useAuth";
 
 /* ------------------------------------------------------------------
    Componente interno: RecommendedInfluencers
@@ -64,44 +65,102 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
    - Muestra info del tour
    - Botón reservar (mock)
    ------------------------------------------------------------------ */
-function TourDetailModal({ tour, onClose, onReserve }) {
+function TourDetailModal({ tour, onClose, onReserve, auth }) {
   if (!tour) return null;
 
-  // Datos de ejemplo para comentarios y puntuaciones
-  const comments = [
-    {
-      user: "Carlos A.",
-      rating: 4,
-      text: "¡Una experiencia increíble! Muy recomendable.",
-    },
-    {
-      user: "Ana L.",
-      rating: 5,
-      text: "Todo estuvo excelente, me encantó el recorrido.",
-    },
-    {
-      user: "Juan P.",
-      rating: 2,
-      text: "No fue lo que esperaba, el guía no estaba tan preparado.",
-    },
-    {
-      user: "Lucía M.",
-      rating: 3,
-      text: "Estuvo bien, pero podría mejorar en algunos aspectos.",
-    },
-  ];
+  const baseComments = useMemo(
+    () =>
+      tour.comments && Array.isArray(tour.comments) && tour.comments.length
+        ? tour.comments
+        : [
+            {
+              user: "Carlos A.",
+              rating: 4,
+              text: "Una experiencia increible! Muy recomendable.",
+            },
+            {
+              user: "Ana L.",
+              rating: 5,
+              text: "Todo estuvo excelente, me encanto el recorrido.",
+            },
+            {
+              user: "Juan P.",
+              rating: 2,
+              text: "No fue lo que esperaba, el guia no estaba tan preparado.",
+            },
+            {
+              user: "Lucia M.",
+              rating: 3,
+              text: "Estuvo bien, pero podria mejorar en algunos aspectos.",
+            },
+          ],
+    [tour]
+  );
 
-  // Calcular la puntuación promedio
+  const [comments, setComments] = useState(baseComments);
+  const [newComment, setNewComment] = useState("");
+  const [newRating, setNewRating] = useState(0);
+
+  const storageKey = "tourComments";
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      const map = raw ? JSON.parse(raw) : {};
+      const stored = map[tour.id] || [];
+      setComments([...baseComments, ...stored]);
+    } catch {
+      setComments(baseComments);
+    } finally {
+      setInitialized(true);
+    }
+  }, [baseComments, tour.id]);
+
+  const totalVotes = comments.length || 1;
   const averageRating =
-    comments.reduce((sum, comment) => sum + comment.rating, 0) /
-    comments.length;
+    comments.reduce((sum, comment) => sum + comment.rating, 0) / totalVotes;
 
-  // Calcular el porcentaje de cada calificación
   const ratingCounts = [1, 2, 3, 4, 5].map(
     (rating) => comments.filter((comment) => comment.rating === rating).length
   );
 
-  const totalVotes = comments.length;
+  const gallery = [tour.image, tour.image2, ...(tour.images || [])].filter(
+    Boolean
+  );
+
+  const handleSubmitComment = (e) => {
+    e.preventDefault();
+    if (!newRating || !newComment.trim()) return;
+    const entry = {
+      user:
+        auth?.nombre ||
+        auth?.name ||
+        auth?.email ||
+        auth?.username ||
+        "Visitante",
+      rating: newRating,
+      text: newComment.trim(),
+    };
+    setComments((prev) => {
+      const next = [entry, ...prev];
+      if (initialized) {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          const map = raw ? JSON.parse(raw) : {};
+          map[tour.id] = next.filter(
+            (c) => !baseComments.some((b) => b.text === c.text && b.user === c.user)
+          );
+          localStorage.setItem(storageKey, JSON.stringify(map));
+        } catch {
+          // ignore localStorage errors
+        }
+      }
+      return next;
+    });
+    setNewComment("");
+    setNewRating(0);
+  };
 
   return (
     <div
@@ -122,17 +181,38 @@ function TourDetailModal({ tour, onClose, onReserve }) {
 
         {/* Contenido scrollable */}
         <div className="p-6 overflow-y-auto mt-10 mb-4 px-6 space-y-6">
-          <h1 className="text-4xl font-bold">{tour.title}</h1>
-          <p className="text-gray-500">Autor: {tour.author}</p>
-          <p className="text-gray-500">
-            Duración: {tour.durationMinutes} min · {tour.distanceKm} km
-          </p>
-          <p className="text-gray-800 font-semibold">💲 {tour.price} ARS</p>
+          <div className="flex flex-col md:flex-row gap-5 md:items-start">
+            {gallery.length > 0 && (
+              <img
+                src={gallery[0]}
+                alt={tour.title}
+                className="w-full md:w-64 h-40 md:h-48 object-cover rounded-xl shadow"
+              />
+            )}
+            <div className="flex-1 space-y-2">
+              <h1 className="text-4xl font-bold">{tour.title}</h1>
+              <p className="text-gray-500">Autor: {tour.author}</p>
+              <p className="text-gray-500">
+                Duracion: {tour.durationMinutes} min · {tour.distanceKm} km
+              </p>
+              <p className="text-gray-800 font-semibold">💲 {tour.price} ARS</p>
+            </div>
+          </div>
 
-          {/* Carrusel de imágenes */}
-          {/* Aquí iría el carrusel como te lo pasé antes */}
+          {gallery.length > 1 && (
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {gallery.slice(1).map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`${tour.title} ${idx + 2}`}
+                  className="w-28 h-20 object-cover rounded-lg border"
+                />
+              ))}
+            </div>
+          )}
 
-          <h3 className="text-black font-bold">Descripción:</h3>
+          <h3 className="text-black font-bold">Descripcion:</h3>
           <p className="text-gray-600">{tour.description}</p>
 
           {/* Influencer */}
@@ -150,17 +230,17 @@ function TourDetailModal({ tour, onClose, onReserve }) {
             {/* Puntuación promedio */}
             <div className="mt-4 flex items-center gap-2">
               <span className="text-2xl font-semibold">
-                Puntuación promedio:
+                Puntuacion promedio:
               </span>
               <span className="text-xl text-yellow-500">
                 {averageRating.toFixed(1)} ★
               </span>
             </div>
 
-            {/* Distribución porcentual de las calificaciones */}
+            {/* Distribucion porcentual de las calificaciones */}
             <div className="mt-6">
               <h4 className="font-semibold">
-                Distribución de las calificaciones
+                Distribucion de las calificaciones
               </h4>
               <div className="space-y-2">
                 {[5, 4, 3, 2, 1].map((rating) => {
@@ -186,15 +266,17 @@ function TourDetailModal({ tour, onClose, onReserve }) {
             </div>
 
             {/* Formulario de comentarios */}
-            <form className="space-y-4 mt-6">
+            <form className="space-y-4 mt-6" onSubmit={handleSubmitComment}>
               <textarea
                 className="w-full p-3 border border-gray-300 rounded-md"
-                placeholder="Escribe aquí tu experiencia..."
+                placeholder="Escribe aqui tu experiencia..."
                 rows="3"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
               ></textarea>
               <div className="flex items-center gap-4">
                 <div className="flex items-center">
-                  <label className="mr-2 text-sm">Calificación</label>
+                  <label className="mr-2 text-sm">Calificacion</label>
                   <div className="flex flex-row-reverse gap-1 text-2xl text-gray-300">
                     {[5, 4, 3, 2, 1].map((rating) => (
                       <React.Fragment key={rating}>
@@ -204,10 +286,14 @@ function TourDetailModal({ tour, onClose, onReserve }) {
                           name="rating"
                           value={rating}
                           hidden
+                          checked={newRating === rating}
+                          onChange={() => setNewRating(rating)}
                         />
                         <label
                           htmlFor={`star${rating}`}
-                          className="cursor-pointer"
+                          className={`cursor-pointer ${
+                            newRating >= rating ? "text-yellow-500" : ""
+                          }`}
                         >
                           ★
                         </label>
@@ -217,7 +303,8 @@ function TourDetailModal({ tour, onClose, onReserve }) {
                 </div>
                 <button
                   type="submit"
-                  className="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90"
+                  className="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 disabled:opacity-60"
+                  disabled={!newComment.trim() || !newRating}
                 >
                   Enviar
                 </button>
@@ -233,7 +320,7 @@ function TourDetailModal({ tour, onClose, onReserve }) {
                     className="w-10 h-10 rounded-full"
                     alt="Usuario"
                   />
-                  <div>
+                  <div className="flex-1">
                     <div className="flex justify-between items-center">
                       <p className="font-semibold">{comment.user}</p>
                       <span className="text-yellow-500 text-sm">
@@ -258,6 +345,7 @@ function TourDetailModal({ tour, onClose, onReserve }) {
    - Maneja tours, filtros y selección de influencer
    ------------------------------------------------------------------ */
 export default function TourRecorridos() {
+  const { auth } = useAuth();
   const [tours, setTours] = useState([]);
   const [filteredTours, setFilteredTours] = useState([]);
   const [packages, setPackages] = useState([]);
@@ -533,6 +621,7 @@ export default function TourRecorridos() {
               setReservation(null);
             }, 500);
           }}
+          auth={auth}
         />
       </div>
     </>

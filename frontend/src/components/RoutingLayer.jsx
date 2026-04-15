@@ -87,10 +87,9 @@ const RoutingLayer = ({ from, to, onRouteInfo }) => {
       show: false,
       fitSelectedRoutes: true,
       lineOptions: { styles: [{ color: "#1a73e8", weight: 5, opacity: 0.85 }] },
+      // Solo mostramos el marcador de origen para no superponer el destino
       createMarker: (i, wp) =>
-        i === 0
-          ? L.marker(wp.latLng, { icon: LOCATE_ICON })
-          : L.marker(wp.latLng, { icon: DEST_ICON }),
+        i === 0 ? L.marker(wp.latLng, { icon: LOCATE_ICON }) : null,
     }).addTo(map);
 
     controlRef.current.on("routesfound", function (e) {
