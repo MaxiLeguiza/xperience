@@ -3,60 +3,11 @@
 // Usa TailwindCSS para mantener el estilo moderno, responsive y coherente con el resto del proyecto.
 
 import React from "react";
-import { useEffect } from "react";
 import Nav from "../Navbar/Nav";
 // Íconos de Google (material-icons) — asegúrate de incluir el link en tu index.html
 // <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 function InfluencerProfile() {
-    useEffect(() => {
-    // Cargar Tailwind dinámicamente con plugins y color personalizado
-    const script = document.createElement("script");
-    script.src =
-      "https://cdn.tailwindcss.com?plugins=forms,typography,container-queries";
-    script.async = true;
-
-    script.onload = () => {
-      // Extender Tailwind con tu color personalizado
-      if (window.tailwind) {
-        window.tailwind.config = {
-          theme: {
-            extend: {
-              colors: {
-                miColor: "#d86015", // Cambia esto por tu color
-                background: {
-                  light: "#f2f4f7",
-                  dark: "#1a1a1a",
-                },
-                text: {
-                  light: "#111827",
-                  dark: "#f9fafb",
-                },
-                primary: "#d86015",
-                secondary: "#16697A",
-                card: {
-                  light: "#ffffff",
-                  dark: "#111827",
-                },
-                border: {
-                  light: "#e5e7eb",
-                  dark: "#374151",
-                },
-              },
-            },
-          },
-          darkMode: "class",
-        };
-      }
-    };
-
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
   return (
     <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
       {/* ======================== NAVBAR SUPERIOR ======================== */}
