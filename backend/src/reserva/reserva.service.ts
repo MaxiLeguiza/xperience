@@ -10,7 +10,11 @@ import { Reserva } from './entities/reserva.entity';
 import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { NotificationsService } from 'src/notifications/notifications.service';
+<<<<<<< HEAD
 import { MailService } from 'src/mail/mail.service';
+=======
+import { EmailService } from 'src/notifications/email.service';
+>>>>>>> 1950221a7841ef5d04293f7dc154c36ac7851838
 
 @Injectable()
 export class ReservaService {
@@ -18,7 +22,11 @@ export class ReservaService {
     @InjectModel(Reserva.name)
     private readonly reservaModel: Model<Reserva>,
     private readonly notificationsService: NotificationsService,
+<<<<<<< HEAD
     private readonly mailService: MailService,
+=======
+    private readonly emailService: EmailService,
+>>>>>>> 1950221a7841ef5d04293f7dc154c36ac7851838
   ) {}
 
   async create(createReservaDto: CreateReservaDto, userEmail: string) {
@@ -38,7 +46,17 @@ export class ReservaService {
       this.notificationsService.notifyNewReservation({
         message: '¡Nueva reserva registrada!',
         reservaId: reserva._id,
-        descripcion: reserva.descripcion,
+        email: reserva.email,
+        items: reserva.items,
+      });
+
+      await this.emailService.sendReservationEmail({
+        to: reserva.email,
+        nombre: reserva.nombre,
+        fecha: reserva.fecha,
+        items: reserva.items || [],
+        total: reserva.total,
+        paymentMethod: reserva.paymentMethod,
       });
 
       // 3. AQUÍ USAS EL MAIL SERVICE (Esto quita el error)

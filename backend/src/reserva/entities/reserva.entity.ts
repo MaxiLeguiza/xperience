@@ -3,41 +3,64 @@ import { Document } from "mongoose";
 
 @Schema()
 export class Reserva extends Document {
+<<<<<<< HEAD
     @Prop({ 
         required: true,
         index: true 
     })
     email: string;
+=======
+  @Prop({
+    required: true,
+    index: true,
+  })
+  nombre: string;
+>>>>>>> 1950221a7841ef5d04293f7dc154c36ac7851838
 
-    @Prop({
-        required: true,
-        index: true, 
-    })
-    descripcion: string;
+  @Prop({
+    required: true,
+    index: true,
+  })
+  email: string;
 
-    @Prop({ 
-        required: true,
-        index: true, 
-    })
-    fechaLlegada: Date;
+  @Prop({
+    required: true,
+    index: true,
+  })
+  telefono: string;
 
-    @Prop({ 
-        required: true,
-        index: true 
-    })
-    fechaSalida: Date;
+  @Prop({
+    required: true,
+    index: true,
+  })
+  fecha: Date;
 
-    @Prop({ 
-        required: true,
-        index: true 
-    })
-    cantidadPersonas: number;
+  @Prop({
+    default: "",
+  })
+  notas?: string;
 
-    @Prop({ 
-        required: true,
-        index: true 
-    })
-    precio: number;
+  @Prop({
+    type: [Object],
+    default: [],
+  })
+  items: Array<{
+    id: string;
+    nombre: string;
+    precio: string;
+    capacidad?: number;
+  }>;
+
+  @Prop({
+    required: true,
+    index: true,
+  })
+  total: number;
+
+  @Prop({
+    default: "credito",
+  })
+  paymentMethod?: string;
 }
 
 export const ReservaSchema = SchemaFactory.createForClass(Reserva);

@@ -5,16 +5,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
   app.setGlobalPrefix('api');
-
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
     }),
   );
-
   app.enableCors({
     origin: 'https://localhost:5173', //process.env.FRONT ||  Reemplaza con la URL de tu frontend de React
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

@@ -60,7 +60,7 @@ export default function Home() {
 
       <main className="flex-grow w-full px-9 py-3 overflow-hidden">
         {/* ESTE div es el que le da altura real al mapa */}
-        <div className="w-full h-[85vh] relative">
+        <div className="w-full h-[calc(100vh-90px)] min-h-[80vh] relative">
           <MapView items={recorridos} />
 
           {loading && (

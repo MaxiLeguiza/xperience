@@ -136,8 +136,8 @@ function LocateControl() {
             const latlng = L.latLng(latitude, longitude);
             console.log(
               `✅ Fix inicial: ${latitude}, ${longitude} (±${Math.round(
-                accuracy
-              )} m)`
+                accuracy,
+              )} m)`,
             );
             setVisualPos(latlng, accuracy);
             if (!firstFixRef.current) {
@@ -159,7 +159,7 @@ function LocateControl() {
                 enableHighAccuracy: true,
                 maximumAge: 0,
                 timeout: 20000,
-              }
+              },
             );
           },
           (err) => {
@@ -180,7 +180,7 @@ function LocateControl() {
             enableHighAccuracy: true,
             maximumAge: 0,
             timeout: 20000,
-          }
+          },
         );
       });
 
@@ -259,10 +259,10 @@ export default function MapView({ items = [] }) {
         .filter(
           (a) =>
             typeof a?.location?.lat === "number" &&
-            typeof a?.location?.lng === "number"
+            typeof a?.location?.lng === "number",
         )
         .map((a) => ({ ...a, pos: [a.location.lat, a.location.lng] })),
-    [items]
+    [items],
   );
 
   const filtered = useMemo(() => {
@@ -326,7 +326,7 @@ export default function MapView({ items = [] }) {
       a9: 8000,
       a10: 45000,
     }),
-    []
+    [],
   );
 
   const resolvePrice = (p) => {
@@ -459,8 +459,7 @@ export default function MapView({ items = [] }) {
               {/* Buscador + ajustar vista */}
               <div className="flex gap-2 items-center">
                 <div className="relative flex-1">
-                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-                  </span>
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></span>
                   <input
                     type="text"
                     placeholder="Buscar lugares o actividades..."
@@ -512,7 +511,7 @@ export default function MapView({ items = [] }) {
                             {label}
                           </button>
                         );
-                      }
+                      },
                     )}
                   </div>
                 </div>
@@ -527,7 +526,7 @@ export default function MapView({ items = [] }) {
                     onChange={(e) =>
                       handleFilterChange(
                         "temporada",
-                        e.target.value.toLowerCase()
+                        e.target.value.toLowerCase(),
                       )
                     }
                     className="w-full border border-gray-200 rounded-lg p-2 text-[12px]
@@ -538,7 +537,7 @@ export default function MapView({ items = [] }) {
                       "Verano",
                       "Invierno",
                       "Primavera",
-                      "Otonio",
+                      "Otoño",
                     ].map((opt) => (
                       <option key={opt} value={opt.toLowerCase()}>
                         {opt}
@@ -555,7 +554,10 @@ export default function MapView({ items = [] }) {
                   <select
                     value={filters.deporte}
                     onChange={(e) =>
-                      handleFilterChange("deporte", e.target.value.toLowerCase())
+                      handleFilterChange(
+                        "deporte",
+                        e.target.value.toLowerCase(),
+                      )
                     }
                     className="w-full border border-gray-200 rounded-lg p-2 text-[12px]
                              bg-white focus:ring-2 focus:ring-orange-400/70 focus:border-orange-400"
@@ -592,7 +594,7 @@ export default function MapView({ items = [] }) {
                         <option key={opt} value={opt.toLowerCase()}>
                           {opt}
                         </option>
-                      )
+                      ),
                     )}
                   </select>
                 </div>
@@ -606,9 +608,7 @@ export default function MapView({ items = [] }) {
                     {[1, 2, 3, 4, 5].map((star) => (
                       <span
                         key={star}
-                        onClick={() =>
-                          handleFilterChange("calificacion", star)
-                        }
+                        onClick={() => handleFilterChange("calificacion", star)}
                         className={`cursor-pointer text-lg ${
                           star <= filters.calificacion
                             ? "text-yellow-400"
