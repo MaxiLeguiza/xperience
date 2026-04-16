@@ -30,6 +30,7 @@ Xperience es una aplicación web diseñada para gestionar y facilitar la organiz
 4. Levanta la base de datos: `cd backend && docker-compose up -d`
 5. Ejecuta el backend: `npm run start:dev`
 6. En otra terminal, ejecuta el frontend: `cd ../frontend && npm run dev`
+7. Instalar `npm install lucide-react`
 
 Accede a la aplicación en `https://localhost:5173/` (frontend) y la API en `http://localhost:3001` (backend).
 
