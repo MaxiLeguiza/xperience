@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 export const AuthContext = createContext({
   auth: null,                // { id, email, nombre? }
@@ -7,15 +7,15 @@ export const AuthContext = createContext({
 });
 
 export function AuthProvider({ children }) {
-  const [auth, setAuthState] = useState(null);
-
-  // Cargar sesión guardada (opcional)
-  useEffect(() => {
+  const [auth, setAuthState] = useState(() => {
+    if (typeof window === "undefined") return null;
     try {
       const userStr = localStorage.getItem("user");
-      if (userStr) setAuthState(JSON.parse(userStr));
-    } catch {}
-  }, []);
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const setAuth = (user) => {
     setAuthState(user);
