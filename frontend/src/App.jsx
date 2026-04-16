@@ -17,42 +17,52 @@ import { Routes, Route } from "react-router-dom";
 import ListInfluencer from "./components/Influencers/ListInfluencer";
 import Nav from "./components/Navbar/Nav";
 import InfluencerCard from "./components/Influencers/InfluencerCard";
+import LandingPage from "./pages/LandingPage";
+// CAMBIO 1: Importamos ProtectedRoute para proteger rutas que requieren autenticación
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
     <Routes>
-      {/* Home */}
-      <Route path="/" element={<Home />} />
+      {/* CAMBIO 2: LandingPage ahora es la PRIMERA página (ruta "/")
+          Todos los usuarios nuevos o sin sesión verán esta página primero.
+          El botón "Inicia tu Aventura" los llevará a /login */}
+      <Route path="/" element={<LandingPage />} />
+
+      {/* CAMBIO 3: Home ahora está protegida (ruta "/home")
+          Solo usuarios logueados pueden acceder.
+          Si intentan acceder sin sesión, serán redirigidos a /login */}
+      <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       {/* Navbar */}
       <Route path="/nav" element={<Nav />} />
 
-      {/* Auth */}
+      {/* CAMBIO 4: Rutas de autenticación (públicas)
+          Usuarios sin sesión pueden acceder a estas páginas */}
       <Route path="/login" element={<Login />} />
       <Route path="/registrar" element={<Registrar />} />
 
-      {/* Buscador */}
-      {/* OJO: antes tenías otra vez path="/" -> lo cambio a /buscar para no pisar el Home */}
-      <Route path="/buscar" element={<SearchBooking />} />
-      <Route path="/resultados" element={<SearchResults />} />
+      {/* CAMBIO 5: Rutas de búsqueda y resultados (protegidas)
+          Solo usuarios logueados pueden buscar y ver resultados */}
+      <Route path="/buscar" element={<ProtectedRoute><SearchBooking /></ProtectedRoute>} />
+      <Route path="/resultados" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
 
-      {/* Carrito / reservas */}
-      <Route path="/carrito" element={<Cart />} />
-      <Route path="/confirmacion" element={<Confirmacion />} />
-      <Route path="/exito" element={<Exito />} />
+      {/* CAMBIO 6: Rutas de carrito y reservas (protegidas)
+          Solo usuarios logueados pueden hacer reservas */}
+      <Route path="/carrito" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+      <Route path="/confirmacion" element={<ProtectedRoute><Confirmacion /></ProtectedRoute>} />
+      <Route path="/exito" element={<ProtectedRoute><Exito /></ProtectedRoute>} />
 
-      {/* Recorridos / Clima */}
-      <Route path="/recorridos" element={<TourRecorridos />} />
-      <Route path="/clima" element={<WeatherCard />} />
+      {/* CAMBIO 7: Rutas de recorridos y clima (protegidas)
+          Solo usuarios logueados pueden ver recorridos y clima */}
+      <Route path="/recorridos" element={<ProtectedRoute><TourRecorridos /></ProtectedRoute>} />
+      <Route path="/clima" element={<ProtectedRoute><WeatherCard /></ProtectedRoute>} />
 
-      {/* ✅ Ruta del QR */}
-      <Route path="/redeem" element={<RedeemPage />} />
-      {/*Listado influencer*/}
-      <Route path="/ListInfluencer" element={<ListInfluencer />} />
-      {/*Perfil influencer*/}
-      <Route path="/Influencers" element={<InfluencerProfile />} />
-      <Route path="/InfluencerCard" element={<InfluencerCard />} />
-
-
+      {/* CAMBIO 8: Rutas de influencers (protegidas)
+          Solo usuarios logueados pueden ver perfiles e información */}
+      <Route path="/redeem" element={<ProtectedRoute><RedeemPage /></ProtectedRoute>} />
+      <Route path="/ListInfluencer" element={<ProtectedRoute><ListInfluencer /></ProtectedRoute>} />
+      <Route path="/Influencers" element={<ProtectedRoute><InfluencerProfile /></ProtectedRoute>} />
+      <Route path="/InfluencerCard" element={<ProtectedRoute><InfluencerCard /></ProtectedRoute>} />
     </Routes>
   );
 }
