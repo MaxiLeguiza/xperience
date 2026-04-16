@@ -10,11 +10,7 @@ import { Reserva } from './entities/reserva.entity';
 import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { NotificationsService } from 'src/notifications/notifications.service';
-<<<<<<< HEAD
-import { MailService } from 'src/mail/mail.service';
-=======
 import { EmailService } from 'src/notifications/email.service';
->>>>>>> 1950221a7841ef5d04293f7dc154c36ac7851838
 
 @Injectable()
 export class ReservaService {
@@ -22,11 +18,7 @@ export class ReservaService {
     @InjectModel(Reserva.name)
     private readonly reservaModel: Model<Reserva>,
     private readonly notificationsService: NotificationsService,
-<<<<<<< HEAD
-    private readonly mailService: MailService,
-=======
     private readonly emailService: EmailService,
->>>>>>> 1950221a7841ef5d04293f7dc154c36ac7851838
   ) {}
 
   async create(createReservaDto: CreateReservaDto, userEmail: string) {
@@ -58,13 +50,6 @@ export class ReservaService {
         total: reserva.total,
         paymentMethod: reserva.paymentMethod,
       });
-
-      // 3. AQUÍ USAS EL MAIL SERVICE (Esto quita el error)
-      // Usamos 'await' porque enviar un correo es un proceso que toma tiempo
-      await this.mailService.sendReservationConfirm(
-        userEmail, // Asegúrate que tu DTO tenga el email
-        reserva,
-      );
 
       return reserva;
     } catch (error) {
