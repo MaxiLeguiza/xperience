@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-import { IsString, IsDateString, IsNumber, IsEmail, IsOptional } from "class-validator";
-=======
 import {
   IsArray,
   IsDateString,
@@ -26,26 +23,11 @@ class ReservaItemDto {
   @IsNumber()
   capacidad?: number;
 }
->>>>>>> 1950221a7841ef5d04293f7dc154c36ac7851838
 
 export class CreateReservaDto {
   @IsString()
   nombre: string;
 
-<<<<<<< HEAD
-    @IsEmail({}, { message: 'El formato del correo es inválido' })
-    @IsOptional()
-    email?: string;
-
-    @IsString()
-    descripcion: string;
-
-    @IsDateString()
-    fechaLlegada: string;
-
-    @IsDateString()
-    fechaSalida: string;
-=======
   @IsEmail()
   email: string;
 
@@ -54,7 +36,6 @@ export class CreateReservaDto {
 
   @IsDateString()
   fecha: Date;
->>>>>>> 1950221a7841ef5d04293f7dc154c36ac7851838
 
   @IsOptional()
   @IsString()
