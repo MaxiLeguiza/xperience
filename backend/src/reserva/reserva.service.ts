@@ -10,7 +10,7 @@ import { Reserva } from './entities/reserva.entity';
 import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { MailService } from 'src/mail/mail.service';
+import { EmailService } from 'src/notifications/email.service';
 
 @Injectable()
 export class ReservaService {
@@ -18,35 +18,29 @@ export class ReservaService {
     @InjectModel(Reserva.name)
     private readonly reservaModel: Model<Reserva>,
     private readonly notificationsService: NotificationsService,
-    private readonly mailService: MailService,
+    private readonly emailService: EmailService,
   ) {}
 
-  async create(createReservaDto: CreateReservaDto, userEmail: string) {
+  async create(createReservaDto: CreateReservaDto) {
     try {
-      // const dataConEmail = {
-      //   ...createReservaDto,
-      //   email: userEmail,
-      // };
-      // const reserva = await this.reservaModel.create(dataConEmail);
-     
-      const reserva = await this.reservaModel.create({
-        ...createReservaDto,
-        email: userEmail,
-      });
+      const reserva = await this.reservaModel.create(createReservaDto);
 
       // 1. Envía la notificación después de crear la reserva
       this.notificationsService.notifyNewReservation({
         message: '¡Nueva reserva registrada!',
         reservaId: reserva._id,
-        descripcion: reserva.descripcion,
+        email: reserva.email,
+        items: reserva.items,
       });
 
-      // 3. AQUÍ USAS EL MAIL SERVICE (Esto quita el error)
-      // Usamos 'await' porque enviar un correo es un proceso que toma tiempo
-      await this.mailService.sendReservationConfirm(
-        userEmail, // Asegúrate que tu DTO tenga el email
-        reserva,
-      );
+      await this.emailService.sendReservationEmail({
+        to: reserva.email,
+        nombre: reserva.nombre,
+        fecha: reserva.fecha,
+        items: reserva.items || [],
+        total: reserva.total,
+        paymentMethod: reserva.paymentMethod,
+      });
 
       return reserva;
     } catch (error) {

@@ -23,12 +23,13 @@ export class ReservaController {
   create(@Body() createReservaDto: CreateReservaDto, @Req() req: any) {
     // El Guard valida el token y mete los datos del usuario en 'req.user'
     console.log('--- CONTENIDO DE REQ.USER ---');
-    console.log(req.user); // <--- Vamos a ver qué trae el token realmente
+    console.log(req.user);
     console.log('-----------------------------');
 
     const userEmail = req.user?.email;
+    const dtoWithUser = { ...createReservaDto, user: userEmail }; // ajustar clave "user" si tu esquema usa otra
 
-    return this.reservaService.create(createReservaDto, userEmail);
+    return this.reservaService.create(dtoWithUser);
   }
 
   @Get()
@@ -51,3 +52,4 @@ export class ReservaController {
     return this.reservaService.remove(id);
   }
 }
+// ...existing code...

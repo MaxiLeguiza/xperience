@@ -1,23 +1,55 @@
-import { IsString, IsDateString, IsNumber, IsEmail, IsOptional } from "class-validator";
+import {
+  IsArray,
+  IsDateString,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from "class-validator";
+import { Type } from "class-transformer";
+
+class ReservaItemDto {
+  @IsString()
+  id: string;
+
+  @IsString()
+  nombre: string;
+
+  @IsString()
+  precio: string;
+
+  @IsOptional()
+  @IsNumber()
+  capacidad?: number;
+}
 
 export class CreateReservaDto {
+  @IsString()
+  nombre: string;
 
-    @IsEmail({}, { message: 'El formato del correo es inválido' })
-    @IsOptional()
-    email?: string;
+  @IsEmail()
+  email: string;
 
-    @IsString()
-    descripcion: string;
+  @IsString()
+  telefono: string;
 
-    @IsDateString()
-    fechaLlegada: string;
+  @IsDateString()
+  fecha: Date;
 
-    @IsDateString()
-    fechaSalida: string;
+  @IsOptional()
+  @IsString()
+  notas?: string;
 
-    @IsNumber()
-    cantidadPersonas: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReservaItemDto)
+  items: ReservaItemDto[];
 
-    @IsNumber()
-    precio: number;
+  @IsNumber()
+  total: number;
+
+  @IsOptional()
+  @IsString()
+  paymentMethod?: string;
 }
