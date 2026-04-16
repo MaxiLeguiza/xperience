@@ -10,6 +10,7 @@ import { Reserva } from './entities/reserva.entity';
 import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { NotificationsService } from 'src/notifications/notifications.service';
+import { EmailService } from 'src/notifications/email.service';
 
 @Injectable()
 export class ReservaService {
@@ -17,6 +18,7 @@ export class ReservaService {
     @InjectModel(Reserva.name)
     private readonly reservaModel: Model<Reserva>,
     private readonly notificationsService: NotificationsService,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(createReservaDto: CreateReservaDto) {
@@ -27,7 +29,17 @@ export class ReservaService {
       this.notificationsService.notifyNewReservation({
         message: '¡Nueva reserva registrada!',
         reservaId: reserva._id,
-        descripcion: reserva.descripcion,
+        email: reserva.email,
+        items: reserva.items,
+      });
+
+      await this.emailService.sendReservationEmail({
+        to: reserva.email,
+        nombre: reserva.nombre,
+        fecha: reserva.fecha,
+        items: reserva.items || [],
+        total: reserva.total,
+        paymentMethod: reserva.paymentMethod,
       });
 
       return reserva;
