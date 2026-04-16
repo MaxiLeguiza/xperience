@@ -1,19 +1,55 @@
-import { IsString, IsDateString, IsNumber } from "class-validator";
+import {
+  IsArray,
+  IsDateString,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from "class-validator";
+import { Type } from "class-transformer";
+
+class ReservaItemDto {
+  @IsString()
+  id: string;
+
+  @IsString()
+  nombre: string;
+
+  @IsString()
+  precio: string;
+
+  @IsOptional()
+  @IsNumber()
+  capacidad?: number;
+}
 
 export class CreateReservaDto {
+  @IsString()
+  nombre: string;
 
-    @IsString()
-    descripcion: string;
+  @IsEmail()
+  email: string;
 
-    @IsDateString()
-    fechaLlegada: Date;
+  @IsString()
+  telefono: string;
 
-    @IsDateString()
-    fechaSalida: Date;
+  @IsDateString()
+  fecha: Date;
 
-    @IsNumber()
-    cantidadPersonas: number;
+  @IsOptional()
+  @IsString()
+  notas?: string;
 
-    @IsNumber()
-    precio: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ReservaItemDto)
+  items: ReservaItemDto[];
+
+  @IsNumber()
+  total: number;
+
+  @IsOptional()
+  @IsString()
+  paymentMethod?: string;
 }
