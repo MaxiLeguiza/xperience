@@ -10,8 +10,8 @@ function Nav() {
 
     const links = [
         { label: "Recorridos", href: "/recorridos" },
-        { label: "Proximamente", href: null },
         { label: "Influencers", href: "/ListInfluencer" },
+        { label: "Proximamente", href: null },
     ];
 
     return (

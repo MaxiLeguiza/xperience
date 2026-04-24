@@ -18,51 +18,54 @@ import ListInfluencer from "./components/Influencers/ListInfluencer";
 import Nav from "./components/Navbar/Nav";
 import InfluencerCard from "./components/Influencers/InfluencerCard";
 import LandingPage from "./pages/LandingPage";
+import CheckoutPage from "./components/Booking/CheckoutPage";
+
+
 // CAMBIO 1: Importamos ProtectedRoute para proteger rutas que requieren autenticación
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
-  return (
-    <Routes>
-      {/* CAMBIO 2: LandingPage ahora es la PRIMERA página (ruta "/")
+    return (
+        <Routes>
+            {/* CAMBIO 2: LandingPage ahora es la PRIMERA página (ruta "/")
           Todos los usuarios nuevos o sin sesión verán esta página primero.
           El botón "Inicia tu Aventura" los llevará a /login */}
-      <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<LandingPage />} />
 
-      {/* CAMBIO 3: Home ahora está protegida (ruta "/home")
+            {/* CAMBIO 3: Home ahora está protegida (ruta "/home")
           Solo usuarios logueados pueden acceder.
           Si intentan acceder sin sesión, serán redirigidos a /login */}
-      <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-      {/* Navbar */}
-      <Route path="/nav" element={<Nav />} />
+            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            {/* Navbar */}
+            <Route path="/nav" element={<Nav />} />
 
-      {/* CAMBIO 4: Rutas de autenticación (públicas)
+            {/* CAMBIO 4: Rutas de autenticación (públicas)
           Usuarios sin sesión pueden acceder a estas páginas */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/registrar" element={<Registrar />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/registrar" element={<Registrar />} />
 
-      {/* CAMBIO 5: Rutas de búsqueda y resultados (protegidas)
+            {/* CAMBIO 5: Rutas de búsqueda y resultados (protegidas)
           Solo usuarios logueados pueden buscar y ver resultados */}
-      <Route path="/buscar" element={<ProtectedRoute><SearchBooking /></ProtectedRoute>} />
-      <Route path="/resultados" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
+            <Route path="/buscar" element={<ProtectedRoute><SearchBooking /></ProtectedRoute>} />
+            <Route path="/resultados" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
 
-      {/* CAMBIO 6: Rutas de carrito y reservas (protegidas)
+            {/* CAMBIO 6: Rutas de carrito y reservas (protegidas)
           Solo usuarios logueados pueden hacer reservas */}
-      <Route path="/carrito" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-      <Route path="/confirmacion" element={<ProtectedRoute><Confirmacion /></ProtectedRoute>} />
-      <Route path="/exito" element={<ProtectedRoute><Exito /></ProtectedRoute>} />
+            <Route path="/carrito" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+            <Route path="/confirmacion" element={<ProtectedRoute><Confirmacion /></ProtectedRoute>} />
+            <Route path="/exito" element={<ProtectedRoute><Exito /></ProtectedRoute>} />
 
-      {/* CAMBIO 7: Rutas de recorridos y clima (protegidas)
+            {/* CAMBIO 7: Rutas de recorridos y clima (protegidas)
           Solo usuarios logueados pueden ver recorridos y clima */}
-      <Route path="/recorridos" element={<ProtectedRoute><TourRecorridos /></ProtectedRoute>} />
-      <Route path="/clima" element={<ProtectedRoute><WeatherCard /></ProtectedRoute>} />
+            <Route path="/recorridos" element={<ProtectedRoute><TourRecorridos /></ProtectedRoute>} />
+            <Route path="/clima" element={<ProtectedRoute><WeatherCard /></ProtectedRoute>} />
 
-      {/* CAMBIO 8: Rutas de influencers (protegidas)
+            {/* CAMBIO 8: Rutas de influencers (protegidas)
           Solo usuarios logueados pueden ver perfiles e información */}
-      <Route path="/redeem" element={<ProtectedRoute><RedeemPage /></ProtectedRoute>} />
-      <Route path="/ListInfluencer" element={<ProtectedRoute><ListInfluencer /></ProtectedRoute>} />
-      <Route path="/Influencers" element={<ProtectedRoute><InfluencerProfile /></ProtectedRoute>} />
-      <Route path="/InfluencerCard" element={<ProtectedRoute><InfluencerCard /></ProtectedRoute>} />
-    </Routes>
-  );
+            <Route path="/redeem" element={<ProtectedRoute><RedeemPage /></ProtectedRoute>} />
+            <Route path="/ListInfluencer" element={<ProtectedRoute><ListInfluencer /></ProtectedRoute>} />
+            <Route path="/Influencers" element={<ProtectedRoute><InfluencerProfile /></ProtectedRoute>} />
+            <Route path="/InfluencerCard" element={<ProtectedRoute><InfluencerCard /></ProtectedRoute>} />
+        </Routes>
+    );
 }
