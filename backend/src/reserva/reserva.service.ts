@@ -34,14 +34,25 @@ export class ReservaService {
         items: reserva.items,
       });
 
-      await this.emailService.sendReservationEmail({
-        to: reserva.email,
-        nombre: reserva.nombre,
-        fecha: reserva.fecha,
-        items: reserva.items || [],
-        total: reserva.total,
-        paymentMethod: reserva.paymentMethod,
-      });
+      try {
+        await this.emailService.sendReservationEmail({
+          to: reserva.email,
+          nombre: reserva.nombre,
+          apellido: reserva.apellido,
+          fecha: reserva.fecha,
+          items: reserva.items || [],
+          total: reserva.total,
+          paymentMethod: reserva.paymentMethod,
+          cantidadPersonas: reserva.cantidadPersonas,
+          descuento: reserva.descuentoAplicado,
+          emailAgencia: reserva.emailAgencia,
+          notas: reserva.notas,
+          reservaId: String(reserva._id),
+          telefono: reserva.telefono,
+        });
+      } catch (emailError) {
+        console.error('Error enviando correo de reserva:', emailError);
+      }
 
       return reserva;
     } catch (error) {
@@ -82,17 +93,28 @@ export class ReservaService {
       });
 
       // 2. Envía email de pre-confirmación con detalles de pago en efectivo
-      await this.emailService.sendReservationEmail({
-        to: reserva.email,
-        nombre: reserva.nombre,
-        fecha: reserva.fecha,
-        items: reserva.items || [],
-        total: reserva.total,
-        paymentMethod: 'efectivo',
-        cantidadPersonas: createReservaEfectivoDto.cantidadPersonas,
-        descuento: createReservaEfectivoDto.descuentoAplicado,
-        emailAgencia: createReservaEfectivoDto.emailAgencia,
-      });
+      try {
+        await this.emailService.sendReservationEmail({
+          to: reserva.email,
+          nombre: reserva.nombre,
+          apellido: reserva.apellido,
+          fecha: reserva.fecha,
+          items: reserva.items || [],
+          total: reserva.total,
+          paymentMethod: 'efectivo',
+          cantidadPersonas: createReservaEfectivoDto.cantidadPersonas,
+          descuento: createReservaEfectivoDto.descuentoAplicado,
+          emailAgencia: createReservaEfectivoDto.emailAgencia,
+          notas: reserva.notas,
+          reservaId: String(reserva._id),
+          telefono: reserva.telefono,
+        });
+      } catch (emailError) {
+        console.error(
+          'Error enviando correo de reserva en efectivo:',
+          emailError,
+        );
+      }
 
       console.log('✅ Reserva de Efectivo creada exitosamente:', reserva._id);
       return {
@@ -104,6 +126,10 @@ export class ReservaService {
       console.error('❌ Error creando reserva de efectivo:', error);
       this.handleExceptions(error);
     }
+  }
+
+  findAll() {
+    return this.reservaModel.find();
   }
 
   async findOne(id: string) {
