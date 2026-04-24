@@ -53,6 +53,45 @@ export class Reserva extends Document {
     default: "credito",
   })
   paymentMethod?: string;
+
+  // Campos adicionales para reportes y análisis (especialmente para Efectivo)
+  @Prop({
+    default: 1,
+  })
+  cantidadPersonas?: number;
+
+  @Prop({
+    index: true,
+  })
+  tourId?: string;
+
+  @Prop({
+    default: 0,
+  })
+  capacidadUtilizada?: number;
+
+  @Prop({
+    default: 0,
+  })
+  descuentoAplicado?: number;
+
+  @Prop({
+    type: Object,
+  })
+  datosTarjeta?: {
+    tipo: string;
+    categoria: string;
+    ultimosDigitos: string;
+    vencimiento: string;
+  };
+
+  @Prop()
+  emailAgencia?: string;
+
+  @Prop({
+    default: () => new Date(),
+  })
+  fechaReserva?: Date;
 }
 
 export const ReservaSchema = SchemaFactory.createForClass(Reserva);

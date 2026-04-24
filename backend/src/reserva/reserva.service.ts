@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateReservaDto } from './dto/create-reserva.dto';
+import { CreateReservaEfectivoDto } from './dto/create-reserva-efectivo.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
 import { Reserva } from './entities/reserva.entity';
 import { isValidObjectId, Model } from 'mongoose';
@@ -21,18 +22,9 @@ export class ReservaService {
     private readonly emailService: EmailService,
   ) {}
 
-  async create(createReservaDto: CreateReservaDto, userEmail: string) {
+  async create(createReservaDto: CreateReservaDto) {
     try {
-      // const dataConEmail = {
-      //   ...createReservaDto,
-      //   email: userEmail,
-      // };
-      // const reserva = await this.reservaModel.create(dataConEmail);
-     
-      const reserva = await this.reservaModel.create({
-        ...createReservaDto,
-        email: userEmail,
-      });
+      const reserva = await this.reservaModel.create(createReservaDto);
 
       // 1. Envía la notificación después de crear la reserva
       this.notificationsService.notifyNewReservation({
@@ -57,8 +49,61 @@ export class ReservaService {
     }
   }
 
-  findAll() {
-    return this.reservaModel.find();
+  // Método específico para reservas de Efectivo sin autenticación
+  async createReservaEfectivo(createReservaEfectivoDto: CreateReservaEfectivoDto) {
+    try {
+      // Crear objeto básico de reserva con los campos que el schema acepta
+      const reservaData = {
+        nombre: createReservaEfectivoDto.nombre,
+        email: createReservaEfectivoDto.email,
+        telefono: createReservaEfectivoDto.telefono,
+        fecha: createReservaEfectivoDto.fecha,
+        notas: createReservaEfectivoDto.notas || '',
+        items: createReservaEfectivoDto.items,
+        total: createReservaEfectivoDto.total,
+        paymentMethod: createReservaEfectivoDto.metodoPago || 'efectivo',
+        // Campos adicionales para reportes/análisis
+        cantidadPersonas: createReservaEfectivoDto.cantidadPersonas,
+        tourId: createReservaEfectivoDto.tourId,
+        capacidadUtilizada: createReservaEfectivoDto.capacidadUtilizada,
+        descuentoAplicado: createReservaEfectivoDto.descuentoAplicado,
+        emailAgencia: createReservaEfectivoDto.emailAgencia,
+        fechaReserva: createReservaEfectivoDto.fechaReserva,
+      };
+
+      const reserva = await this.reservaModel.create(reservaData);
+
+      // 1. Envía la notificación después de crear la reserva
+      this.notificationsService.notifyNewReservation({
+        message: '¡Nueva reserva registrada - Pago en Efectivo!',
+        reservaId: reserva._id,
+        email: reserva.email,
+        items: reserva.items,
+      });
+
+      // 2. Envía email de pre-confirmación con detalles de pago en efectivo
+      await this.emailService.sendReservationEmail({
+        to: reserva.email,
+        nombre: reserva.nombre,
+        fecha: reserva.fecha,
+        items: reserva.items || [],
+        total: reserva.total,
+        paymentMethod: 'efectivo',
+        cantidadPersonas: createReservaEfectivoDto.cantidadPersonas,
+        descuento: createReservaEfectivoDto.descuentoAplicado,
+        emailAgencia: createReservaEfectivoDto.emailAgencia,
+      });
+
+      console.log('✅ Reserva de Efectivo creada exitosamente:', reserva._id);
+      return {
+        success: true,
+        message: 'Reserva confirmada. Se enviará un correo de pre-confirmación.',
+        reserva: reserva,
+      };
+    } catch (error) {
+      console.error('❌ Error creando reserva de efectivo:', error);
+      this.handleExceptions(error);
+    }
   }
 
   async findOne(id: string) {

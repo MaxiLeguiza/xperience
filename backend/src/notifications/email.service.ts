@@ -20,19 +20,26 @@ export class EmailService {
   constructor(private readonly configService: ConfigService) {
     const user = this.configService.get<string>('GMAIL_USER');
     const pass = this.configService.get<string>('GMAIL_APP_PASSWORD');
+    const rejectUnauthorized =
+      this.configService.get<string>('MAIL_TLS_REJECT_UNAUTHORIZED') !==
+      'false';
+
     this.from = this.configService.get<string>('MAIL_FROM') || user;
 
     if (user && pass) {
       this.transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: { user, pass },
+        tls: { rejectUnauthorized },
       });
     }
   }
 
   async sendReservationEmail(data: ReservaEmailData) {
     if (!this.transporter || !this.from) {
-      this.logger.warn('Email no configurado: faltan GMAIL_USER/GMAIL_APP_PASSWORD.');
+      this.logger.warn(
+        'Email no configurado: faltan GMAIL_USER/GMAIL_APP_PASSWORD.',
+      );
       return;
     }
 
