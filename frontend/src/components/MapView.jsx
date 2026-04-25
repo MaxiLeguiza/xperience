@@ -638,7 +638,7 @@ export default function MapView({ items = [] }) {
               </button>
               <button
                 onClick={handleApplyFilters}
-                className="text-[12px] px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-white font-semibold shadow-md hover:brightness-110 transition"
+                className="text-[12px] px-4 py-2 rounded-lg bg-orange-500 text-white font-semibold shadow-md hover:bg-orange-600 transition"
               >
                 Ver resultados
               </button>
