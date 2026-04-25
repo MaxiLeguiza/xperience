@@ -4,23 +4,39 @@ export const AuthContext = createContext({
   auth: null,                // { id, email, nombre? }
   setAuth: () => {},
   logout: () => {},
+  isLoading: true,
 });
 
 export function AuthProvider({ children }) {
   const [auth, setAuthState] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Cargar sesión guardada (opcional)
+  // Cargar sesión guardada al iniciar
   useEffect(() => {
     try {
       const userStr = localStorage.getItem("user");
-      if (userStr) setAuthState(JSON.parse(userStr));
-    } catch {}
+      const token = localStorage.getItem("token");
+      
+      if (userStr && token) {
+        setAuthState(JSON.parse(userStr));
+      }
+    } catch (error) {
+      console.error("Error al cargar sesión:", error);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   const setAuth = (user) => {
     setAuthState(user);
-    if (user) localStorage.setItem("user", JSON.stringify(user));
-    else localStorage.removeItem("user");
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+    }
   };
 
   const logout = () => {
@@ -30,8 +46,12 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ auth, setAuth, logout }}>
+    <AuthContext.Provider value={{ auth, setAuth, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
+}
+
+export function useAuth() {
+  return useContext(AuthContext);
 }

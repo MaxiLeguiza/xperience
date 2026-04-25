@@ -9,13 +9,19 @@ import { AuthContext } from '../context/AuthProvider';
  * 1. Verifica si el usuario tiene sesión activa (auth en el contexto)
  * 2. Si está logueado → muestra el componente solicitado
  * 3. Si NO está logueado → redirige a /login
+ * 4. Mientras carga → muestra un loading
  * 
  * EJEMPLO DE USO:
  * <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
  */
 export default function ProtectedRoute({ children }) {
   // Obtenemos el estado de autenticación del contexto
-  const { auth } = useContext(AuthContext);
+  const { auth, isLoading } = useContext(AuthContext);
+
+  // Mientras carga, mostrar loading
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Cargando...</div>;
+  }
 
   // Si no hay usuario logueado, redirigimos a login
   if (!auth) {

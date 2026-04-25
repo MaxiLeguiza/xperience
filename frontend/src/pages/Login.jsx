@@ -57,7 +57,7 @@ const Login = () => {
         email: data?.user?.email,
         nombre: data?.user?.nombre,
       });
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       const status = error?.response?.status;
       const data = error?.response?.data;

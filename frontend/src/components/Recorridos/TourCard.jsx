@@ -4,6 +4,7 @@
 // Incluye: título, autor, precio, duración, paquete y datos del influencer.
 // -------------------------------------------------------------
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 // Función utilitaria para mostrar duración
 function formatDuration(minutes) {
@@ -14,6 +15,13 @@ function formatDuration(minutes) {
 }
 
 export default function TourCardHorizontal({ tour, onSelect }) {
+  const navigate = useNavigate();
+
+  const handleReservar = (e) => {
+    e.stopPropagation();
+    navigate("/confirmacion", { state: { tour } });
+  };
+
   return (
     <div
       className="bg-white rounded-xl shadow hover:shadow-md transition cursor-pointer overflow-hidden flex"
@@ -47,8 +55,8 @@ export default function TourCardHorizontal({ tour, onSelect }) {
         {/* Separador */}
         <div className="border-t border-gray-200 my-4"></div>
 
-        {/* Influencer y precio */}
-        <div className="flex justify-between items-center">
+        {/* Influencer */}
+        <div>
           {tour.influencer && (
             <div className="flex items-center space-x-2">
               <img
@@ -59,7 +67,17 @@ export default function TourCardHorizontal({ tour, onSelect }) {
               <span className="text-sm font-medium">{tour.influencer.name}</span>
             </div>
           )}
+        </div>
+
+        {/* Precio y Botón */}
+        <div className="flex justify-between items-center mt-4">
           <p className="text-2xl font-bold text-[#FF4500]">${tour.price}</p>
+          <button
+            onClick={handleReservar}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+          >
+            Reservar
+          </button>
         </div>
       </div>
     </div>
