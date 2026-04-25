@@ -64,6 +64,16 @@ export class UserService {
 
     // Verificar contraseña
     const passwordValid = await bcrypt.compare(password, user.password);
+    
+    // DEBUG - Remover después
+    console.log('🔐 Debug login:', {
+      emailBuscado: normalizedEmail,
+      usuarioEncontrado: !!user,
+      passwordHashAlmacenada: user.password.substring(0, 10) + '...',
+      passwordIngresada: password,
+      esValida: passwordValid,
+    });
+    
     if (!passwordValid) {
       throw new UnauthorizedException('Contraseña incorrecta');
     }

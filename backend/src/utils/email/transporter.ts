@@ -12,14 +12,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Descomenta esto para que en cuanto prendas el servidor, 
-// la terminal te diga si la conexión es exitosa o no.
-transporter.verify((error, success) => {
-  if (error) {
-    console.log('❌ Error en la configuración de correo:', error.message);
-  } else {
-    console.log('✅ Servidor de correo listo para enviar');
-  }
-});
+// Verificación solo en producción
+if (process.env.NODE_ENV === 'production') {
+  transporter.verify((error, success) => {
+    if (error) {
+      console.log('❌ Error en la configuración de correo:', error.message);
+    } else {
+      console.log('✅ Servidor de correo listo para enviar');
+    }
+  });
+}
 
 export default transporter;
