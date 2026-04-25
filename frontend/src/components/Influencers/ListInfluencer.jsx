@@ -153,7 +153,7 @@ const ListInfluencer = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Buscador */}
               <div className="relative md:col-span-2">
-                <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <span className="material-icons absolute left-3 inset-y-0 flex items-center text-gray-400">
                   search
                 </span>
                 <input

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 export const AuthContext = createContext({
   auth: null,                // { id, email, nombre? }
@@ -8,6 +8,7 @@ export const AuthContext = createContext({
 });
 
 export function AuthProvider({ children }) {
+<<<<<<< HEAD
   const [auth, setAuthState] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,6 +29,17 @@ export function AuthProvider({ children }) {
       setIsLoading(false);
     }
   }, []);
+=======
+  const [auth, setAuthState] = useState(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const userStr = localStorage.getItem("user");
+      return userStr ? JSON.parse(userStr) : null;
+    } catch {
+      return null;
+    }
+  });
+>>>>>>> 451ac5e6658109e4d7979ea01aa213003018e42f
 
   const setAuth = (user) => {
     setAuthState(user);

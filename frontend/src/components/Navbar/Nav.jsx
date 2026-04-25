@@ -1,67 +1,17 @@
-import { React, useEffect, useState } from 'react'
-import Login from '../../pages/Login'
-import Home from '../../pages/home';
+import { useState } from 'react'
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import AuthSection from '../Autenticacion/AuthSection';
 
 function Nav() {
-    const { auth, logout } = useAuth();
-
-    useEffect(() => {
-        // Cargar Tailwind dinámicamente con plugins y color personalizado
-        const script = document.createElement("script");
-        script.src =
-            "https://cdn.tailwindcss.com?plugins=forms,typography,container-queries";
-        script.async = true;
-
-        script.onload = () => {
-            // Extender Tailwind con tu color personalizado
-            if (window.tailwind) {
-                window.tailwind.config = {
-                    theme: {
-                        extend: {
-                            colors: {
-                                'miColor': "#d86015", // Cambia esto por tu color
-                                background: {
-                                    light: "#f2f4f7",
-                                    dark: "#1a1a1a",
-                                },
-                                text: {
-                                    light: "#111827",
-                                    dark: "#f9fafb",
-                                },
-                                primary: "#d86015",
-                                secondary: "#16697A",
-                                card: {
-                                    light: "#ffffff",
-                                    dark: "#111827",
-                                },
-                                border: {
-                                    light: "#e5e7eb",
-                                    dark: "#374151",
-                                },
-                            },
-                        },
-                    },
-                    darkMode: "class",
-                };
-            }
-        };
-
-        document.head.appendChild(script);
-
-        return () => {
-            document.head.removeChild(script);
-        };
-    }, []);
+    const { auth } = useAuth();
     // Estado para guardar el link seleccionado
-    const [activeLink, setActiveLink] = useState(); // Por defecto "Influencers"
+    const [activeLink, setActiveLink] = useState();
 
     const links = [
         { label: "Recorridos", href: "/recorridos" },
-        { label: "Proximamente", href: "#" },
         { label: "Influencers", href: "/ListInfluencer" },
+        { label: "Proximamente", href: null },
     ];
 
     return (
@@ -70,26 +20,43 @@ function Nav() {
                 <div className="flex items-center justify-between h-16">
                     {/* LOGO */}
                     <div className="flex items-center min-w-[100px]">
-                        <Link to="/">
-                            <h1 className="text-3xl font-bold shadow-white-md text-primary ">Xperience</h1>
-                        
+                        <Link to={auth ? "/home" : "/"}>
+                            <h1 className="text-3xl font-bold text-primary "> Xperience</h1>
                         </Link>
                     </div>
                     {/* LINKS DE NAVEGACIÓN */}
                     <nav className="hidden md:flex items-center space-x-4 mx-auto w-auto">
-                        {links.map((link) => (
-                            <a
-                                key={link.label}
-                                href={link.href}
-                                onClick={() => setActiveLink(link.label)}
-                                className={`px-3 py-2 rounded-md text-sm font-medium ${activeLink === link.label
-                                    ? "text-primary border-b-2 border-primary" // seleccionado
-                                    : "text-text-dark hover:text-primary"     // no seleccionado
-                                    }`}
-                            >
-                                {link.label}
-                            </a>
-                        ))}
+                        {links.map((link) => {
+                            const isActive = activeLink === link.label;
+                            const linkClass = `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive
+                                ? "text-primary border-b-2 border-primary"
+                                : "text-white hover:text-primary"
+                                }`;
+
+                            if (!link.href) {
+                                return (
+                                    <button
+                                        key={link.label}
+                                        type="button"
+                                        disabled
+                                        className="px-3 py-2 rounded-md text-sm font-medium text-white opacity-50 cursor-not-allowed"
+                                    >
+                                        {link.label}
+                                    </button>
+                                );
+                            }
+
+                            return (
+                                <Link
+                                    key={link.label}
+                                    to={link.href}
+                                    onClick={() => setActiveLink(link.label)}
+                                    className={linkClass}
+                                >
+                                    {link.label}
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     {/* BOTÓN DE LOGIN */}

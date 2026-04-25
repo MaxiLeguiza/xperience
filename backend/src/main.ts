@@ -12,8 +12,19 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  const allowedOrigins = [
+    'https://localhost:5173',
+    'https://localhost:5175',
+  ];
+
   app.enableCors({
-    origin: 'https://localhost:5173', //process.env.FRONT ||  Reemplaza con la URL de tu frontend de React
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS origin not allowed: ${origin}`));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

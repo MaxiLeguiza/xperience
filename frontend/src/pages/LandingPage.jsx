@@ -168,7 +168,7 @@ export default function App() {
                     </div>
 
                     <div className="pt-8 border-t border-white/10 text-center text-white/60 text-sm">
-                        <p>&copy; 2024 XPERIENCE. Todos los derechos reservados.</p>
+                        <p>&copy; 2026 XPERIENCE. Todos los derechos reservados.</p>
                     </div>
                 </div>
             </footer>

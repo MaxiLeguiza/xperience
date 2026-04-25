@@ -387,7 +387,7 @@ export default function TourRecorridos() {
         },
       },
       {
-        id: "t1",
+        id: "t1b",
         title: "City Tour",
         author: "Juan Pérez",
         durationMinutes: 120,
@@ -530,7 +530,7 @@ export default function TourRecorridos() {
                 className="btn-primary px-4 py-2 rounded-md text-sm font-medium flex items-center bg-[#FF4500] text-white hover:bg-[#E03E00]"
                 onClick={() => setCreateOpen(true)}
               >
-                <span className="material-icons mr-2">add</span>+ Nuevo
+                <span className="material-icons mr-2">add</span> Nuevo
                 recorrido
               </button>
             </div>
