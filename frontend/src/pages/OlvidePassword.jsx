@@ -31,14 +31,15 @@ const OlvidePassword = () => {
 
   return (
       <>
-            <div>
-                <h1 className="text-indigo-600 font-black text-6xl">
+            <div className="min-h-screen bg-gradient-to-br from-black via-[#ef4444] to-[#d86015] py-12 md:py-24 px-4 flex flex-col items-center justify-center">
+            <div className="max-w-xl mb-10">
+                <h1 className="text-white font-black text-6xl text-center">
                     Recupera tu Acceso y no Pierdas {""} 
-                    <span className="text-black">tus Pacientes</span>
+                    <span className="text-black">tu Cuenta</span>
                 </h1>
             </div>
 
-            <div className='mt-20 md:mt-5 shadow-lg px-5 py-10 rounded-xl bg-white'>
+            <div className='w-full max-w-xl shadow-lg px-5 py-5 rounded-xl bg-black/40 backdrop-blur-md border border-white/20'>
 
                 { msg && <Alerta 
                     alerta={alerta}
@@ -46,16 +47,16 @@ const OlvidePassword = () => {
                 <form
                     onSubmit={handleSubmit}
                 >
-                    <div className="my-5">
+                    <div className="my-3">
                         <label
-                            className="uppercase text-gray-600 block text-xl font-bold"
+                            className="uppercase text-white block text-xl font-bold"
                         >
                             Email
                         </label>
                         <input 
                             type="email"
                             placeholder="Email de Registro"
-                            className="border w-full p-3 mt-3 bg-gray-50 rounded-xl"
+                            className="border border-white/30 w-full p-3 mt-3 bg-white/20 text-white placeholder-white/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/30"
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                         />
@@ -64,18 +65,19 @@ const OlvidePassword = () => {
                     <input 
                         type="submit"
                         value="Enviar Instrucciones"
-                        className="bg-indigo-700 w-full py-3 px-10 rounded-xl text-white uppercase font-bold mt-5 hover:cursor-pointer hover:bg-indigo-800 md:w-auto "
+                        className="bg-gradient-to-r from-[#ef4444] to-[#d86015] w-full py-3 px-10 rounded-xl text-white uppercase font-bold mt-5 hover:cursor-pointer hover:shadow-lg hover:shadow-[#d86015]/50 transition-all hover:scale-105 md:w-auto "
                     />
                 </form>
 
                 <nav className='mt-10 lg:flex lg:justify-between'>
                     <Link 
-                        className='block text-center my-5 text-gray-500'
-                        to="/">¿Ya tienes una cuenta? Inicia Sesión</Link >
-                    <Link 
-                        className='block text-center my-5 text-gray-500'
-                        to="/registrar">¿No tienes una cuenta? Regístrate</Link >
+                        className='block text-center my-5 text-white/80 hover:text-white transition-colors'
+                        to="/login">¿Ya tienes una cuenta? Inicia Sesión</Link >
+                    <Link 
+                        className='block text-center my-5 text-white/80 hover:text-white transition-colors'
+                        to="/registrar">¿No tienes una cuenta? Regístrate</Link >
                 </nav>
+            </div>
             </div>
       </>
   )

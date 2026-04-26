@@ -4,6 +4,8 @@ import MapView from "./components/MapView";
 import Home from "./pages/home";
 import Login from "./pages/Login";
 import Registrar from "./pages/Registrar";
+import OlvidePassword from "./pages/OlvidePassword";
+import NuevoPassword from "./pages/NuevoPassword";
 import SearchBooking from "./components/SearchBooking";
 import SearchResults from "./components/Booking/SearchResults";
 import Cart from "./components/Booking/Cart";
@@ -43,6 +45,8 @@ export default function App() {
           Usuarios sin sesión pueden acceder a estas páginas */}
             <Route path="/login" element={<Login />} />
             <Route path="/registrar" element={<Registrar />} />
+            <Route path="/olvide-password" element={<OlvidePassword />} />
+            <Route path="/nuevo-password/:token" element={<NuevoPassword />} />
 
             {/* CAMBIO 5: Rutas de búsqueda y resultados (protegidas)
           Solo usuarios logueados pueden buscar y ver resultados */}

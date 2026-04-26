@@ -54,21 +54,22 @@ const Registrar = () => {
   const { msg } = alerta;
 
   return (
-    <div className="container mx-auto mt-12 md:mt-24 px-4 max-w-md md:max-w-xl">
+    <div className="min-h-screen bg-gradient-to-br from-black via-[#ef4444] to-[#d86015] py-12 md:py-24 px-4">
+      <div className="container mx-auto max-w-md md:max-w-xl">
       {/* Título / Mensaje */}
       <div className="mb-10">
-        <h1 className="text-orange-600 font-black text-4xl md:text-5xl text-center">
+        <h1 className="text-white font-black text-4xl md:text-5xl text-center">
           Crea tu Cuenta y Busca {""}
           <span className="text-black">tus Actividades Favoritas</span>
         </h1>
       </div>
 
-      {/* Formulario (Fondo Blanco Suave: bg-gray-50) */}
-      <div className="shadow-lg px-5 py-10 rounded-xl bg-gray-50">
+      {/* Formulario (Fondo con Glassmorphism) */}
+      <div className="shadow-lg px-5 py-5 rounded-xl bg-black/40 backdrop-blur-md border border-white/20">
         {msg && <Alerta alerta={alerta} />}
         <form onSubmit={handleSubmit}>
-          <div className="my-5">
-            <label className="uppercase text-gray-600 block text-sm md:text-xl font-bold">
+          <div className="my-3">
+            <label className="uppercase text-white block text-sm md:text-xl font-bold">
               Nombre
             </label>
             {/* Input con foco Naranja */}
@@ -76,16 +77,16 @@ const Registrar = () => {
               type="text"
               placeholder="Tu Nombre"
               className="
-                                border border-gray-300 w-full p-3 mt-3 bg-white rounded-xl
-                                focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+                                border border-white/30 w-full p-3 mt-3 bg-white/20 text-white placeholder-white/50 rounded-xl
+                                focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 focus:bg-white/30
                             "
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
           </div>
 
-          <div className="my-5">
-            <label className="uppercase text-gray-600 block text-sm md:text-xl font-bold">
+          <div className="my-3">
+            <label className="uppercase text-white block text-sm md:text-xl font-bold">
               Email
             </label>
             {/* Input con foco Naranja */}
@@ -93,16 +94,16 @@ const Registrar = () => {
               type="email"
               placeholder="Email de Registro"
               className="
-                                border border-gray-300 w-full p-3 mt-3 bg-white rounded-xl
-                                focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+                                border border-white/30 w-full p-3 mt-3 bg-white/20 text-white placeholder-white/50 rounded-xl
+                                focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 focus:bg-white/30
                             "
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
-          <div className="my-5">
-            <label className="uppercase text-gray-600 block text-sm md:text-xl font-bold">
+          <div className="my-3">
+            <label className="uppercase text-white block text-sm md:text-xl font-bold">
               Password
             </label>
             {/* Input con foco Naranja */}
@@ -110,16 +111,16 @@ const Registrar = () => {
               type="password"
               placeholder="Tu Password"
               className="
-                                border border-gray-300 w-full p-3 mt-3 bg-white rounded-xl
-                                focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+                                border border-white/30 w-full p-3 mt-3 bg-white/20 text-white placeholder-white/50 rounded-xl
+                                focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 focus:bg-white/30
                             "
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
-          <div className="my-5">
-            <label className="uppercase text-gray-600 block text-sm md:text-xl font-bold">
+          <div className="my-3">
+            <label className="uppercase text-white block text-sm md:text-xl font-bold">
               Repetir Password
             </label>
             {/* Input con foco Naranja */}
@@ -127,8 +128,8 @@ const Registrar = () => {
               type="password"
               placeholder="Repite tu Password"
               className="
-                                border border-gray-300 w-full p-3 mt-3 bg-white rounded-xl
-                                focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+                                border border-white/30 w-full p-3 mt-3 bg-white/20 text-white placeholder-white/50 rounded-xl
+                                focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/50 focus:bg-white/30
                             "
               value={repetirPassword}
               onChange={(e) => setRepetirPassword(e.target.value)}
@@ -140,27 +141,28 @@ const Registrar = () => {
             type="submit"
             value="Crear Cuenta"
             className="
-                            bg-orange-600 w-full py-3 px-10 rounded-xl text-white uppercase font-bold mt-5 
-                            hover:cursor-pointer hover:bg-orange-700 transition-colors
+                            bg-gradient-to-r from-[#ef4444] to-[#d86015] w-full py-3 px-10 rounded-xl text-white uppercase font-bold mt-5 
+                            hover:cursor-pointer hover:shadow-lg hover:shadow-[#d86015]/50 transition-all hover:scale-105
                         "
           />
         </form>
 
         <nav className="mt-10 lg:flex lg:justify-between">
           <Link
-            className="block text-center my-5 text-gray-500 hover:text-orange-600 transition-colors"
+            className="block text-center my-5 text-white/80 hover:text-white transition-colors"
             to="/login"
           >
             ¿Ya tienes una cuenta? Inicia Sesión
           </Link>
           <Link
-            className="block text-center my-5 text-gray-500 hover:text-orange-600 transition-colors"
+            className="block text-center my-5 text-white/80 hover:text-white transition-colors"
             to="/olvide-password"
           >
             Olvide mi Password
           </Link>
         </nav>
       </div>
+    </div>
     </div>
   );
 };
