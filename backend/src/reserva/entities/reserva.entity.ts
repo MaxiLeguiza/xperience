@@ -8,12 +8,9 @@ export class Reserva extends Document {
     index: true,
   })
   nombre: string;
-<<<<<<< HEAD
-=======
 
   @Prop()
   apellido?: string;
->>>>>>> 451ac5e6658109e4d7979ea01aa213003018e42f
 
   @Prop({
     required: true,

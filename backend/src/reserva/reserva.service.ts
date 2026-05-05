@@ -12,10 +12,6 @@ import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { EmailService } from 'src/notifications/email.service';
-<<<<<<< HEAD
-import { MailService } from 'src/mail/mail.service';
-=======
->>>>>>> 451ac5e6658109e4d7979ea01aa213003018e42f
 
 @Injectable()
 export class ReservaService {
@@ -24,10 +20,6 @@ export class ReservaService {
     private readonly reservaModel: Model<Reserva>,
     private readonly notificationsService: NotificationsService,
     private readonly emailService: EmailService,
-<<<<<<< HEAD
-    private readonly mailService: MailService,
-=======
->>>>>>> 451ac5e6658109e4d7979ea01aa213003018e42f
   ) {}
 
   async create(createReservaDto: CreateReservaDto) {

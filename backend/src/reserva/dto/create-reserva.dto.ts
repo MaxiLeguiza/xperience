@@ -23,8 +23,6 @@ class ReservaItemDto {
   @IsNumber()
   capacidad?: number;
 }
-<<<<<<< HEAD
-=======
 
 class DatosTarjetaDto {
   @IsString()
@@ -39,22 +37,15 @@ class DatosTarjetaDto {
   @IsString()
   vencimiento: string;
 }
->>>>>>> 451ac5e6658109e4d7979ea01aa213003018e42f
 
 export class CreateReservaDto {
   @IsString()
   nombre: string;
 
-<<<<<<< HEAD
-=======
   @IsOptional()
-  @IsString()
-  apellido?: string;
 
->>>>>>> 451ac5e6658109e4d7979ea01aa213003018e42f
   @IsEmail()
   email: string;
-
   @IsString()
   telefono: string;
 
