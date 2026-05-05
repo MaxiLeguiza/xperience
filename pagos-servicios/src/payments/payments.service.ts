@@ -30,13 +30,13 @@ export class PaymentsService {
         payer: { name: payer.name, surname: payer.surname, email: payer.email },
         back_urls: {
           // Estas URLs apuntan al FRONTEND de la aplicación
-          success: 'http://localhost:27017/compra-exito',// Localhos:5173
-          failure: 'http://localhost:27017/compra-fallida',
-          pending: 'http://localhost:27017/compra-pendiente',
+          success: 'http://localhost:5173/compra-exito',// Localhos:5173
+          failure: 'http://localhost:5173/compra-fallida',
+          pending: 'http://localhost:5173/compra-pendiente',
         },
        /* auto_return: 'approved' as const,*/
         // Esta URL apunta a ESTE microservicio
-        notification_url: 'https://localhost:27017/payments/webhook', // Me recomienda utilizar un ngrok para esto: Sirve para exponer un servidor local a Internet de forma segura y temporal
+        notification_url: 'https://localhost:5173/payments/webhook', // Me recomienda utilizar un ngrok para esto: Sirve para exponer un servidor local a Internet de forma segura y temporal
       };
 
       const result = await preference.create({ body });

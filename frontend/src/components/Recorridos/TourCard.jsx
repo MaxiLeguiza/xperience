@@ -19,7 +19,7 @@ export default function TourCardHorizontal({ tour, onSelect }) {
 
   const handleReservar = (e) => {
     e.stopPropagation();
-    navigate("/confirmacion", { state: { tour } });
+    navigate("/Carrito", { state: { tour } });
   };
 
   return (

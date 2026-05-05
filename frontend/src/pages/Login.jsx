@@ -51,16 +51,16 @@ const Login = () => {
                 password,
             });
 
-      localStorage.setItem("token", data.token);
-      setAuth({
-        id: data?.user?.id,
-        email: data?.user?.email,
-        nombre: data?.user?.nombre,
-      });
-      navigate("/home");
-    } catch (error) {
-      const status = error?.response?.status;
-      const data = error?.response?.data;
+            localStorage.setItem("token", data.token);
+            setAuth({
+                id: data?.user?.id,
+                email: data?.user?.email,
+                nombre: data?.user?.nombre,
+            });
+            navigate("/home");
+        } catch (error) {
+            const status = error?.response?.status;
+            const data = error?.response?.data;
 
             // const backendMsg = extractBackendMsg(error);
             const backendMsg = data?.msg ?? data?.message ?? (typeof data === "string" ? data : "");
