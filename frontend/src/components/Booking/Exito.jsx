@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Nav from "../Navbar/Nav";
 
 export default function Exito() {
   const { state } = useLocation();
@@ -15,6 +14,12 @@ export default function Exito() {
     document.head.appendChild(link);
   }, []);
 
+  useEffect(() => {
+  if (!state) {
+    navigate('/home');
+  }
+}, [state, navigate]);
+
   const {
     title = "Expedición",
     date = "Sin fecha",
@@ -27,7 +32,14 @@ export default function Exito() {
     <div className="bg-[#090e15] text-white min-h-screen">
 
       {/* HEADER */}
-     <Nav />
+      <header className="bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-6 py-4 fixed top-0 w-full z-50">
+        <div className="text-2xl font-black text-orange-500">Xperience</div>
+        <div className="flex gap-4 text-gray-400">
+          <Icon name="share" />
+          <Icon name="print" />
+        </div>
+      </header>
+
       <main className="pt-24 pb-16 px-4 max-w-5xl mx-auto">
 
         {/* HERO */}
@@ -44,7 +56,7 @@ export default function Exito() {
           </h1>
 
           <p className="text-gray-400 max-w-lg mx-auto">
-            Tu Xperiencia ha sido procesada con éxito. Prepárate para una aventura inolvidable.
+            Tu expedición ha sido procesada con éxito. Prepárate para una aventura inolvidable.
           </p>
         </section>
 
@@ -84,7 +96,7 @@ export default function Exito() {
               <div>
                 <h3 className="font-bold">Información de Preparación</h3>
                 <p className="text-sm text-gray-400">
-                  Te enviamos un correo con todos los detalles. Recuerda corroborar la información y confirma con la agencia para evitar cualquier inconveniente.
+                  Te enviamos un correo con todos los detalles.
                 </p>
               </div>
             </div>
@@ -104,11 +116,6 @@ export default function Exito() {
 
               </div>
             </div>
-
-            {/* MAP */}
-            <div className="bg-[#141a22] h-40 rounded-xl flex items-center justify-center flex-col">
-            </div>
-
           </div>
 
         </div>

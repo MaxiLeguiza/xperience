@@ -8,8 +8,6 @@ import OlvidePassword from "./pages/OlvidePassword";
 import NuevoPassword from "./pages/NuevoPassword";
 import SearchBooking from "./components/SearchBooking";
 import SearchResults from "./components/Booking/SearchResults";
-import Cart from "./components/Booking/Cart";
-import Confirmacion from "./components/Booking/Confirmacion";
 import Exito from "./components/Booking/Exito";
 import TourRecorridos from "./components/Recorridos/TourRecorridos";
 import WeatherCard from "./components/clima/WeatherCard";
@@ -51,12 +49,11 @@ export default function App() {
             {/* CAMBIO 5: Rutas de búsqueda y resultados (protegidas)
           Solo usuarios logueados pueden buscar y ver resultados */}
             <Route path="/buscar" element={<ProtectedRoute><SearchBooking /></ProtectedRoute>} />
-            <Route path="/resultados" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
+            {/* <Route path="/resultados" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} /> */}
 
             {/* CAMBIO 6: Rutas de carrito y reservas (protegidas)
           Solo usuarios logueados pueden hacer reservas */}
             <Route path="/carrito" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-            <Route path="/confirmacion" element={<ProtectedRoute><Confirmacion /></ProtectedRoute>} />
             <Route path="/exito" element={<ProtectedRoute><Exito /></ProtectedRoute>} />
 
             {/* CAMBIO 7: Rutas de recorridos y clima (protegidas)

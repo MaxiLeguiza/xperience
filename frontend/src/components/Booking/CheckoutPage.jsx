@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   User,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import Nav from '../Navbar/Nav';
 import clienteAxios from '../../config/axios';
+import paymentsAxios from '../../config/paymentsAxios';
 
 export default function CheckoutPage({ onBack }) {
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ export default function CheckoutPage({ onBack }) {
     fecha: '',
     notas: '',
   });
+
 
   const emailConfig = {
     emailAgencia: 'contacto@xperience.com',
@@ -158,6 +160,53 @@ export default function CheckoutPage({ onBack }) {
     setAppliedCoupon(found);
   };
 
+
+
+
+
+
+  const handleCreateMpPreference = async () => {
+    setIsSubmitting(true);
+    setApiError('');
+
+    try {
+      const items = (selectedItems.length > 0 ? selectedItems : [tour]).map((item) => ({
+        id: item.id || item._id || tour.id || tour._id || '0',
+        title: item.nombre || item.name || tour.nombre || tour.name || 'Reserva',
+        quantity: cantidadPersonas,
+        unit_price: precioBase,
+        currency_id: 'ARS',
+      }));
+
+      const payer = {
+        name: formData.nombre || 'Cliente',
+        surname: formData.apellido || '',
+        email: formData.email,
+      };
+
+      const response = await paymentsAxios.post('/payments/create-preference', {
+        items,
+        payer,
+      });
+
+      const initPoint = response?.data?.init_point;
+      if (!initPoint) {
+        throw new Error('No se pudo iniciar el checkout de Mercado Pago.');
+      }
+
+      window.location.href = initPoint;
+    } catch (error) {
+      console.error('Error creando preferencia MP:', error);
+      setApiError(
+        error.response?.data?.message ||
+        error.message ||
+        'No se pudo generar el pago de Mercado Pago. Intenta nuevamente.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -174,24 +223,33 @@ export default function CheckoutPage({ onBack }) {
     image: item.image || tour.image || '',
   });
 
-  const buildReservaPayload = () => ({
-    nombre: formData.nombre,
-    apellido: formData.apellido,
-    email: formData.email,
-    telefono: formData.telefono,
-    fecha: formData.fecha || new Date().toISOString().split('T')[0],
-    notas: formData.notas,
-    items: (selectedItems.length > 0 ? selectedItems : [tour]).map(normalizeReservaItem),
-    total: totalPrice,
-    paymentMethod,
-    cantidadPersonas,
-    tourId: tour.id || tour._id || '',
-    capacidadUtilizada: cantidadPersonas,
-    descuentoAplicado: discount,
-    metodoPago: paymentMethod,
-    emailAgencia: paymentMethod === 'efectivo' ? emailConfig.emailAgencia : null,
-    fechaReserva: new Date().toISOString(),
-  });
+  const buildReservaPayload = () => {
+    // INFORMACIÓN PARA GUARDAR EN BASE DE DATOS
+    // Esta estructura debe ser guardada cuando se integre con BD
+    return {
+      nombre: formData.nombre,
+      apellido: formData.apellido,
+      email: formData.email,
+      telefono: formData.telefono,
+      fecha: formData.fecha || new Date().toISOString().split('T')[0],
+      notas: formData.notas,
+      items: (selectedItems.length > 0 ? selectedItems : [tour]).map(normalizeReservaItem),
+      total: totalPrice,
+      paymentMethod,
+      cantidadPersonas,
+      tourId: tour.id || tour._id || '',
+      capacidadUtilizada: cantidadPersonas,
+      descuentoAplicado: discount,
+      metodoPago: paymentMethod,
+      emailAgencia: paymentMethod === 'Pago en destino' ? emailConfig.emailAgencia : null,
+      fechaReserva: new Date().toISOString(),
+      // CAMPOS ADICIONALES PARA BD (pueden agregarse según necesidad):
+      // - usuarioId: id del usuario autenticado
+      // - estado: 'pendiente' | 'confirmada' | 'cancelada'
+      // - historialPagos: array de transacciones
+      // - datosTarjeta: solo cuando paymentMethod === 'tarjeta'
+    };
+  };
 
   const handleSubmit = async () => {
     if (!formData.nombre || !formData.email || !formData.telefono) {
@@ -213,148 +271,80 @@ export default function CheckoutPage({ onBack }) {
       const reservaPayload = buildReservaPayload();
       let response;
 
-      if (paymentMethod === 'efectivo') {
-        response = await clienteAxios.post(
-          '/api/reserva/public/efectivo',
-          reservaPayload,
-        );
-      } else if (paymentMethod === 'tarjeta') {
-        response = await clienteAxios.post('/api/reserva', {
-          ...reservaPayload,
-          datosTarjeta: {
-            tipo: cardData.type,
-            categoria: cardData.category,
-            ultimosDigitos: cardData.number.slice(-4),
-            vencimiento: cardData.expiry,
-          },
+      if (paymentMethod === 'Pago en destino') {
+        // COMENTADO - DESTINADO PARA INTEGRACIÓN CON BASE DE DATOS:
+        // response = await clienteAxios.post(
+        //   '/api/reserva/public/Pago en destino',
+        //   reservaPayload,
+        // );
+        // INSTRUCCIONES PARA DESCOMENTAR:
+        // 1. Asegurate de que el endpoint '/api/reserva/public/Pago en destino' existe
+        // 2. Valida que la respuesta contenga { reserva: {...} }
+        // 3. Descomenta las líneas de arriba y comenta la línea de setConfirmationData
+        // Por ahora, mostramos confirmación sin guardar en BD:
+        navigate('/exito', {
+          state: {
+            title: tour.nombre || tour.name,
+            date: formData.fecha,
+            travelers: `${cantidadPersonas} Persona(s)`,
+            code: 'XP-' + Math.floor(Math.random() * 100000),
+            image: tour.image,
+            total: totalPrice,
+            email: formData.email,
+          }
         });
+        return;
+      } else if (paymentMethod === 'tarjeta') {
+        // COMENTADO - DESTINADO PARA INTEGRACIÓN CON BASE DE DATOS:
+        // response = await clienteAxios.post('/api/reserva', {
+        //   ...reservaPayload,
+        //   datosTarjeta: {
+        //     tipo: cardData.type,
+        //     categoria: cardData.category,
+        //     ultimosDigitos: cardData.number.slice(-4),
+        //     vencimiento: cardData.expiry,
+        //   },
+        // });
+        // INSTRUCCIONES PARA DESCOMENTAR:
+        // 1. Asegurate de que el endpoint '/api/reserva' existe
+        // 2. Valida que la respuesta contenga { reserva: {...} }
+        // 3. Descomenta las líneas de arriba y comenta la línea de setConfirmationData
+        // Por ahora, mostramos confirmación sin guardar en BD:
+        navigate('/exito', {
+          state: {
+            title: tour.nombre || tour.name,
+            date: formData.fecha,
+            travelers: `${cantidadPersonas} Persona(s)`,
+            code: 'XP-' + Math.floor(Math.random() * 100000),
+            image: tour.image,
+            total: totalPrice,
+            email: formData.email,
+          }
+        });
+        return;
+      } else if (paymentMethod === 'mercadopago') {
+        await handleCreateMpPreference();
+        return;
       } else {
-        throw new Error(
-          'Mercado Pago todavia no confirma la reserva automaticamente. El correo debe dispararse desde el webhook cuando el pago quede aprobado.',
-        );
+        throw new Error('Método de pago desconocido.');
       }
 
-      const reserva = response?.data?.reserva || response?.data || null;
-      setConfirmationData(reserva);
-      setStep('confirmation');
+      // COMENTADO - DESTINADO PARA INTEGRACIÓN CON BASE DE DATOS:
+      // const reserva = response?.data?.reserva || response?.data || null;
+      // setConfirmationData(reserva);
+      // setStep('confirmation');
+      // INSTRUCCIONES: Cuando se integren los endpoints de arriba, descomenta estas líneas
     } catch (err) {
       console.error('Error procesando reserva:', err);
       setApiError(
         err.response?.data?.message ||
-          err.message ||
-          'No se pudo procesar la reserva. Intenta nuevamente.',
+        err.message ||
+        'No se pudo procesar la reserva. Intenta nuevamente.',
       );
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  if (step === 'confirmation') {
-    const reservaId = confirmationData?._id || confirmationData?.id || '-';
-    const reservaEmail = confirmationData?.email || formData.email;
-    const reservaFecha = confirmationData?.fecha || formData.fecha;
-    const reservaMetodo = confirmationData?.paymentMethod || paymentMethod;
-    const reservaTotal = confirmationData?.total ?? totalPrice;
-    const reservaPersonas =
-      confirmationData?.cantidadPersonas ?? cantidadPersonas;
-    const reservaItems =
-      confirmationData?.items || (selectedItems.length > 0 ? selectedItems : [tour]);
-
-    return (
-      <div className="min-h-screen bg-[#F1F5F9] text-slate-900 font-sans flex flex-col">
-        <Nav />
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="bg-white max-w-xl w-full p-10 rounded-2xl text-center shadow-xl border border-slate-200">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            </div>
-            <h1 className="mb-4 text-3xl font-black text-slate-900">
-              Reserva Confirmada
-            </h1>
-            <p className="text-slate-600 mb-8">
-              Tu aventura{' '}
-              <strong className="text-slate-900">
-                {tour.nombre || tour.name || 'Reserva'}
-              </strong>{' '}
-              ha sido registrada.
-            </p>
-            <div className="bg-green-50 border border-green-200 p-4 rounded-xl text-green-700 text-sm mb-6">
-              <strong>Correo enviado:</strong> se envio una confirmacion a{' '}
-              {reservaEmail} con el detalle de la reserva.
-            </div>
-            <div className="bg-slate-50 border border-slate-100 p-6 rounded-xl text-left space-y-4 mb-8">
-              <div className="flex justify-between items-center gap-4">
-                <span className="text-slate-500 text-sm uppercase tracking-wider font-semibold">
-                  Codigo
-                </span>
-                <span className="text-slate-800 font-medium break-all">
-                  {reservaId}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-sm uppercase tracking-wider font-semibold">
-                  Fecha
-                </span>
-                <span className="text-slate-800 font-medium">
-                  {formatDisplayDate(reservaFecha)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-sm uppercase tracking-wider font-semibold">
-                  Metodo
-                </span>
-                <span className="text-slate-800 font-medium capitalize">
-                  {reservaMetodo}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-sm uppercase tracking-wider font-semibold">
-                  Personas
-                </span>
-                <span className="text-slate-800 font-medium">
-                  {reservaPersonas}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 text-sm uppercase tracking-wider font-semibold">
-                  Total
-                </span>
-                <span className="text-orange-600 font-bold text-lg">
-                  {formatCurrency(reservaTotal)}
-                </span>
-              </div>
-              <div className="flex justify-between items-start gap-4">
-                <span className="text-slate-500 text-sm uppercase tracking-wider font-semibold">
-                  Reserva
-                </span>
-                <span className="text-slate-800 font-medium text-right">
-                  {reservaItems
-                    .map((item) => item.nombre || item.name)
-                    .join(', ')}
-                </span>
-              </div>
-              {reservaMetodo === 'efectivo' && (
-                <div className="flex justify-between items-center gap-4">
-                  <span className="text-slate-500 text-sm uppercase tracking-wider font-semibold">
-                    Contacto
-                  </span>
-                  <span className="text-slate-800 font-medium">
-                    {emailConfig.emailAgencia}
-                  </span>
-                </div>
-              )}
-            </div>
-            <button
-              onClick={handleBack}
-              className="w-full bg-gradient-to-r from-orange-500 to-[#d86015] hover:scale-105 transition-transform text-white py-4 rounded-full font-bold shadow-md"
-            >
-              Volver
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] text-slate-900 font-sans relative pb-20">
@@ -446,7 +436,7 @@ export default function CheckoutPage({ onBack }) {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { id: 'tarjeta', label: 'Tarjeta', icon: CreditCard },
-                  { id: 'efectivo', label: 'Efectivo', icon: DollarSign },
+                  { id: 'Pago en destino', label: 'Pago en destino', icon: DollarSign },
                   { id: 'mercadopago', label: 'Mercado Pago', icon: Wallet },
                 ].map((method) => {
                   const Icon = method.icon;
@@ -456,16 +446,14 @@ export default function CheckoutPage({ onBack }) {
                       key={method.id}
                       type="button"
                       onClick={() => setPaymentMethod(method.id)}
-                      className={`cursor-pointer flex flex-col items-center justify-center py-6 px-4 rounded-xl border-2 transition-all ${
-                        selected
-                          ? 'border-orange-500 bg-orange-50 text-orange-700'
-                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                      }`}
+                      className={`cursor-pointer flex flex-col items-center justify-center py-6 px-4 rounded-xl border-2 transition-all ${selected
+                        ? 'border-orange-500 bg-orange-50 text-orange-700'
+                        : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                        }`}
                     >
                       <Icon
-                        className={`w-8 h-8 mb-3 ${
-                          selected ? 'text-orange-600' : 'text-slate-400'
-                        }`}
+                        className={`w-8 h-8 mb-3 ${selected ? 'text-orange-600' : 'text-slate-400'
+                          }`}
                       />
                       <span className="text-xs font-bold uppercase tracking-widest">
                         {method.label}
@@ -526,9 +514,10 @@ export default function CheckoutPage({ onBack }) {
               )}
 
               {paymentMethod === 'mercadopago' && (
-                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 text-sm">
-                  El envio automatico del correo para Mercado Pago debe salir
-                  desde el webhook cuando el pago quede aprobado.
+                <div className="mt-6">
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 text-sm">
+                    <span className="font-bold">Importante: </span>  Al confirmar, serás redirigido a Mercado Pago para completar el pago de forma segura.
+                  </div>
                 </div>
               )}
 
@@ -539,6 +528,7 @@ export default function CheckoutPage({ onBack }) {
               )}
             </section>
           </div>
+
 
           <aside className="lg:col-span-5">
             <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200 sticky top-24">

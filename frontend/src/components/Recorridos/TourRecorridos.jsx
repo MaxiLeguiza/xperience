@@ -7,6 +7,7 @@
 // -------------------------------------------------------------
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TourCard from "./TourCard"; // Asumo que ya lo tenes en tu proyecto
 import Filters from "./Filters"; // Asumo que ya lo tenes
 import CreateTourModal from "./CreateTourModal"; // Asumo que ya lo tenes
@@ -346,6 +347,7 @@ function TourDetailModal({ tour, onClose, onReserve, auth }) {
    ------------------------------------------------------------------ */
 export default function TourRecorridos() {
   const { auth } = useAuth();
+  const navigate = useNavigate();
   const [tours, setTours] = useState([]);
   const [filteredTours, setFilteredTours] = useState([]);
   const [packages, setPackages] = useState([]);
@@ -612,14 +614,8 @@ export default function TourRecorridos() {
           tour={selectedTour}
           onClose={() => setSelectedTour(null)}
           onReserve={(tour) => {
-            setSelectedTour(null);
-            setReservation(tour);
-
-            // Mock: confirmación visual
-            setTimeout(() => {
-              alert(`✅ Reserva confirmada para: ${tour.title}`);
-              setReservation(null);
-            }, 500);
+            // Navega a CheckoutPage con el tour seleccionado en formato correcto
+            navigate("/carrito", { state: { selectedItems: [tour] } });
           }}
           auth={auth}
         />
