@@ -17,11 +17,27 @@ function formatDuration(minutes) {
 export default function TourCardHorizontal({ tour, onSelect }) {
   const navigate = useNavigate();
 
+
   const handleReservar = (e) => {
     e.stopPropagation();
-    navigate("/Carrito", { state: { tour } });
-  };
 
+    const normalizedTour = {
+      id: tour.id,
+      nombre: tour.title,
+      precio: tour.price,
+      capacidad: tour.capacity || 10,
+      image: tour.image,
+      durationMinutes: tour.durationMinutes,
+      author: tour.author,
+      influencer: tour.influencer,
+    };
+
+    navigate("/carrito", {
+      state: {
+        selectedItems: [normalizedTour],
+      },
+    });
+  };
   return (
     <div
       className="bg-white rounded-xl shadow hover:shadow-md transition cursor-pointer overflow-hidden flex"
@@ -83,3 +99,10 @@ export default function TourCardHorizontal({ tour, onSelect }) {
     </div>
   );
 }
+
+
+  /* const handleReservar = (e) => {
+     e.stopPropagation();
+     navigate("/carrito", { state: { selectedItems: [tour] } });
+   };
+ */
