@@ -57,6 +57,12 @@ export class Reserva extends Document {
   })
   paymentMethod?: string;
 
+  @Prop({
+    default: 'confirmada',
+    index: true,
+  })
+  estado?: string;
+
   // Campos adicionales para reportes y análisis (especialmente para Efectivo)
   @Prop({
     default: 1,
@@ -95,6 +101,9 @@ export class Reserva extends Document {
     default: () => new Date(),
   })
   fechaReserva?: Date;
+
+  @Prop()
+  canceladaEn?: Date;
 }
 
 export const ReservaSchema = SchemaFactory.createForClass(Reserva);

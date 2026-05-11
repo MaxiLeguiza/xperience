@@ -117,4 +117,75 @@ Gracias por elegir Xperience.`;
       html,
     });
   }
+
+  async sendReservationCancelledEmail(data: ReservaEmailData) {
+    if (!this.transporter || !this.from) {
+      this.logger.warn(
+        'Email no configurado: faltan GMAIL_USER/GMAIL_APP_PASSWORD.',
+      );
+      return;
+    }
+
+    const itemsText =
+      data.items?.length > 0
+        ? data.items
+            .map(
+              (i) =>
+                `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`,
+            )
+            .join('\n')
+        : '- (sin items)';
+
+    const itemsHtml =
+      data.items?.length > 0
+        ? data.items
+            .map(
+              (i) =>
+                `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
+            )
+            .join('')
+        : '<li>(sin items)</li>';
+
+    const fecha = new Date(data.fecha).toLocaleDateString('es-AR');
+    const nombreCompleto = [data.nombre, data.apellido]
+      .filter(Boolean)
+      .join(' ');
+
+    const subject = 'Cancelacion de reserva - Xperience';
+    const text = `Hola ${nombreCompleto || data.nombre},
+
+Tu reserva fue cancelada correctamente.
+
+Codigo de reserva: ${data.reservaId ?? 'No disponible'}
+Fecha original: ${fecha}
+Metodo de pago: ${data.paymentMethod || 'credito'}
+Items:
+${itemsText}
+
+Total: $${data.total}
+
+Si necesitabas ayuda adicional, podes responder a este correo.`;
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;line-height:1.5;">
+        <h2>Reserva cancelada</h2>
+        <p>Hola <strong>${nombreCompleto || data.nombre}</strong>, tu reserva fue cancelada correctamente.</p>
+        <p><strong>Codigo de reserva:</strong> ${data.reservaId ?? 'No disponible'}</p>
+        <p><strong>Fecha original:</strong> ${fecha}</p>
+        <p><strong>Metodo de pago:</strong> ${data.paymentMethod || 'credito'}</p>
+        <p><strong>Items:</strong></p>
+        <ul>${itemsHtml}</ul>
+        <p><strong>Total:</strong> $${data.total}</p>
+        <p>Si necesitabas ayuda adicional, podes responder a este correo.</p>
+      </div>
+    `;
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: data.to,
+      subject,
+      text,
+      html,
+    });
+  }
 }
