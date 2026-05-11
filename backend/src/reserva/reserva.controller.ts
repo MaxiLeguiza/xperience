@@ -58,6 +58,11 @@ export class ReservaController {
     return this.reservaService.update(id, updateReservaDto);
   }
 
+  @Patch(':id/cancel')
+  cancel(@Param('id') id: string) {
+    return this.reservaService.cancel(id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.reservaService.remove(id);

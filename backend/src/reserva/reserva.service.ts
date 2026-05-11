@@ -24,7 +24,10 @@ export class ReservaService {
 
   async create(createReservaDto: CreateReservaDto) {
     try {
-      const reserva = await this.reservaModel.create(createReservaDto);
+      const reserva = await this.reservaModel.create({
+        ...createReservaDto,
+        estado: 'confirmada',
+      });
 
       // 1. Envía la notificación después de crear la reserva
       this.notificationsService.notifyNewReservation({
@@ -80,6 +83,7 @@ export class ReservaService {
         descuentoAplicado: createReservaEfectivoDto.descuentoAplicado,
         emailAgencia: createReservaEfectivoDto.emailAgencia,
         fechaReserva: createReservaEfectivoDto.fechaReserva,
+        estado: 'confirmada',
       };
 
       const reserva = await this.reservaModel.create(reservaData);
@@ -148,6 +152,49 @@ export class ReservaService {
     try {
       await reserva.updateOne(updateReservaDto, { new: true });
       return { ...reserva.toJSON(), ...updateReservaDto };
+    } catch (error) {
+      this.handleExceptions(error);
+    }
+  }
+
+  async cancel(id: string) {
+    const reserva = await this.findOne(id);
+
+    if (reserva.estado === 'cancelada') {
+      return reserva;
+    }
+
+    try {
+      await reserva.updateOne({
+        estado: 'cancelada',
+        canceladaEn: new Date(),
+      });
+
+      const cancelledReserva = await this.reservaModel.findById(id);
+
+      if (cancelledReserva) {
+        try {
+          await this.emailService.sendReservationCancelledEmail({
+            to: cancelledReserva.email,
+            nombre: cancelledReserva.nombre,
+            apellido: cancelledReserva.apellido,
+            fecha: cancelledReserva.fecha,
+            items: cancelledReserva.items || [],
+            total: cancelledReserva.total,
+            paymentMethod: cancelledReserva.paymentMethod,
+            cantidadPersonas: cancelledReserva.cantidadPersonas,
+            descuento: cancelledReserva.descuentoAplicado,
+            emailAgencia: cancelledReserva.emailAgencia,
+            notas: cancelledReserva.notas,
+            reservaId: String(cancelledReserva._id),
+            telefono: cancelledReserva.telefono,
+          });
+        } catch (emailError) {
+          console.error('Error enviando correo de cancelacion:', emailError);
+        }
+      }
+
+      return cancelledReserva;
     } catch (error) {
       this.handleExceptions(error);
     }

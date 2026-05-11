@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   User,
@@ -23,14 +23,12 @@ export default function CheckoutPage({ onBack }) {
   const selectedItems = location.state?.selectedItems || [];
   const tour = selectedItems[0] || {};
 
-  const [step, setStep] = useState('form');
   const [paymentMethod, setPaymentMethod] = useState('tarjeta');
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [errorCoupon, setErrorCoupon] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState('');
-  const [confirmationData, setConfirmationData] = useState(null);
   const [cantidadPersonas, setCantidadPersonas] = useState(1);
   const [cardError, setCardError] = useState('');
   const [cardData, setCardData] = useState({
@@ -50,7 +48,6 @@ export default function CheckoutPage({ onBack }) {
     notas: '',
   });
 
-
   const emailConfig = {
     emailAgencia: 'contacto@xperience.com',
   };
@@ -62,7 +59,9 @@ export default function CheckoutPage({ onBack }) {
   ];
 
   const precioBase = parseFloat(
-    String(tour.precio || tour.price || 0).replace(/[^\d,.-]/g, '').replace(',', '.'),
+    String(tour.precio || tour.price || 0)
+      .replace(/[^\d,.-]/g, '')
+      .replace(',', '.'),
   );
   const capacidadMaxima = tour.capacidad || tour.capacity || 10;
   const subtotal = precioBase * cantidadPersonas;
@@ -79,11 +78,6 @@ export default function CheckoutPage({ onBack }) {
       currency: 'ARS',
       maximumFractionDigits: 0,
     }).format(Number(value || 0));
-
-  const formatDisplayDate = (value) => {
-    if (!value) return '-';
-    return new Date(value).toLocaleDateString('es-AR');
-  };
 
   const detectCardType = (number) => {
     const num = number.replace(/\s/g, '');
@@ -160,23 +154,58 @@ export default function CheckoutPage({ onBack }) {
     setAppliedCoupon(found);
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
+  const normalizeReservaItem = (item) => ({
+    id: item.id || item._id || tour.id || tour._id || '',
+    nombre: item.nombre || item.name || tour.nombre || tour.name || 'Aventura',
+    precio:
+      typeof item.precio === 'string'
+        ? item.precio
+        : formatCurrency(item.price || precioBase),
+    capacidad: cantidadPersonas,
+    image: item.image || tour.image || '',
+  });
 
-
-
+  const buildReservaPayload = () => ({
+    nombre: formData.nombre,
+    apellido: formData.apellido,
+    email: formData.email,
+    telefono: formData.telefono,
+    fecha: formData.fecha || new Date().toISOString().split('T')[0],
+    notas: formData.notas,
+    items: (selectedItems.length > 0 ? selectedItems : [tour]).map(
+      normalizeReservaItem,
+    ),
+    total: totalPrice,
+    paymentMethod,
+    cantidadPersonas,
+    tourId: tour.id || tour._id || '',
+    capacidadUtilizada: cantidadPersonas,
+    descuentoAplicado: discount,
+    metodoPago: paymentMethod,
+    emailAgencia:
+      paymentMethod === 'Pago en destino' ? emailConfig.emailAgencia : null,
+    fechaReserva: new Date().toISOString(),
+  });
 
   const handleCreateMpPreference = async () => {
     setIsSubmitting(true);
     setApiError('');
 
     try {
-      const items = (selectedItems.length > 0 ? selectedItems : [tour]).map((item) => ({
-        id: item.id || item._id || tour.id || tour._id || '0',
-        title: item.nombre || item.name || tour.nombre || tour.name || 'Reserva',
-        quantity: cantidadPersonas,
-        unit_price: precioBase,
-        currency_id: 'ARS',
-      }));
+      const items = (selectedItems.length > 0 ? selectedItems : [tour]).map(
+        (item) => ({
+          id: item.id || item._id || tour.id || tour._id || '0',
+          title: item.nombre || item.name || tour.nombre || tour.name || 'Reserva',
+          quantity: cantidadPersonas,
+          unit_price: precioBase,
+          currency_id: 'ARS',
+        }),
+      );
 
       const payer = {
         name: formData.nombre || 'Cliente',
@@ -199,56 +228,12 @@ export default function CheckoutPage({ onBack }) {
       console.error('Error creando preferencia MP:', error);
       setApiError(
         error.response?.data?.message ||
-        error.message ||
-        'No se pudo generar el pago de Mercado Pago. Intenta nuevamente.',
+          error.message ||
+          'No se pudo generar el pago de Mercado Pago. Intenta nuevamente.',
       );
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const normalizeReservaItem = (item) => ({
-    id: item.id || item._id || tour.id || tour._id || '',
-    nombre: item.nombre || item.name || tour.nombre || tour.name || 'Aventura',
-    precio:
-      typeof item.precio === 'string'
-        ? item.precio
-        : formatCurrency(item.price || precioBase),
-    capacidad: cantidadPersonas,
-    image: item.image || tour.image || '',
-  });
-
-  const buildReservaPayload = () => {
-    // INFORMACIÓN PARA GUARDAR EN BASE DE DATOS
-    // Esta estructura debe ser guardada cuando se integre con BD
-    return {
-      nombre: formData.nombre,
-      apellido: formData.apellido,
-      email: formData.email,
-      telefono: formData.telefono,
-      fecha: formData.fecha || new Date().toISOString().split('T')[0],
-      notas: formData.notas,
-      items: (selectedItems.length > 0 ? selectedItems : [tour]).map(normalizeReservaItem),
-      total: totalPrice,
-      paymentMethod,
-      cantidadPersonas,
-      tourId: tour.id || tour._id || '',
-      capacidadUtilizada: cantidadPersonas,
-      descuentoAplicado: discount,
-      metodoPago: paymentMethod,
-      emailAgencia: paymentMethod === 'Pago en destino' ? emailConfig.emailAgencia : null,
-      fechaReserva: new Date().toISOString(),
-      // CAMPOS ADICIONALES PARA BD (pueden agregarse según necesidad):
-      // - usuarioId: id del usuario autenticado
-      // - estado: 'pendiente' | 'confirmada' | 'cancelada'
-      // - historialPagos: array de transacciones
-      // - datosTarjeta: solo cuando paymentMethod === 'tarjeta'
-    };
   };
 
   const handleSubmit = async () => {
@@ -272,74 +257,50 @@ export default function CheckoutPage({ onBack }) {
       let response;
 
       if (paymentMethod === 'Pago en destino') {
-        // COMENTADO - DESTINADO PARA INTEGRACIÓN CON BASE DE DATOS:
-        // response = await clienteAxios.post(
-        //   '/api/reserva/public/Pago en destino',
-        //   reservaPayload,
-        // );
-        // INSTRUCCIONES PARA DESCOMENTAR:
-        // 1. Asegurate de que el endpoint '/api/reserva/public/Pago en destino' existe
-        // 2. Valida que la respuesta contenga { reserva: {...} }
-        // 3. Descomenta las líneas de arriba y comenta la línea de setConfirmationData
-        // Por ahora, mostramos confirmación sin guardar en BD:
-        navigate('/exito', {
-          state: {
-            title: tour.nombre || tour.name,
-            date: formData.fecha,
-            travelers: `${cantidadPersonas} Persona(s)`,
-            code: 'XP-' + Math.floor(Math.random() * 100000),
-            image: tour.image,
-            total: totalPrice,
-            email: formData.email,
-          }
-        });
-        return;
+        response = await clienteAxios.post(
+          '/api/reserva/public/efectivo',
+          reservaPayload,
+        );
       } else if (paymentMethod === 'tarjeta') {
-        // COMENTADO - DESTINADO PARA INTEGRACIÓN CON BASE DE DATOS:
-        // response = await clienteAxios.post('/api/reserva', {
-        //   ...reservaPayload,
-        //   datosTarjeta: {
-        //     tipo: cardData.type,
-        //     categoria: cardData.category,
-        //     ultimosDigitos: cardData.number.slice(-4),
-        //     vencimiento: cardData.expiry,
-        //   },
-        // });
-        // INSTRUCCIONES PARA DESCOMENTAR:
-        // 1. Asegurate de que el endpoint '/api/reserva' existe
-        // 2. Valida que la respuesta contenga { reserva: {...} }
-        // 3. Descomenta las líneas de arriba y comenta la línea de setConfirmationData
-        // Por ahora, mostramos confirmación sin guardar en BD:
-        navigate('/exito', {
-          state: {
-            title: tour.nombre || tour.name,
-            date: formData.fecha,
-            travelers: `${cantidadPersonas} Persona(s)`,
-            code: 'XP-' + Math.floor(Math.random() * 100000),
-            image: tour.image,
-            total: totalPrice,
-            email: formData.email,
-          }
+        response = await clienteAxios.post('/api/reserva', {
+          ...reservaPayload,
+          datosTarjeta: {
+            tipo: cardData.type,
+            categoria: cardData.category,
+            ultimosDigitos: cardData.number.slice(-4),
+            vencimiento: cardData.expiry,
+          },
         });
-        return;
       } else if (paymentMethod === 'mercadopago') {
         await handleCreateMpPreference();
         return;
       } else {
-        throw new Error('Método de pago desconocido.');
+        throw new Error('Metodo de pago desconocido.');
       }
 
-      // COMENTADO - DESTINADO PARA INTEGRACIÓN CON BASE DE DATOS:
-      // const reserva = response?.data?.reserva || response?.data || null;
-      // setConfirmationData(reserva);
-      // setStep('confirmation');
-      // INSTRUCCIONES: Cuando se integren los endpoints de arriba, descomenta estas líneas
+      const reserva = response?.data?.reserva || response?.data || null;
+
+      navigate('/exito', {
+        state: {
+          title: tour.nombre || tour.name,
+          date: formData.fecha,
+          travelers: `${cantidadPersonas} Persona(s)`,
+          code:
+            reserva?._id ||
+            reserva?.id ||
+            `XP-${Math.floor(Math.random() * 100000)}`,
+          image: tour.image,
+          total: totalPrice,
+          email: formData.email,
+          reserva,
+        },
+      });
     } catch (err) {
       console.error('Error procesando reserva:', err);
       setApiError(
         err.response?.data?.message ||
-        err.message ||
-        'No se pudo procesar la reserva. Intenta nuevamente.',
+          err.message ||
+          'No se pudo procesar la reserva. Intenta nuevamente.',
       );
     } finally {
       setIsSubmitting(false);
@@ -436,7 +397,11 @@ export default function CheckoutPage({ onBack }) {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { id: 'tarjeta', label: 'Tarjeta', icon: CreditCard },
-                  { id: 'Pago en destino', label: 'Pago en destino', icon: DollarSign },
+                  {
+                    id: 'Pago en destino',
+                    label: 'Pago en destino',
+                    icon: DollarSign,
+                  },
                   { id: 'mercadopago', label: 'Mercado Pago', icon: Wallet },
                 ].map((method) => {
                   const Icon = method.icon;
@@ -446,14 +411,16 @@ export default function CheckoutPage({ onBack }) {
                       key={method.id}
                       type="button"
                       onClick={() => setPaymentMethod(method.id)}
-                      className={`cursor-pointer flex flex-col items-center justify-center py-6 px-4 rounded-xl border-2 transition-all ${selected
-                        ? 'border-orange-500 bg-orange-50 text-orange-700'
-                        : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                        }`}
+                      className={`cursor-pointer flex flex-col items-center justify-center py-6 px-4 rounded-xl border-2 transition-all ${
+                        selected
+                          ? 'border-orange-500 bg-orange-50 text-orange-700'
+                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                      }`}
                     >
                       <Icon
-                        className={`w-8 h-8 mb-3 ${selected ? 'text-orange-600' : 'text-slate-400'
-                          }`}
+                        className={`w-8 h-8 mb-3 ${
+                          selected ? 'text-orange-600' : 'text-slate-400'
+                        }`}
                       />
                       <span className="text-xs font-bold uppercase tracking-widest">
                         {method.label}
@@ -516,7 +483,9 @@ export default function CheckoutPage({ onBack }) {
               {paymentMethod === 'mercadopago' && (
                 <div className="mt-6">
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 text-sm">
-                    <span className="font-bold">Importante: </span>  Al confirmar, serás redirigido a Mercado Pago para completar el pago de forma segura.
+                    <span className="font-bold">Importante: </span> Al
+                    confirmar, seras redirigido a Mercado Pago para completar
+                    el pago de forma segura.
                   </div>
                 </div>
               )}
@@ -528,7 +497,6 @@ export default function CheckoutPage({ onBack }) {
               )}
             </section>
           </div>
-
 
           <aside className="lg:col-span-5">
             <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200 sticky top-24">
@@ -553,7 +521,8 @@ export default function CheckoutPage({ onBack }) {
                     {tour.nombre || tour.name || 'Aventura Seleccionada'}
                   </h3>
                   <p className="text-slate-500 text-sm mb-2 font-medium">
-                    Capacidad: {cantidadPersonas} Persona(s) / Max {capacidadMaxima}
+                    Capacidad: {cantidadPersonas} Persona(s) / Max{' '}
+                    {capacidadMaxima}
                   </p>
                   <div className="flex items-center gap-2 mb-2">
                     <button
@@ -564,7 +533,9 @@ export default function CheckoutPage({ onBack }) {
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="text-sm font-medium">{cantidadPersonas}</span>
+                    <span className="text-sm font-medium">
+                      {cantidadPersonas}
+                    </span>
                     <button
                       type="button"
                       onClick={() => handleCantidadChange(1)}
@@ -648,8 +619,8 @@ export default function CheckoutPage({ onBack }) {
               </button>
 
               <p className="text-center text-[10px] text-slate-500 mt-5 uppercase tracking-widest px-2 leading-relaxed font-semibold">
-                Al confirmar, aceptas nuestros protocolos de seguridad y terminos
-                de servicio.
+                Al confirmar, aceptas nuestros protocolos de seguridad y
+                terminos de servicio.
               </p>
             </div>
 
