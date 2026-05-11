@@ -267,9 +267,10 @@ export default function MapView({ items = [] }) {
 
   const filtered = useMemo(() => {
     return points.filter((p) => {
+      const difficulty = String(p.difficulty || "").toLowerCase();
       if (
         filters.dificultad !== "cualquiera" &&
-        p.difficulty?.toLowerCase() !== filters.dificultad
+        difficulty !== filters.dificultad
       )
         return false;
       if (
@@ -295,6 +296,19 @@ export default function MapView({ items = [] }) {
   const center = points[0]?.pos || [-32.8895, -68.8458];
   const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
   const ATTR = "© OpenStreetMap contributors";
+  const sportOptions = useMemo(
+    () => [
+      "cualquiera",
+      ...[
+        ...new Set(
+          points
+            .map((item) => String(item.category || "").toLowerCase())
+            .filter(Boolean),
+        ),
+      ].sort(),
+    ],
+    [points],
+  );
 
   const handleFilterChange = (key, value) =>
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -487,7 +501,7 @@ export default function MapView({ items = [] }) {
                     Dificultad
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {["cualquiera", "facil", "media", "dificil"].map(
+                    {["cualquiera", "baja", "media", "alta"].map(
                       (value) => {
                         const active = filters.dificultad === value;
                         const label =
@@ -562,15 +576,13 @@ export default function MapView({ items = [] }) {
                     className="w-full border border-gray-200 rounded-lg p-2 text-[12px]
                              bg-white focus:ring-2 focus:ring-orange-400/70 focus:border-orange-400"
                   >
-                    {[
-                      "Cualquiera",
-                      "Rafting",
-                      "Trekking",
-                      "Escalada",
-                      "Ciclismo",
-                    ].map((opt) => (
+                    {sportOptions.map((opt) => (
                       <option key={opt} value={opt.toLowerCase()}>
-                        {opt}
+                        {opt === "cualquiera"
+                          ? "Cualquiera"
+                          : opt
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (char) => char.toUpperCase())}
                       </option>
                     ))}
                   </select>

@@ -11,6 +11,14 @@ import recorridosBase from "../data/recorridos.json";
 
 const API = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
+function normalizeKey(value = "") {
+  return String(value)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
 export default function Home() {
   const [recorridos, setRecorridos] = useState(recorridosBase || []);
   const [loading, setLoading] = useState(false);
@@ -29,13 +37,41 @@ export default function Home() {
         const data = await res.json();
         if (!mounted) return;
 
-        const mapped = (data || []).map((r) => ({
-          ...r,
-          id: r._id ?? r.id,
-          pos: r.location ? [r.location.lat, r.location.lng] : r.pos ?? null,
-        }));
+        const baseByKey = new Map(
+          (recorridosBase || []).map((item) => [
+            `${normalizeKey(item.name)}|${normalizeKey(item.address)}`,
+            item,
+          ]),
+        );
 
-        setRecorridos(mapped);
+        const mapped = (data || []).map((r) => {
+          const key = `${normalizeKey(r.name)}|${normalizeKey(r.address)}`;
+          const fallback = baseByKey.get(key);
+
+          return {
+            ...fallback,
+            ...r,
+            id: r._id ?? r.id ?? fallback?.id,
+            pos: r.location ? [r.location.lat, r.location.lng] : r.pos ?? fallback?.pos ?? null,
+            price: r.price ?? fallback?.price,
+            season: r.season ?? fallback?.season,
+            ageGroup: r.ageGroup ?? fallback?.ageGroup,
+            capacity: r.capacity ?? fallback?.capacity,
+          };
+        });
+
+        const merged = [
+          ...mapped,
+          ...(recorridosBase || []).filter((item) => {
+            const key = `${normalizeKey(item.name)}|${normalizeKey(item.address)}`;
+            return !mapped.some(
+              (mappedItem) =>
+                `${normalizeKey(mappedItem.name)}|${normalizeKey(mappedItem.address)}` === key,
+            );
+          }),
+        ];
+
+        setRecorridos(merged);
       } catch (err) {
         console.warn("Error cargando recorridos:", err);
         if (mounted) {
@@ -46,8 +82,7 @@ export default function Home() {
       }
     };
 
-    // descomentá cuando uses el backend:
-    // fetchData();
+    fetchData();
 
     return () => {
       mounted = false;
