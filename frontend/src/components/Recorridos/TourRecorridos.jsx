@@ -85,7 +85,7 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
   };
 
   const isInRoute = itinerary.some(t => t.id === tour.id);
-  const canBeJoined = tour.allowMultiRoute !== false; 
+  const canBeJoined = tour.allowMultiRoute !== false;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all" onClick={onClose}>
@@ -125,18 +125,18 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
               <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 w-full md:w-[260px] shadow-sm flex-shrink-0">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Precio total</p>
                 <p className="text-3xl font-black text-orange-500 mb-6"><span className="text-lg mr-1">$</span>{tour.price}</p>
-                
+
                 <div className="space-y-3">
                   <button onClick={() => onReserve(tour)} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:-translate-y-0.5 text-sm">
                     Reservar {tour.isPackage ? "Paquete Completo" : "Solo Esto"}
                   </button>
 
                   {canBeJoined ? (
-                     <button onClick={() => onToggleRoute(tour)} className={`w-full font-bold py-3 px-4 rounded-xl transition-all duration-300 border text-sm ${isInRoute ? "bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"}`}>
-                       {isInRoute ? "- Quitar de itinerario" : "+ Unir a itinerario"}
-                     </button>
+                    <button onClick={() => onToggleRoute(tour)} className={`w-full font-bold py-3 px-4 rounded-xl transition-all duration-300 border text-sm ${isInRoute ? "bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"}`}>
+                      {isInRoute ? "- Quitar de itinerario" : "+ Unir a itinerario"}
+                    </button>
                   ) : (
-                     <p className="text-xs text-center text-slate-400 mt-2 italic">⚠️ Creador no permite unir.</p>
+                    <p className="text-xs text-center text-slate-400 mt-2 italic">⚠️ Creador no permite unir.</p>
                   )}
                 </div>
               </div>
@@ -154,7 +154,7 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
             )}
 
             <div className="border-t border-slate-100 my-8"></div>
-            
+
             {/* Reseñas */}
             <div>
               <h3 className="text-2xl font-bold text-slate-800 mb-6">Reseñas</h3>
@@ -219,7 +219,7 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
 export default function TourRecorridos({ onRouteBuilt }) {
   const { auth } = useAuth();
   const navigate = useNavigate();
-  
+
   const [tours, setTours] = useState([]);
   const [filteredTours, setFilteredTours] = useState([]);
   const [influencers, setInfluencers] = useState([]);
@@ -234,7 +234,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
   const simulatedCurrentUser = {
     ...auth,
     id: auth?.id || "u999",
-    nombre: auth?.nombre || "Usuario Influencer", 
+    nombre: auth?.nombre || "Usuario Influencer",
     role: "influencer", // <-- Cambia a "user" para probar el comportamiento normal
     social: "@mi_instagram",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"
@@ -245,10 +245,10 @@ export default function TourRecorridos({ onRouteBuilt }) {
     const mockTours = [
       { id: "pkg1", title: "Aventura Extrema V.I.P", author: "Luisito Comunica", durationMinutes: 0, distanceKm: 0, price: 58000, description: "Paquete exclusivo que une Rafting y Canopy en un solo día.", image: "https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: false, isPackage: true, influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" }, rating: 5.0 },
       { id: "pkg2", title: "Ruta del Vino y Relax", author: "Maxi Leguiza", durationMinutes: 0, distanceKm: 0, price: 45000, description: "Un paquete relajante creado por nuestro guía local para disfrutar de las mejores termas y bodegas.", image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, isPackage: true, influencer: null, rating: 4.8 },
-      { id: "t1", title: "Kayak en Potrerillos", author: "Dante Ruiz", durationMinutes: 150, distanceKm: 8, price: 22000, description: "Remada guiada en el dique con vistas abiertas...", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.8 }, 
+      { id: "t1", title: "Kayak en Potrerillos", author: "Dante Ruiz", durationMinutes: 150, distanceKm: 8, price: 22000, description: "Remada guiada en el dique con vistas abiertas...", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.8 },
       { id: "t2", title: "Rafting Río Mendoza", author: "Maxi Leguiza", durationMinutes: 210, distanceKm: 15, price: 36000, description: "Salida con rápidos...", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i2", name: "Drew Binsky", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80", social: "@drewbinsky" }, rating: 5.0 },
       { id: "t3", title: "Cabalgata en Uspallata", author: "Ema Caceres", durationMinutes: 180, distanceKm: 12, price: 18000, description: "Recorrido amable...", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: false, influencer: { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" }, rating: 4.2 },
-      { id: "t4", title: "Termas de Cacheuta Full Day", author: "Maria Luna", durationMinutes: 300, distanceKm: 18, price: 26000, description: "Día completo de termas...", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1439853949127-fa647821eba0?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.6 }, 
+      { id: "t4", title: "Termas de Cacheuta Full Day", author: "Maria Luna", durationMinutes: 300, distanceKm: 18, price: 26000, description: "Día completo de termas...", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1439853949127-fa647821eba0?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.6 },
       { id: "t5", title: "Trekking en Vallecitos", author: "Ana Gomez", durationMinutes: 320, distanceKm: 18, price: 24000, description: "Ascenso con tramos exigentes...", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1465311440653-ba9b1d9b0f5b?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" } },
       { id: "t6", title: "Canopy en Potrerillos", author: "Sofia Ramirez", durationMinutes: 110, distanceKm: 5, price: 21000, description: "Circuito aéreo con buenas vistas...", image: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" } },
     ];
@@ -288,7 +288,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
       image: tour.image || tour.image2,
       durationMinutes: tour.durationMinutes,
       author: tour.author,
-      influencer: tour.influencer || null 
+      influencer: tour.influencer || null
     }));
   };
 
@@ -316,7 +316,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-0">
           <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 h-full overflow-y-auto no-scrollbar pb-6 pr-2">
-            
+
             {/* 🔥 CARRUSEL AUTOMÁTICO DE PAQUETES/TOURS 🔥 */}
             <RecommendedPackages tours={tours} onSelectTour={setSelectedTour} />
 
@@ -327,7 +327,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
             {filteredTours.length > 0 ? (
               filteredTours.map((t) => (
                 <div key={t.id} className="relative transition-transform duration-300 flex-shrink-0">
-                  
+
                   {/* Etiquetas Superiores */}
                   <div className="absolute top-4 left-4 z-20 flex flex-col items-start gap-1">
                     {t.isPackage && (
@@ -370,7 +370,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
           <div className="w-px h-8 bg-slate-700"></div>
           <button
             onClick={() => {
-              const itemsNormalizados = normalizeForCart(itinerary); 
+              const itemsNormalizados = normalizeForCart(itinerary);
               if (onRouteBuilt) {
                 onRouteBuilt(itemsNormalizados);
               } else {
@@ -386,19 +386,19 @@ export default function TourRecorridos({ onRouteBuilt }) {
       )}
 
       {/* 🔥 PASAMOS EL CURRENT USER AL MODAL DE CREACIÓN */}
-      <CreateTourModal 
-        open={createOpen} 
-        onClose={() => setCreateOpen(false)} 
-        onCreated={(newTour) => { setTours((t) => [newTour, ...t]); setFilteredTours((t) => [newTour, ...t]); }} 
-        existingTours={tours} 
+      <CreateTourModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={(newTour) => { setTours((t) => [newTour, ...t]); setFilteredTours((t) => [newTour, ...t]); }}
+        existingTours={tours}
         currentUser={simulatedCurrentUser}
       />
-      
-      <TourDetailModal 
-        tour={selectedTour} 
-        onClose={() => setSelectedTour(null)} 
-        onReserve={(tour) => navigate("/carrito", { state: { selectedItems: normalizeForCart([tour]) } })} 
-        auth={auth} 
+
+      <TourDetailModal
+        tour={selectedTour}
+        onClose={() => setSelectedTour(null)}
+        onReserve={(tour) => navigate("/carrito", { state: { selectedItems: normalizeForCart([tour]) } })}
+        auth={auth}
         itinerary={itinerary}
         onToggleRoute={handleToggleRoute}
       />

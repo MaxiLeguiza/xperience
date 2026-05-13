@@ -1,199 +1,133 @@
-import {React , useEffect} from "react";
+// ListInfluencer.jsx
+// -------------------------------------------------------------
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Nav from "../Navbar/Nav";
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"></link>
+import { Search, ChevronDown, Users, MapPin, Video, Map, Navigation } from "lucide-react";
 
-
-// Array de influencers con todos los datos necesarios para mostrar en las tarjetas
-const influencers = [
+// =========================================================
+// 🛠️ MOCK: En el futuro, esto vendrá de un GET a /api/influencers
+// =========================================================
+const influencersData = [
   {
+    id: "infl-1",
     name: "Carlos Aventura",
     handle: "@carlos_aventura",
-    description:
-      "Apasionado por los deportes aéreos y de montaña. Comparto mis experiencias desde las cimas más altas.",
-    tags: [
-      { icon: "paragliding", label: "Parapente" },
-      { icon: "kayaking", label: "Rafting" },
-      { icon: "terrain", label: "Trekking" },
-    ],
-    stats: { followers: "1.2M", countries: "23 Países", videos: 78 },
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCNzD-FcvpRdhM9ug8_GLJOuedf1AOgNikGAwtHQhPaBV529A1cHBdYwEJBoXMqWR6U7crUoi7jQ_iymGPpbrbBSY00Z5R24Y0fhIMVlPBro5Ys4qShv6sZ10iKiTjltuSxQLEDAbR2PXmQ9W7FRsroyZv_MnGO_D7MB9TOEqDBSTZKoi3JXHG_KhVrnVJrpjLcXajYpHptgwSEnXL7oUoevMzhPGSNAZJT9fotGaCcY68JZthiakdwRoZRRfxUWopxD7pK8MWoVLQ",
+    description: "Apasionado por los deportes aéreos y de montaña. Comparto mis experiencias desde las cimas más altas de Mendoza y el mundo.",
+    tags: ["Parapente", "Rafting", "Trekking"],
+    stats: { followers: "1.2M", countries: 23, videos: 78 },
+    image: "https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=800&q=80",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
   },
-  // Puedes agregar más influencers aquí siguiendo la misma estructura
+  {
+    id: "infl-2",
+    name: "Sofía Explora",
+    handle: "@sofia_explora",
+    description: "Amante del turismo enológico y las cabalgatas al atardecer. Descubriendo los rincones más exclusivos de la ruta del vino.",
+    tags: ["Enoturismo", "Cabalgatas", "Relax"],
+    stats: { followers: "850K", countries: 12, videos: 142 },
+    image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=800&q=80",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80"
+  }
 ];
 
-
-// Componente para una sola tarjeta de influencer
 const InfluencerCard = ({ influencer }) => (
-
-    
-
   <Link
-    to="/Influencers" // En React Router, usamos Link para navegación interna
-    className="group bg-card-light dark:bg-card-dark rounded-lg shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 ease-in-out"
+    to={`/Influencers/${influencer.id}`} // 🔥 Este enlace pasa el ID a la URL
+    className="group bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col"
   >
-    {/* Contenedor de la imagen y el nombre encima */}
-    <div className="relative">
-      <img
-        alt={`Foto de perfil de ${influencer.name}`}
-        className="w-full h-56 object-cover"
-        src={influencer.image}
-      />
-      {/* Gradiente negro para que el texto sea legible sobre la imagen */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
-        <h3 className="text-xl font-bold text-white">{influencer.name}</h3>
-        <p className="text-sm text-gray-300">{influencer.handle}</p>
+    <div className="relative h-64 overflow-hidden">
+      <img alt={`Fondo de ${influencer.name}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={influencer.image} />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/30 to-transparent" />
+      <div className="absolute top-4 right-4">
+        <img src={influencer.avatar} alt="avatar" className="w-12 h-12 rounded-full border-2 border-white shadow-md object-cover" />
+      </div>
+      <div className="absolute bottom-4 left-5 right-5">
+        <h3 className="text-2xl font-black text-white leading-tight">{influencer.name}</h3>
+        <p className="text-orange-400 font-bold text-sm tracking-wide">{influencer.handle}</p>
       </div>
     </div>
-
-    {/* Información del influencer: descripción, tags y estadísticas */}
-    <div className="p-4">
-      {/* Descripción */}
-      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-        {influencer.description}
-      </p>
-
-      {/* Tags (actividades/deportes) */}
-      <div className="flex justify-start items-center gap-2 flex-wrap mb-3">
+    <div className="p-5 flex-1 flex flex-col">
+      <p className="text-sm text-slate-600 mb-4 line-clamp-2 leading-relaxed flex-1">{influencer.description}</p>
+      <div className="flex flex-wrap gap-2 mb-5">
         {influencer.tags.map((tag) => (
-          <span
-            key={tag.label}
-            className="bg-red-100 text-secondary text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1"
-          >
-            <span className="material-icons text-sm">{tag.icon}</span>{" "}
-            {tag.label}
+          <span key={tag} className="bg-orange-50 text-orange-600 border border-orange-100 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1">
+            {tag}
           </span>
         ))}
       </div>
-
-      {/* Estadísticas: seguidores, países, videos */}
-      <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
-        <div className="flex items-center gap-1">
-          <span className="material-icons text-base text-primary">group</span>
-          <span>{influencer.stats.followers}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="material-icons text-base text-primary">place</span>
-          <span>{influencer.stats.countries}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="material-icons text-base text-primary">
-            video_library
-          </span>
-          <span>{influencer.stats.videos}</span>
-        </div>
+      <div className="border-t border-slate-100 mb-4"></div>
+      <div className="flex justify-between items-center text-xs font-bold text-slate-500">
+        <div className="flex items-center gap-1.5" title="Seguidores"><Users className="w-4 h-4 text-slate-400" /><span>{influencer.stats.followers}</span></div>
+        <div className="flex items-center gap-1.5" title="Países visitados"><MapPin className="w-4 h-4 text-slate-400" /><span>{influencer.stats.countries}</span></div>
+        <div className="flex items-center gap-1.5" title="Videos publicados"><Video className="w-4 h-4 text-slate-400" /><span>{influencer.stats.videos}</span></div>
       </div>
     </div>
   </Link>
 );
 
-// Componente principal que renderiza toda la página de influencers
 const ListInfluencer = () => {
-     useEffect(() => {
-      // Cargar Tailwind dinámicamente con plugins y color personalizado
-      const script = document.createElement("script");
-      script.src =
-        "https://cdn.tailwindcss.com?plugins=forms,typography,container-queries";
-      script.async = true;
-  
-      script.onload = () => {
-        // Extender Tailwind con tu color personalizado
-        if (window.tailwind) {
-          window.tailwind.config = {
-            theme: {
-              extend: {
-                colors: {
-                  miColor: "#d86015", // Cambia esto por tu color
-                  background: {
-                    light: "#f2f4f7",
-                    dark: "#1a1a1a",
-                  },
-                  text: {
-                    light: "#111827",
-                    dark: "#f9fafb",
-                  },
-                  primary: "#d86015",
-                  secondary: "#16697A",
-                  card: {
-                    light: "#ffffff",
-                    dark: "#111827",
-                  },
-                  border: {
-                    light: "#e5e7eb",
-                    dark: "#374151",
-                  },
-                },
-              },
-            },
-            darkMode: "class",
-          };
-        }
-      };
-  
-      document.head.appendChild(script);
-  
-      return () => {
-        document.head.removeChild(script);
-      };
-    }, []);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [category, setCategory] = useState("");
+
+  const filteredInfluencers = influencersData.filter(inf => {
+    const matchesSearch = inf.name.toLowerCase().includes(searchTerm.toLowerCase()) || inf.handle.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = category === "" || inf.tags.includes(category);
+    return matchesSearch && matchesCategory;
+  });
+
   return (
-    <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
-      {/* Header / Navbar */}
-      <Nav/>
-
-      {/* Main content */}
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Buscador y filtro */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-text-light dark:text-text-dark mb-4">
-            Explora Influencers
+    <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-900">
+      <div className="flex-shrink-0 z-50"><Nav /></div>
+      {/* 🔥 Eliminamos max-w-7xl y mx-auto. Ajustamos los paddings a px-4 sm:px-8 lg:px-12 */}
+      <main className="flex-grow w-full px-4 sm:px-8 lg:px-12 py-8 md:py-10">
+        
+        <div className="text-center mb-10">
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
+            Nuestros <span className="text-orange-500">Creadores</span>
           </h2>
-          <div className="bg-card-light dark:bg-card-dark p-4 rounded-lg shadow-md">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Buscador */}
-              <div className="relative md:col-span-2">
-                <span className="material-icons absolute left-3 inset-y-0 flex items-center text-gray-400">
-                  search
-                </span>
-                <input
-                  className="w-full pl-10 pr-4 py-2 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark rounded-md focus:ring-primary focus:border-primary"
-                  placeholder="Buscar por nombre, deporte..."
-                  type="text"
-                />
-              </div>
+          <p className="text-slate-500 text-sm md:text-base max-w-2xl mx-auto">
+            Descubre a los aventureros y expertos locales que diseñan las rutas más increíbles.
+          </p>
+        </div>
 
-              {/* Filtro */}
-              <div className="relative">
-                <select className="w-full pl-4 pr-10 py-2 border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark rounded-md appearance-none focus:ring-primary focus:border-primary">
-                  <option>Filtrar por categoría</option>
-                  <option>Parapente</option>
-                  <option>Trekking</option>
-                  <option>Rafting</option>
-                  <option>Ciclismo</option>
-                  <option>Surf</option>
-                </select>
-                <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                  expand_more
-                </span>
-              </div>
+        {/* El buscador central sí conserva max-w-4xl para que no sea absurdamente largo */}
+        <div className="bg-slate-700 p-2 rounded-2xl md:rounded-full shadow-lg shadow-slate-200/50 border border-slate-200 mb-10 w-full max-w-4xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-2">
+            <div className="flex-1 w-full flex items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl md:rounded-full px-4 py-3 border border-slate-100 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20">
+              <Search className="w-5 h-5 text-slate-400 flex-shrink-0" />
+              <input className="w-full bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 ml-3" placeholder="Buscar por nombre o usuario..." type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            </div>
+            <div className="hidden md:block w-px h-8 bg-slate-200 mx-2"></div>
+            <div className="w-full md:w-auto relative flex items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl md:rounded-full px-4 py-3 border border-slate-100 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20">
+              <Map className="w-4 h-4 text-slate-400 flex-shrink-0 absolute left-4" />
+              <select className="w-full md:w-48 bg-transparent border-none outline-none text-sm font-bold text-slate-600 appearance-none pl-7 pr-6 cursor-pointer" value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="">Todas las categorías</option>
+                <option value="Parapente">Parapente</option>
+                <option value="Trekking">Trekking</option>
+                <option value="Rafting">Rafting</option>
+                <option value="Enoturismo">Enoturismo</option>
+                <option value="Cabalgatas">Cabalgatas</option>
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 pointer-events-none absolute right-4" />
             </div>
           </div>
         </div>
 
-        {/* Grid de tarjetas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {influencers.map((inf) => (
-            <InfluencerCard key={inf.name} influencer={inf} /> // Renderizamos cada tarjeta
-          ))}
-        </div>
+        {filteredInfluencers.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {filteredInfluencers.map((inf) => (
+              <InfluencerCard key={inf.id} influencer={inf} /> 
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+            <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"><Navigation className="w-8 h-8 text-slate-400" /></div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">No se encontraron creadores</h3>
+            <p className="text-slate-500 text-sm">Prueba ajustando los filtros de búsqueda.</p>
+          </div>
+        )}
 
-        {/* Botón para cargar más */}
-        <div className="text-center mt-12">
-          <button className="w-full sm:w-auto bg-primary text-white px-8 py-3 rounded-md text-sm font-medium hover:bg-primary-dark transition-colors">
-            Cargar más influencers
-          </button>
-        </div>
       </main>
     </div>
   );

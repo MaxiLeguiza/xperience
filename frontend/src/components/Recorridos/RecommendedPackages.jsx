@@ -29,7 +29,7 @@ export default function RecommendedPackages({ tours = [], onSelectTour }) {
   const currentTour = topTours[currentIndex];
 
   return (
-    <div className="bg-white p-5 rounded-[24px] shadow-sm border border-slate-100 flex-shrink-0 relative overflow-hidden group">
+    <div className="bg-orange-200 p-5 rounded-[24px] shadow-sm border border-slate-100 flex-shrink-0 relative overflow-hidden group">
       
       {/* Encabezado */}
       <div className="flex items-center justify-between mb-4 relative z-10">
