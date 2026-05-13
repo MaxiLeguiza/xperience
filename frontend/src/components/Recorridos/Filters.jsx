@@ -1,18 +1,41 @@
 // Filters.jsx
 // -------------------------------------------------------------
 // Barra de filtros y búsqueda (Diseño Horizontal Premium / Flotante).
+// Optimizado: Solo aplica la búsqueda al presionar "Aplicar".
 // -------------------------------------------------------------
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export default function Filters({ filters, setFilters, applyFilters }) {
+  // 1. Estado local "borrador" para guardar los cambios mientras se escribe
+  const [localFilters, setLocalFilters] = useState(filters);
+
+  // 2. Efecto para sincronizar el estado si se reinician los filtros desde afuera
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
   const handleNumberChange = (key, value) => {
     const numberValue = value === "" ? "" : Number(value);
-    setFilters((f) => ({ ...f, [key]: numberValue }));
+    setLocalFilters((f) => ({ ...f, [key]: numberValue }));
+  };
+
+  // 3. Función que transfiere el borrador al estado global solo al hacer clic
+  const handleApplyClick = () => {
+    setFilters(localFilters);
+    // (Nota: como en tu TourRecorridos.jsx tienes un useEffect escuchando 'filters', 
+    // al hacer setFilters aquí, la búsqueda se disparará sola).
+  };
+
+  // Opcional: Permitir aplicar filtros presionando la tecla "Enter"
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleApplyClick();
+    }
   };
 
   return (
     // Contenedor principal: sticky para que flote, forma de píldora (rounded-full) en PC
-    <section className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border border-slate-200 shadow-lg shadow-slate-200/50 rounded-2xl md:rounded-full p-2 md:p-3 w-full transition-all">
+    <section className="sticky top-0 z-30 bg-slate-700/90 backdrop-blur-md border border-slate-200 shadow-lg shadow-slate-200/50 rounded-2xl md:rounded-full p-2 md:p-3 w-full transition-all">
       <div className="flex flex-col md:flex-row items-center gap-3">
         
         {/* 1. Búsqueda por Título */}
@@ -25,8 +48,9 @@ export default function Filters({ filters, setFilters, applyFilters }) {
             type="text"
             placeholder="Buscar destino o actividad..."
             className="w-full bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 ml-3"
-            value={filters.q}
-            onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
+            value={localFilters.q}
+            onChange={(e) => setLocalFilters((f) => ({ ...f, q: e.target.value }))}
+            onKeyDown={handleKeyDown}
           />
         </div>
 
@@ -40,16 +64,18 @@ export default function Filters({ filters, setFilters, applyFilters }) {
             type="number"
             placeholder="Mín"
             className="w-16 bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            value={filters.priceMin || ""}
+            value={localFilters.priceMin || ""}
             onChange={(e) => handleNumberChange("priceMin", e.target.value)}
+            onKeyDown={handleKeyDown}
           />
           <span className="text-slate-300 mx-2">-</span>
           <input
             type="number"
             placeholder="Máx"
             className="w-16 bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            value={filters.priceMax || ""}
+            value={localFilters.priceMax || ""}
             onChange={(e) => handleNumberChange("priceMax", e.target.value)}
+            onKeyDown={handleKeyDown}
           />
         </div>
 
@@ -58,15 +84,15 @@ export default function Filters({ filters, setFilters, applyFilters }) {
 
         {/* 3. Ordenar por Precio (Toggle Switch en lugar de Checkbox) */}
         <label className="w-full md:w-auto flex items-center justify-between md:justify-center gap-3 cursor-pointer px-2 py-2 md:py-0">
-          <span className="text-sm font-bold text-slate-500 whitespace-nowrap">
+          <span className="text-sm font-bold text-white whitespace-nowrap">
             Más baratos
           </span>
           <div className="relative">
             <input
               type="checkbox"
               className="sr-only peer"
-              checked={filters.sortPriceAsc}
-              onChange={(e) => setFilters((f) => ({ ...f, sortPriceAsc: e.target.checked }))}
+              checked={localFilters.sortPriceAsc}
+              onChange={(e) => setLocalFilters((f) => ({ ...f, sortPriceAsc: e.target.checked }))}
             />
             {/* Fondo del Toggle */}
             <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-500/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
@@ -75,7 +101,7 @@ export default function Filters({ filters, setFilters, applyFilters }) {
 
         {/* 4. Botón Aplicar */}
         <button
-          onClick={applyFilters}
+          onClick={handleApplyClick}
           className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white py-2.5 px-6 rounded-full text-sm font-bold transition-colors whitespace-nowrap"
         >
           Aplicar
