@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import clienteAxios from '../../config/axios';
+import Nav from '../Navbar/Nav';
 
 export default function Exito() {
   const { state } = useLocation();
@@ -86,13 +87,14 @@ export default function Exito() {
 
   return (
     <div className="min-h-screen bg-[#090e15] text-white">
-      <header className="bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-6 py-4 fixed top-0 w-full z-50 border-b border-white/5">
+      {/*<header className="bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-6 py-4 fixed top-0 w-full z-50 border-b border-white/5">
         <div className="text-2xl font-black text-orange-500">Xperience</div>
         <div className="flex gap-4 text-gray-400">
           <Icon name="share" />
           <Icon name="print" />
         </div>
-      </header>
+      </header>*/}
+      <Nav />
 
       <main className="pt-24 pb-16 px-4 max-w-6xl mx-auto">
         <section className="text-center mb-12">

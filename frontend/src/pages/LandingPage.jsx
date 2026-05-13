@@ -6,6 +6,7 @@ import { XperienceLogo } from '../components/LandingPage/XperienceLogo';
 import { Mountain, Instagram, Twitter, Facebook, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 export default function App() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,12 +19,7 @@ export default function App() {
                 <div className="max-w-7xl mx-auto px-4 py-3">
                     <div className="flex items-center justify-between">
                         {/* Logo */}
-                        <a href="#" className="flex items-center gap-3 group text-[16px] px-[-5px] py-[0px]">
-                            <XperienceLogo size={35} showText={false} />
-                            <span className="text-2xl text-white tracking-wide transition-all group-hover:tracking-wider" style={{ fontFamily: 'cursive, sans-serif' }}>
-                                PERIENCE
-                            </span>
-                        </a>
+                        <XperienceLogo />
 
                         {/* Desktop Menu */}
                         <div className="hidden md:flex items-center gap-8">
@@ -107,9 +103,9 @@ export default function App() {
                         Únete a miles de aventureros y comienza tu próximo desafío extremo hoy mismo
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="px-8 py-4 bg-white text-black rounded-lg hover:bg-white/90 transition-all hover:scale-105 hover:shadow-2xl font-bold">
+                        <Link to="/registrar" className="inline-block px-8 py-4 bg-white text-black rounded-lg hover:bg-white/90 transition-all hover:scale-105 hover:shadow-2xl font-bold">
                             Crear Cuenta Gratis
-                        </button>
+                        </Link>
                         <button className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition-all hover:scale-105 font-bold">
                             Explorar Comunidad
                         </button>
@@ -122,10 +118,10 @@ export default function App() {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid md:grid-cols-4 gap-8 mb-8">
                         <div>
-                            <div className="mb-4">
-                                <XperienceLogo size={30} showText={false} />
-                                <span className="ml-2 text-[24px]" style={{ fontFamily: 'cursive, sans-serif' }}>PERIENCE</span>
+                            <div className="mb-6">
+                                <XperienceLogo  />
                             </div>
+
                             <p className="text-white/70 text-[15px]">
                                 Tu plataforma definitiva para deportes extremos y aventuras inolvidables
                             </p>

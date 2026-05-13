@@ -19,7 +19,7 @@ export default function AuthSection() {
             </span>
             <button
               onClick={logout}
-              className="px-6 py-1 rounded-md border border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white transition-colors"
+              className="px-2 py-1 rounded-md border border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white transition-colors"
             >
               Cerrar sesión
             </button>

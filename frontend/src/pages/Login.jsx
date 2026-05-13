@@ -112,7 +112,7 @@ const Login = () => {
                         to="/"
                         className="fixed top-4 left-4 z-50 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-[#d86015] px-6 py-3 text-sm font-semibold text-white shadow-2xl shadow-orange-500/20 hover:from-orange-500/90 hover:to-[#d86015]/90 hover:shadow-[#d86015]/30 transition-all"
                     >
-                        Volver atrás
+                        Volver
                     </Link>
                 </div>
 
