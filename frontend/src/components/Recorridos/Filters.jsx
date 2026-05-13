@@ -1,9 +1,7 @@
 // Filters.jsx
 // -------------------------------------------------------------
-// Barra de filtros y búsqueda.
-// Permite: buscar por texto, filtrar por rango de precios y ordenar por precio ascendente.
+// Barra de filtros y búsqueda (Diseño Horizontal Premium / Flotante).
 // -------------------------------------------------------------
-// Filters.jsx
 import React from "react";
 
 export default function Filters({ filters, setFilters, applyFilters }) {
@@ -13,79 +11,77 @@ export default function Filters({ filters, setFilters, applyFilters }) {
   };
 
   return (
-    <section className="card p-6 bg-white rounded-xl shadow">
-      <h3 className="text-lg font-semibold mb-4">Filtros</h3>
-
-      {/* Campo título */}
-      <div className="mb-4">
-        <label htmlFor="title" className="text-sm font-medium text-gray-700">
-          Título
-        </label>
-        <input
-          id="title"
-          type="text"
-          placeholder="Buscar por título..."
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-          value={filters.q}
-          onChange={(e) =>
-            setFilters((f) => ({ ...f, q: e.target.value }))
-          }
-        />
-      </div>
-
-      {/* Precio mínimo/máximo */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label htmlFor="priceMin" className="text-sm font-medium text-gray-700">
-            Precio Mín.
-          </label>
+    // Contenedor principal: sticky para que flote, forma de píldora (rounded-full) en PC
+    <section className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border border-slate-200 shadow-lg shadow-slate-200/50 rounded-2xl md:rounded-full p-2 md:p-3 w-full transition-all">
+      <div className="flex flex-col md:flex-row items-center gap-3">
+        
+        {/* 1. Búsqueda por Título */}
+        <div className="flex-1 w-full flex items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-full px-4 py-2.5 border border-slate-100 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20">
+          <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
           <input
-            id="priceMin"
-            type="number"
-            placeholder="$0"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-            value={filters.priceMin}
-            onChange={(e) => handleNumberChange("priceMin", e.target.value)}
+            id="title"
+            type="text"
+            placeholder="Buscar destino o actividad..."
+            className="w-full bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 ml-3"
+            value={filters.q}
+            onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
           />
         </div>
-        <div>
-          <label htmlFor="priceMax" className="text-sm font-medium text-gray-700">
-            Precio Máx.
-          </label>
+
+        {/* Separador vertical (solo PC) */}
+        <div className="hidden md:block w-px h-8 bg-slate-200"></div>
+
+        {/* 2. Rango de Precios */}
+        <div className="w-full md:w-auto flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors rounded-full px-4 py-2.5 border border-slate-100 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20">
+          <span className="text-sm font-bold text-slate-400 mr-2">$</span>
           <input
-            id="priceMax"
             type="number"
-            placeholder="$1000"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-            value={filters.priceMax}
+            placeholder="Mín"
+            className="w-16 bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            value={filters.priceMin || ""}
+            onChange={(e) => handleNumberChange("priceMin", e.target.value)}
+          />
+          <span className="text-slate-300 mx-2">-</span>
+          <input
+            type="number"
+            placeholder="Máx"
+            className="w-16 bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            value={filters.priceMax || ""}
             onChange={(e) => handleNumberChange("priceMax", e.target.value)}
           />
         </div>
-      </div>
 
-      {/* Ordenar por precio */}
-      <div className="flex items-center mb-4">
-        <input
-          id="sortPriceAsc"
-          type="checkbox"
-          checked={filters.sortPriceAsc}
-          onChange={(e) =>
-            setFilters((f) => ({ ...f, sortPriceAsc: e.target.checked }))
-          }
-          className="h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
-        />
-        <label htmlFor="sortPriceAsc" className="ml-2 text-sm text-gray-700">
-          Ordenar por precio (ascendente)
+        {/* Separador vertical (solo PC) */}
+        <div className="hidden md:block w-px h-8 bg-slate-200"></div>
+
+        {/* 3. Ordenar por Precio (Toggle Switch en lugar de Checkbox) */}
+        <label className="w-full md:w-auto flex items-center justify-between md:justify-center gap-3 cursor-pointer px-2 py-2 md:py-0">
+          <span className="text-sm font-bold text-slate-500 whitespace-nowrap">
+            Más baratos
+          </span>
+          <div className="relative">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={filters.sortPriceAsc}
+              onChange={(e) => setFilters((f) => ({ ...f, sortPriceAsc: e.target.checked }))}
+            />
+            {/* Fondo del Toggle */}
+            <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-orange-500/40 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+          </div>
         </label>
-      </div>
 
-      {/* Botón aplicar */}
-      <button
-        onClick={applyFilters}
-        className="w-full bg-[#FF4500] hover:bg-[#E03E00] text-white py-2 px-4 rounded-md text-sm font-medium"
-      >
-        Aplicar filtros
-      </button>
+        {/* 4. Botón Aplicar */}
+        <button
+          onClick={applyFilters}
+          className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white py-2.5 px-6 rounded-full text-sm font-bold transition-colors whitespace-nowrap"
+        >
+          Aplicar
+        </button>
+
+      </div>
     </section>
   );
 }

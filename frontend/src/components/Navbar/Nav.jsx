@@ -9,9 +9,9 @@ function Nav() {
     const [activeLink, setActiveLink] = useState();
 
     const links = [
-        { label: "Recorridos", href: "/recorridos" },
+        { label: "Actividades", href: "/recorridos" },
         { label: "Influencers", href: "/ListInfluencer" },
-        { label: "Proximamente", href: null },
+        { label: "Extreme IA", href: "/Chat" },
     ];
 
     return (
@@ -21,14 +21,14 @@ function Nav() {
                     {/* LOGO */}
                     <div className="flex items-center min-w-[100px]">
                         <Link to={auth ? "/home" : "/"}>
-                            <h1 className="text-3xl font-bold text-primary "> Xperience</h1>
+                            <h1 className="text-4xl font-bold text-primary hover:scale-105 transition-all hover:text-white"> X<span className="text-white">PERIENCE</span></h1>
                         </Link>
                     </div>
                     {/* LINKS DE NAVEGACIÓN */}
-                    <nav className="hidden md:flex items-center space-x-4 mx-auto w-auto">
+                    <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
                         {links.map((link) => {
                             const isActive = activeLink === link.label;
-                            const linkClass = `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive
+                            const linkClass = `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:scale-110 transition-all ${isActive
                                 ? "text-primary border-b-2 border-primary"
                                 : "text-white hover:text-primary"
                                 }`;
