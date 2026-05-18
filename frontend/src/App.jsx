@@ -23,6 +23,7 @@ import CheckoutPage from "./components/Booking/CheckoutPage";
 
 // CAMBIO 1: Importamos ProtectedRoute para proteger rutas que requieren autenticación
 import ProtectedRoute from "./components/ProtectedRoute";
+import Chat from "./pages/Chat";
 
 export default function App() {
     return (
@@ -65,8 +66,13 @@ export default function App() {
           Solo usuarios logueados pueden ver perfiles e información */}
             <Route path="/redeem" element={<ProtectedRoute><RedeemPage /></ProtectedRoute>} />
             <Route path="/ListInfluencer" element={<ProtectedRoute><ListInfluencer /></ProtectedRoute>} />
+            <Route path="/Influencers/:id" element={<InfluencerProfile />} />
             <Route path="/Influencers" element={<ProtectedRoute><InfluencerProfile /></ProtectedRoute>} />
             <Route path="/InfluencerCard" element={<ProtectedRoute><InfluencerCard /></ProtectedRoute>} />
+        {/* CAMBIO 8: Chat IA (protegidas) */}
+       
+       <Route path="/Chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+       
         </Routes>
     );
 }
