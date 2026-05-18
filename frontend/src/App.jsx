@@ -19,6 +19,8 @@ import Nav from "./components/Navbar/Nav";
 import InfluencerCard from "./components/Influencers/InfluencerCard";
 import LandingPage from "./pages/LandingPage";
 import CheckoutPage from "./components/Booking/CheckoutPage";
+import AgencyDashboard from "./components/Agencias/AgencyDashboard";
+import AdvancedTourManager from "./components/Agencias/AdvancedTourManager";  
 
 
 // CAMBIO 1: Importamos ProtectedRoute para proteger rutas que requieren autenticación
@@ -70,6 +72,9 @@ export default function App() {
             <Route path="/Influencers" element={<ProtectedRoute><InfluencerProfile /></ProtectedRoute>} />
             <Route path="/InfluencerCard" element={<ProtectedRoute><InfluencerCard /></ProtectedRoute>} />
         {/* CAMBIO 8: Chat IA (protegidas) */}
+  
+        <Route path="/agencia/dashboard" element={<ProtectedRoute><AgencyDashboard /></ProtectedRoute>} />
+        <Route path="/agencia/crear-ruta" element={<ProtectedRoute><AdvancedTourManager /></ProtectedRoute>} />
        
        <Route path="/Chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
        

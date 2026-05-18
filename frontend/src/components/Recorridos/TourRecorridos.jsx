@@ -2,12 +2,24 @@
 // -------------------------------------------------------------
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+// Componentes de Leaflet
+import { MapContainer, TileLayer, Marker } from "react-leaflet"; 
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
 import TourCard from "./TourCard";
 import Filters from "./Filters";
 import CreateTourModal from "./CreateTourModal";
 import RecommendedPackages from "./RecommendedPackages";
 import Nav from "../Navbar/Nav";
 import useAuth from "../../hooks/useAuth";
+
+const customMarker = new L.divIcon({
+  className: "custom-marker",
+  html: `<div style="width: 18px; height: 18px; background-color: #f97316; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9]
+});
 
 function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
   return (
@@ -40,13 +52,17 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
   if (!tour) return null;
 
   const baseComments = useMemo(() => tour.comments && Array.isArray(tour.comments) && tour.comments.length ? tour.comments : [
-    { user: "Carlos A.", rating: 4, text: "¡Una experiencia increíble! Muy recomendable." },
-    { user: "Ana L.", rating: 5, text: "Todo estuvo excelente, me encantó el recorrido." }
+    { user: "Carlos A.", rating: 4, text: "¡Una experiencia increíble! Muy recomendable.", timestamp: Date.now() - 172800000 }, 
+    { user: "Ana L.", rating: 5, text: "Todo estuvo excelente, me encantó el recorrido.", timestamp: Date.now() - 432000000 }  
   ], [tour]);
 
   const [comments, setComments] = useState(baseComments);
   const [newComment, setNewComment] = useState("");
   const [newRating, setNewRating] = useState(0);
+
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editCommentText, setEditCommentText] = useState("");
+  const [editCommentRating, setEditCommentRating] = useState(0);
 
   const storageKey = "tourComments";
   const [initialized, setInitialized] = useState(false);
@@ -68,20 +84,53 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
   const handleSubmitComment = (e) => {
     e.preventDefault();
     if (!newRating || !newComment.trim()) return;
-    const entry = { user: auth?.nombre || "Visitante", rating: newRating, text: newComment.trim() };
+    
+    const entry = { 
+      user: auth?.nombre || "Visitante", 
+      rating: newRating, 
+      text: newComment.trim(),
+      timestamp: Date.now() 
+    };
+
     setComments((prev) => {
       const next = [entry, ...prev];
       if (initialized) {
         try {
           const raw = localStorage.getItem(storageKey);
           const map = raw ? JSON.parse(raw) : {};
-          map[tour.id] = next.filter((c) => !baseComments.some((b) => b.text === c.text && b.user === c.user));
+          map[tour.id] = next.filter((c) => !baseComments.some((b) => b.timestamp === c.timestamp));
           localStorage.setItem(storageKey, JSON.stringify(map));
         } catch { }
       }
       return next;
     });
     setNewComment(""); setNewRating(0);
+  };
+
+  const handleSaveEdit = (index) => {
+    if (!editCommentText.trim() || !editCommentRating) return;
+
+    setComments((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], text: editCommentText.trim(), rating: editCommentRating };
+
+      if (initialized) {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          const map = raw ? JSON.parse(raw) : {};
+          map[tour.id] = next.filter((c) => !baseComments.some((b) => b.timestamp === c.timestamp));
+          localStorage.setItem(storageKey, JSON.stringify(map));
+        } catch { }
+      }
+      return next;
+    });
+    setEditingIndex(null);
+  };
+
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return "";
+    const d = new Date(timestamp);
+    return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
   const isInRoute = itinerary.some(t => t.id === tour.id);
@@ -101,7 +150,6 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
               <img src={gallery[0]} alt={tour.title} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
               <div className="absolute bottom-6 left-6 right-6">
-                {/* Etiqueta Visual de Paquete */}
                 {tour.isPackage && <span className="bg-gradient-to-r from-orange-500 to-pink-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full mb-2 inline-block shadow-md border border-white">Paquete de Actividades</span>}
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-md leading-tight">{tour.title}</h1>
               </div>
@@ -120,6 +168,25 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
                   <h3 className="text-lg font-bold text-slate-800 mb-2">Acerca del {tour.isPackage ? "paquete" : "recorrido"}</h3>
                   <p className="text-slate-600 leading-relaxed text-sm md:text-base">{tour.description}</p>
                 </div>
+
+                {!tour.isPackage && (
+                  <div className="mt-6 border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-100">
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ubicación del evento</h4>
+                    </div>
+                    <div className="h-48 w-full relative z-0">
+                      <MapContainer 
+                        center={tour.pos || [-32.8895, -68.8458]} 
+                        zoom={12} 
+                        scrollWheelZoom={false} 
+                        style={{ height: "100%", width: "100%", zIndex: 0 }}
+                      >
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <Marker position={tour.pos || [-32.8895, -68.8458]} icon={customMarker} />
+                      </MapContainer>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 w-full md:w-[260px] shadow-sm flex-shrink-0">
@@ -155,7 +222,7 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
 
             <div className="border-t border-slate-100 my-8"></div>
 
-            {/* Reseñas */}
+            {/* SECCIÓN DE RESEÑAS */}
             <div>
               <h3 className="text-2xl font-bold text-slate-800 mb-6">Reseñas</h3>
               <div className="flex flex-col md:flex-row gap-8 mb-8">
@@ -194,20 +261,81 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
                 <textarea className="w-full p-4 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all resize-none text-sm" placeholder="¿Qué te pareció esta expedición?..." rows="3" value={newComment} onChange={(e) => setNewComment(e.target.value)}></textarea>
                 <div className="flex justify-end"><button type="submit" disabled={!newComment.trim() || !newRating} className="bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors text-sm">Publicar reseña</button></div>
               </form>
+              
               <div className="space-y-6">
-                {comments.map((comment, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-base flex-shrink-0">{comment.user.charAt(0).toUpperCase()}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-base font-bold text-slate-800">{comment.user}</p>
-                        <span className="text-orange-400 text-xs tracking-widest">{"★".repeat(comment.rating)}{"☆".repeat(5 - comment.rating)}</span>
+                {comments.map((comment, index) => {
+                  const isOwner = comment.user === (auth?.nombre || "Visitante");
+                  const isWithin24Hours = comment.timestamp && (Date.now() - comment.timestamp) < 24 * 60 * 60 * 1000;
+                  const canEdit = isOwner && isWithin24Hours;
+                  const isEditing = editingIndex === index;
+
+                  return (
+                    <div key={index} className="flex gap-4">
+                      <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-base flex-shrink-0">
+                        {comment.user.charAt(0).toUpperCase()}
                       </div>
-                      <p className="text-sm text-slate-600 leading-relaxed">{comment.text}</p>
+                      
+                      <div className="flex-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-2 sm:gap-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-base font-bold text-slate-800">{comment.user}</p>
+                            <span className="text-[10px] font-bold text-slate-400 mt-0.5">
+                              {formatDateTime(comment.timestamp)}
+                            </span>
+                          </div>
+                          
+                          {canEdit && !isEditing && (
+                            <button 
+                              onClick={() => {
+                                setEditingIndex(index);
+                                setEditCommentText(comment.text);
+                                setEditCommentRating(comment.rating);
+                              }} 
+                              className="text-[10px] font-bold text-orange-500 hover:text-orange-600 uppercase tracking-widest"
+                            >
+                              Editar reseña
+                            </button>
+                          )}
+                        </div>
+
+                        {isEditing ? (
+                          <div className="bg-white border border-slate-200 p-4 rounded-2xl mt-2 shadow-sm">
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="text-xs font-bold text-slate-500">Calificación:</span>
+                              <div className="flex flex-row-reverse gap-1 text-lg">
+                                {[5, 4, 3, 2, 1].map((rating) => (
+                                  <React.Fragment key={rating}>
+                                    <input id={`edit-star-${index}-${rating}`} type="radio" hidden checked={editCommentRating === rating} onChange={() => setEditCommentRating(rating)} />
+                                    <label htmlFor={`edit-star-${index}-${rating}`} className={`cursor-pointer transition-colors ${editCommentRating >= rating ? "text-orange-400" : "text-slate-300 hover:text-orange-200"}`}>★</label>
+                                  </React.Fragment>
+                                ))}
+                              </div>
+                            </div>
+                            <textarea 
+                              className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all resize-none text-sm" 
+                              rows="2" 
+                              value={editCommentText} 
+                              onChange={(e) => setEditCommentText(e.target.value)}
+                            />
+                            <div className="flex justify-end gap-3 mt-3">
+                              <button onClick={() => setEditingIndex(null)} className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">Cancelar</button>
+                              <button onClick={() => handleSaveEdit(index)} disabled={!editCommentText.trim() || !editCommentRating} className="bg-orange-500 text-white font-bold px-4 py-2 rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors text-xs">Guardar cambios</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-orange-400 text-xs tracking-widest block mb-1">
+                              {"★".repeat(comment.rating)}{"☆".repeat(5 - comment.rating)}
+                            </span>
+                            <p className="text-sm text-slate-600 leading-relaxed">{comment.text}</p>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+
             </div>
           </div>
         </div>
@@ -230,27 +358,36 @@ export default function TourRecorridos({ onRouteBuilt }) {
 
   const [itinerary, setItinerary] = useState([]);
 
-  // 🔥 SIMULAMOS EL CURRENT USER (En producción vendrá de useAuth/Mongo)
-  const simulatedCurrentUser = {
+  // 🔥 EXTRACCIÓN DE ROL A PRUEBA DE FALLOS:
+  // Busca en auth, en auth.user, o directamente en el localStorage si el contexto no lo guardó bien.
+  let storedRole = "user";
+  try {
+    const localData = JSON.parse(localStorage.getItem('user') || localStorage.getItem('auth') || '{}');
+    storedRole = localData?.role || localData?.user?.role || "user";
+  } catch (error) {}
+
+  const currentRole = String(auth?.role || auth?.user?.role || storedRole).toLowerCase().trim();
+  const isCreatorOrAgency = currentRole === "agencia" || currentRole === "influencer";
+
+  const currentUserObj = {
     ...auth,
-    id: auth?.id || "u999",
-    nombre: auth?.nombre || "Usuario Influencer",
-    role: "influencer", // <-- Cambia a "user" para probar el comportamiento normal
-    social: "@mi_instagram",
+    id: auth?.id || auth?.user?.id || "u999",
+    nombre: auth?.nombre || auth?.user?.nombre || "Usuario",
+    role: currentRole, 
+    social: "@user", 
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"
   };
 
   useEffect(() => {
-    // 🔥 MOCK DATA ACTUALIZADA CON 2 PAQUETES (Uno Influencer, Uno Normal)
     const mockTours = [
-      { id: "pkg1", title: "Aventura Extrema V.I.P", author: "Luisito Comunica", durationMinutes: 0, distanceKm: 0, price: 58000, description: "Paquete exclusivo que une Rafting y Canopy en un solo día.", image: "https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: false, isPackage: true, influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" }, rating: 5.0 },
-      { id: "pkg2", title: "Ruta del Vino y Relax", author: "Maxi Leguiza", durationMinutes: 0, distanceKm: 0, price: 45000, description: "Un paquete relajante creado por nuestro guía local para disfrutar de las mejores termas y bodegas.", image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, isPackage: true, influencer: null, rating: 4.8 },
-      { id: "t1", title: "Kayak en Potrerillos", author: "Dante Ruiz", durationMinutes: 150, distanceKm: 8, price: 22000, description: "Remada guiada en el dique con vistas abiertas...", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.8 },
-      { id: "t2", title: "Rafting Río Mendoza", author: "Maxi Leguiza", durationMinutes: 210, distanceKm: 15, price: 36000, description: "Salida con rápidos...", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i2", name: "Drew Binsky", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80", social: "@drewbinsky" }, rating: 5.0 },
-      { id: "t3", title: "Cabalgata en Uspallata", author: "Ema Caceres", durationMinutes: 180, distanceKm: 12, price: 18000, description: "Recorrido amable...", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: false, influencer: { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" }, rating: 4.2 },
-      { id: "t4", title: "Termas de Cacheuta Full Day", author: "Maria Luna", durationMinutes: 300, distanceKm: 18, price: 26000, description: "Día completo de termas...", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1439853949127-fa647821eba0?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.6 },
-      { id: "t5", title: "Trekking en Vallecitos", author: "Ana Gomez", durationMinutes: 320, distanceKm: 18, price: 24000, description: "Ascenso con tramos exigentes...", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1465311440653-ba9b1d9b0f5b?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" } },
-      { id: "t6", title: "Canopy en Potrerillos", author: "Sofia Ramirez", durationMinutes: 110, distanceKm: 5, price: 21000, description: "Circuito aéreo con buenas vistas...", image: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" } },
+      { id: "pkg1", title: "Aventura Extrema V.I.P", author: "Luisito Comunica", durationMinutes: 0, distanceKm: 0, price: 58000, description: "Paquete exclusivo que une Rafting y Canopy en un solo día.", image: "https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: false, isPackage: true, influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" }, rating: 5.0, pos: [-32.8895, -68.8458] },
+      { id: "pkg2", title: "Ruta del Vino y Relax", author: "Maxi Leguiza", durationMinutes: 0, distanceKm: 0, price: 45000, description: "Un paquete relajante creado por nuestro guía local para disfrutar de las mejores termas y bodegas.", image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, isPackage: true, influencer: null, rating: 4.8, pos: [-33.0033, -68.8683] },
+      { id: "t1", title: "Kayak en Potrerillos", author: "Dante Ruiz", durationMinutes: 150, distanceKm: 8, price: 22000, description: "Remada guiada en el dique con vistas abiertas...", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.8, pos: [-32.9525, -69.1866] },
+      { id: "t2", title: "Rafting Río Mendoza", author: "Maxi Leguiza", durationMinutes: 210, distanceKm: 15, price: 36000, description: "Salida con rápidos...", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i2", name: "Drew Binsky", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80", social: "@drewbinsky" }, rating: 5.0, pos: [-32.9000, -69.2000] },
+      { id: "t3", title: "Cabalgata en Uspallata", author: "Ema Caceres", durationMinutes: 180, distanceKm: 12, price: 18000, description: "Recorrido amable...", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: false, influencer: { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" }, rating: 4.2, pos: [-32.5833, -69.3500] },
+      { id: "t4", title: "Termas de Cacheuta Full Day", author: "Maria Luna", durationMinutes: 300, distanceKm: 18, price: 26000, description: "Día completo de termas...", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1439853949127-fa647821eba0?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.6, pos: [-33.0238, -69.1152] },
+      { id: "t5", title: "Trekking en Vallecitos", author: "Ana Gomez", durationMinutes: 320, distanceKm: 18, price: 24000, description: "Ascenso con tramos exigentes...", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1465311440653-ba9b1d9b0f5b?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" }, rating: 4.8, pos: [-32.9667, -69.3167] },
+      { id: "t6", title: "Canopy en Potrerillos", author: "Sofia Ramirez", durationMinutes: 110, distanceKm: 5, price: 21000, description: "Circuito aéreo con buenas vistas...", image: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" }, rating: 4.5, pos: [-32.9525, -69.1866] },
     ];
 
     setTours(mockTours);
@@ -302,9 +439,21 @@ export default function TourRecorridos({ onRouteBuilt }) {
             <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">
               Encuentra actividades y experiencias <span className="text-orange-500">inolvidables</span>
             </h1>
-            <button onClick={() => setCreateOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-5 text-sm rounded-full shadow-[0_4px_14px_0_rgba(249,115,22,0.39)]">
-              Crear Ruta
-            </button>
+            
+            {/* GRUPO DE BOTONES */}
+            <div className="flex items-center gap-3">
+              {/* Solo Agencias ven este botón */}
+              {isCreatorOrAgency && (
+                <button onClick={() => navigate('/agencia/dashboard')} className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 px-5 text-sm rounded-full shadow-md transition-all hidden sm:block">
+                  Mi Panel de Agencia
+                </button>
+              )}
+              {/* Todos los usuarios ven el botón de crear ruta rápida */}
+              <button onClick={() => setCreateOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-5 text-sm rounded-full shadow-[0_4px_14px_0_rgba(249,115,22,0.39)]">
+                Crear Ruta
+              </button>
+            </div>
+
           </div>
         </div>
       </header>
@@ -317,9 +466,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-0">
           <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 h-full overflow-y-auto no-scrollbar pb-6 pr-2">
 
-            {/* 🔥 CARRUSEL AUTOMÁTICO DE PAQUETES/TOURS 🔥 */}
             <RecommendedPackages tours={tours} onSelectTour={setSelectedTour} />
-
             <RecommendedInfluencers influencers={influencers} onSelect={(inf) => setSelectedInfluencerId(inf ? inf.id : null)} selectedId={selectedInfluencerId} />
           </div>
 
@@ -328,8 +475,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
               filteredTours.map((t) => (
                 <div key={t.id} className="relative transition-transform duration-300 flex-shrink-0">
 
-                  {/* Etiquetas Superiores */}
-                  <div className="absolute top-4 left-4 z-20 flex flex-col items-start gap-1">
+                  <div className="absolute top-6 left-6 z-[30] flex flex-col items-start gap-1 pointer-events-none">
                     {t.isPackage && (
                       <div className="bg-slate-900/90 text-white text-[9px] font-black uppercase px-3 py-1 rounded-full shadow-md border border-slate-700/50 backdrop-blur-sm">
                         Paquete Múltiple
@@ -385,20 +531,20 @@ export default function TourRecorridos({ onRouteBuilt }) {
         </div>
       )}
 
-      {/* 🔥 PASAMOS EL CURRENT USER AL MODAL DE CREACIÓN */}
+      {/* Todo el mundo puede acceder a crear ruta base */}
       <CreateTourModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onCreated={(newTour) => { setTours((t) => [newTour, ...t]); setFilteredTours((t) => [newTour, ...t]); }}
         existingTours={tours}
-        currentUser={simulatedCurrentUser}
+        currentUser={currentUserObj}
       />
 
       <TourDetailModal
         tour={selectedTour}
         onClose={() => setSelectedTour(null)}
         onReserve={(tour) => navigate("/carrito", { state: { selectedItems: normalizeForCart([tour]) } })}
-        auth={auth}
+        auth={currentUserObj}
         itinerary={itinerary}
         onToggleRoute={handleToggleRoute}
       />

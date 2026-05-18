@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
+  OnModuleInit, // 🔥 NUEVO: Importamos el ciclo de vida de inicialización
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -12,37 +13,65 @@ import { User } from './entities/user.entity';
 import { isValidObjectId, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose/dist/common/mongoose.decorators';
 import { LoginAuthDto } from './dto/login-auth.dto';
-// import { RegisterAuthDto } from './dto/register-auth.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class UserService {
+export class UserService implements OnModuleInit { // 🔥 NUEVO: Implementamos OnModuleInit
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<User>,
     private readonly jwtService: JwtService,
   ) {}
 
+  // =========================================================
+  // 🔥 NUEVO: Carga inicial automática (Seed)
+  // Se ejecuta automáticamente al arrancar el servidor backend
+  // =========================================================
+  async onModuleInit() {
+    const agenciaEmail = 'agencia@gmail.com';
+    const existingAgencia = await this.userModel.findOne({ email: agenciaEmail });
+
+    if (!existingAgencia) {
+      console.log('⏳ Creando usuario Agencia de prueba...');
+      const hashedPassword = await bcrypt.hash('123456789', 10);
+      
+      await this.userModel.create({
+        nombre: 'Agencia Oficial Xperience',
+        email: agenciaEmail,
+        password: hashedPassword,
+        role: 'agencia', // Le forzamos el rol para que tenga los permisos
+      });
+      
+      console.log('✅ Usuario Agencia creado con éxito: agencia@gmail.com | Pass: 123456789');
+    } else {
+      console.log('✅ Usuario Agencia de prueba ya se encuentra en la base de datos.');
+    }
+  }
+
+  // =========================================================
+  // Métodos estándar CRUD
+  // =========================================================
   async create(createUserDto: CreateUserDto) {
-    const { nombre, email, password } = createUserDto;
+    const { nombre, email, password, role } = createUserDto;
 
     if (!email || !password || !nombre) {
       throw new HttpException('Bad Request', 400);
     }
 
     const plainTextPassword = await bcrypt.hash(password, 10);
-
     const existingUser = await this.userModel.findOne({ email });
 
     if (existingUser) {
       throw new HttpException('User already exists', 400);
     }
+    
     try {
       const user = await this.userModel.create({
         nombre,
         email,
         password: plainTextPassword,
+        role: role || 'user', 
       });
       return user;
     } catch (error) {
@@ -52,34 +81,26 @@ export class UserService {
 
   async login(loginAuthDto: LoginAuthDto) {
     const { email, password } = loginAuthDto;
-
-    // Normalizar email
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Buscar usuario
     const user = await this.userModel.findOne({ email: normalizedEmail });
     if (!user) {
       throw new UnauthorizedException('Usuario no registrado');
     }
 
-    // Verificar contraseña
     const passwordValid = await bcrypt.compare(password, user.password);
-    
-    // DEBUG - Remover después
-    console.log('🔐 Debug login:', {
-      emailBuscado: normalizedEmail,
-      usuarioEncontrado: !!user,
-      passwordHashAlmacenada: user.password.substring(0, 10) + '...',
-      passwordIngresada: password,
-      esValida: passwordValid,
-    });
     
     if (!passwordValid) {
       throw new UnauthorizedException('Contraseña incorrecta');
     }
 
-    // Crear payload y token JWT
-    const payload = { email: user.email, sub: user._id };
+    const payload = { 
+      email: user.email, 
+      sub: user._id,
+      role: user.role,
+      nombre: user.nombre
+    };
+    
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -88,6 +109,7 @@ export class UserService {
         id: user._id,
         email: user.email,
         nombre: user.nombre,
+        role: user.role, 
       },
     };
   }
@@ -121,16 +143,10 @@ export class UserService {
   }
 
   async remove(id: string) {
-    // const user = await this.findOne(id);
-    // await user.deleteOne();
-
-    //const deleted = await this.userModel.findByIdAndDelete(id);
-
     const { deletedCount } = await this.userModel.deleteOne({ _id: id });
     if (deletedCount === 0) {
       throw new BadRequestException(`User with id ${id} not found`);
     }
-
     return;
   }
 

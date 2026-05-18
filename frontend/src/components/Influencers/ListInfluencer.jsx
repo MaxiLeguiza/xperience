@@ -1,14 +1,13 @@
 // ListInfluencer.jsx
 // -------------------------------------------------------------
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Nav from "../Navbar/Nav";
-import { Search, ChevronDown, Users, MapPin, Video, Map, Navigation } from "lucide-react";
+import { Search, ChevronDown, Users, MapPin, Video, Map, Navigation, Plus, X } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
-// =========================================================
-// 🛠️ MOCK: En el futuro, esto vendrá de un GET a /api/influencers
-// =========================================================
-const influencersData = [
+// Datos base por defecto
+const initialInfluencersData = [
   {
     id: "infl-1",
     name: "Carlos Aventura",
@@ -33,7 +32,7 @@ const influencersData = [
 
 const InfluencerCard = ({ influencer }) => (
   <Link
-    to={`/Influencers/${influencer.id}`} // 🔥 Este enlace pasa el ID a la URL
+    to={`/Influencers/${influencer.id}`}
     className="group bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 ease-out overflow-hidden flex flex-col"
   >
     <div className="relative h-64 overflow-hidden">
@@ -66,32 +65,129 @@ const InfluencerCard = ({ influencer }) => (
   </Link>
 );
 
+function AddInfluencerModal({ isOpen, onClose, onAdd }) {
+  const [formData, setFormData] = useState({
+    name: "", handle: "@", description: "", category: "Trekking", avatar: "", image: ""
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newInfluencer = {
+      id: `infl-${Date.now()}`,
+      name: formData.name,
+      handle: formData.handle.startsWith("@") ? formData.handle : `@${formData.handle}`,
+      description: formData.description,
+      tags: [formData.category],
+      stats: { followers: "Nuevo", countries: 0, videos: 0 },
+      avatar: formData.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+      image: formData.image || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80"
+    };
+    onAdd(newInfluencer);
+
+    // Limpiamos el form
+    setFormData({ name: "", handle: "@", description: "", category: "Trekking", avatar: "", image: "" });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-[32px] shadow-2xl max-w-lg w-full p-8 relative animate-slide-up">
+        <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-800 bg-slate-50 hover:bg-slate-100 p-2 rounded-full transition-colors">
+          <X className="w-5 h-5" />
+        </button>
+        <h2 className="text-2xl font-black text-slate-800 mb-1">Registrar Creador</h2>
+        <p className="text-sm font-medium text-slate-500 mb-6">Asocia a un influencer con tu agencia oficial.</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Nombre Real</label>
+              <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-orange-500 outline-none" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Usuario / Red Social</label>
+              <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-orange-500 outline-none" value={formData.handle} onChange={e => setFormData({ ...formData, handle: e.target.value })} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">Categoría Principal</label>
+            <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-orange-500 outline-none" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
+              <option>Trekking</option>
+              <option>Enoturismo</option>
+              <option>Parapente</option>
+              <option>Rafting</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 mb-1">Breve Biografía</label>
+            <textarea required rows="3" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-orange-500 outline-none resize-none" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+          </div>
+          <button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl shadow-md transition-colors mt-4">Guardar Creador</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 const ListInfluencer = () => {
+  const { auth } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filteredInfluencers = influencersData.filter(inf => {
+  // 🔥 CORRECCIÓN: Leemos de localStorage para mantener la data viva
+  const [influencersList, setInfluencersList] = useState(() => {
+    const saved = localStorage.getItem("agencyInfluencersDB");
+    return saved ? JSON.parse(saved) : initialInfluencersData;
+  });
+
+  const isAgency = auth?.role === "agencia" || auth?.user?.role === "agencia";
+
+  const filteredInfluencers = influencersList.filter(inf => {
     const matchesSearch = inf.name.toLowerCase().includes(searchTerm.toLowerCase()) || inf.handle.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = category === "" || inf.tags.includes(category);
     return matchesSearch && matchesCategory;
   });
 
+  // 🔥 CORRECCIÓN: Guardamos en state y en localStorage
+  const handleAddInfluencer = (newInfluencer) => {
+    const updatedList = [newInfluencer, ...influencersList];
+    setInfluencersList(updatedList);
+    localStorage.setItem("agencyInfluencersDB", JSON.stringify(updatedList));
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-900">
       <div className="flex-shrink-0 z-50"><Nav /></div>
-      {/* 🔥 Eliminamos max-w-7xl y mx-auto. Ajustamos los paddings a px-4 sm:px-8 lg:px-12 */}
-      <main className="flex-grow w-full px-4 sm:px-8 lg:px-12 py-8 md:py-10">
-        
-        <div className="text-center mb-10">
+      <main className="flex-grow w-full px-4 sm:px-8 lg:px-12 py-8 md:py-10 relative">
+
+        <div className="text-center mb-10 relative">
           <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
             Nuestros <span className="text-orange-500">Creadores</span>
           </h2>
           <p className="text-slate-500 text-sm md:text-base max-w-2xl mx-auto">
             Descubre a los aventureros y expertos locales que diseñan las rutas más increíbles.
           </p>
+
+          {isAgency && (
+            <div className="absolute top-0 right-0 hidden md:block">
+              <button onClick={() => setIsModalOpen(true)} className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-6 text-sm rounded-full shadow-md transition-all flex items-center gap-2 hover:-translate-y-0.5">
+                <Plus className="w-4 h-4" /> Registrar Creador
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* El buscador central sí conserva max-w-4xl para que no sea absurdamente largo */}
+        {isAgency && (
+          <div className="md:hidden flex justify-center mb-6">
+            <button onClick={() => setIsModalOpen(true)} className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-6 text-sm rounded-full shadow-md transition-all flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Registrar Creador
+            </button>
+          </div>
+        )}
+
         <div className="bg-slate-700 p-2 rounded-2xl md:rounded-full shadow-lg shadow-slate-200/50 border border-slate-200 mb-10 w-full max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row items-center gap-2">
             <div className="flex-1 w-full flex items-center bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl md:rounded-full px-4 py-3 border border-slate-100 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20">
@@ -117,7 +213,7 @@ const ListInfluencer = () => {
         {filteredInfluencers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredInfluencers.map((inf) => (
-              <InfluencerCard key={inf.id} influencer={inf} /> 
+              <InfluencerCard key={inf.id} influencer={inf} />
             ))}
           </div>
         ) : (
@@ -129,6 +225,13 @@ const ListInfluencer = () => {
         )}
 
       </main>
+
+      <AddInfluencerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAdd={handleAddInfluencer}
+      />
+
     </div>
   );
 };

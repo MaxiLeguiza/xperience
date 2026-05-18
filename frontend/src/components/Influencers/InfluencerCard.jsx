@@ -33,7 +33,7 @@ function InfluencerCard() {
             <div className="space-y-4">
                 {topInfluencers.map((inf) => (
                     <div key={inf.id} className="flex items-center space-x-4 bg-white text-gray-900 p-6 rounded-lg shadow-xl border-l-4 border-orange-500">
-                   {/**  style={{ background: 'linear-gradient(135deg,  #16697A, #011a51)',}}> COlores de patillas  */}
+                        {/**  style={{ background: 'linear-gradient(135deg,  #16697A, #011a51)',}}> COlores de patillas  */}
                         <img src={inf.img} alt={`Foto de ${inf.nombre}`} className="w-12 h-12 rounded-full object-cover" />
                         <div>
                             <h4 className="font-semibold text-black">{inf.nombre}</h4>

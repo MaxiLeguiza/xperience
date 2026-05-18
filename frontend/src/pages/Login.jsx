@@ -16,7 +16,6 @@ const Login = () => {
 
     const extractBackendMsg = (error) => {
         const m = error?.response?.data?.msg ?? error?.response?.data?.message;
-        // Nest puede mandar string o array
         if (Array.isArray(m)) return m.join(", ");
         return m || "";
     };
@@ -40,7 +39,7 @@ const Login = () => {
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
             setAlerta({ msg: "Todos los campos son obligatorios", error: true });
-            return; // Detiene la ejecución si hay errores
+            return; 
         }
         // ---------------------------------------------
 
@@ -52,28 +51,28 @@ const Login = () => {
             });
 
             localStorage.setItem("token", data.token);
+            
+            // 🔥 AQUÍ ESTÁ LA CORRECCIÓN: Ahora guardamos el rol
             setAuth({
                 id: data?.user?.id,
                 email: data?.user?.email,
                 nombre: data?.user?.nombre,
+                role: data?.user?.role, 
             });
+            
             navigate("/home");
         } catch (error) {
             const status = error?.response?.status;
             const data = error?.response?.data;
 
-            // const backendMsg = extractBackendMsg(error);
             const backendMsg = data?.msg ?? data?.message ?? (typeof data === "string" ? data : "");
 
-            // Por si no hay server
             if (!error?.response) {
                 setAlerta({ msg: "No hay conexión con el servidor.", error: true });
                 return;
             }
 
-            // Mapeo específico como pediste:
             if (status === 401 || status === 403) {
-                // Detectar cuál falló por el texto que manda tu backend
                 if (/usuario no registrado/i.test(backendMsg)) {
                     setFieldErrors((f) => ({
                         ...f,
@@ -84,7 +83,6 @@ const Login = () => {
                     setFieldErrors((f) => ({ ...f, password: "Contraseña incorrecta." }));
                     setAlerta({ msg: "Contraseña incorrecta.", error: true });
                 } else {
-                    // fallback genérico si cambia el mensaje
                     setAlerta({ msg: "Usuario o contraseña incorrectos.", error: true });
                 }
             } else if (status === 404) {
@@ -117,9 +115,6 @@ const Login = () => {
                 </div>
 
                 <div className="container mx-auto flex flex-col items-center gap-4 p-4 max-w-xl">
-                    {/* Encabezado (h1) 
-                Se ajusta el margen y el texto para que se vea mejor en una sola columna.
-            */}
                     <div className="mb-8">
                         <h1 className="text-white font-black text-6xl text-center">
                             Inicia Sesión y busca tus{" "}
@@ -127,9 +122,6 @@ const Login = () => {
                         </h1>
                     </div>
 
-                    {/* Formulario 
-            Se ajustan los márgenes.
-        */}
                     <div className="w-full shadow-lg px-5 py-5 rounded-xl bg-black/40 backdrop-blur-md border border-white/20">
                         {msg && <Alerta alerta={alerta} />}
 
@@ -171,7 +163,6 @@ const Login = () => {
                                         setPassword(e.target.value);
                                     }}
                                 />
-                                {/* Esta línea muestra el error específico de contraseña vacía */}
                                 {fieldErrors.password && (
                                     <p className="text-sm text-red-600 mt-1">
                                         {fieldErrors.password}
