@@ -16,10 +16,10 @@ function Nav() {
 
     return (
         <header className="bg-card-dark shadow-md sticky top-0 z-50">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
+            <div className="w-full px-9">
+                <div className="flex items-center justify-between h-16 relative">
                     {/* LOGO */}
-                    <div className="flex items-center min-w-[100px]">
+                    <div className="flex items-center min-w-[100px] z-10">
                         <Link to={auth ? "/home" : "/"}>
                             <h1 className="text-4xl font-bold text-primary hover:scale-105 transition-all hover:text-white"> X<span className="text-white">PERIENCE</span></h1>
                         </Link>
@@ -60,7 +60,7 @@ function Nav() {
                     </nav>
 
                     {/* BOTÓN DE LOGIN */}
-                    <div className='min-w-[100px]'>
+                    <div className='min-w-[100px] z-10'>
                             <AuthSection/>
                     </div>
                 </div>

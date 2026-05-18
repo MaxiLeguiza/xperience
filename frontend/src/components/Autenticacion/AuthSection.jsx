@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { Notifications } from "../Autenticacion/Notifications_standalone";
+import { Notifications } from "../Notifications/Notifications_standalone";
 // import { User } from 'lucide-react';
 
 export default function AuthSection() {
