@@ -1,6 +1,20 @@
 import { useEffect, useRef } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
+import {
+  Bike,
+  Binoculars,
+  Cable,
+  Camera,
+  Flag,
+  Mountain,
+  Sailboat,
+  Star,
+  TentTree,
+  Waves,
+  Wind,
+} from "lucide-react";
+import { renderToStaticMarkup } from "react-dom/server";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
@@ -46,10 +60,50 @@ const ICONS = {
   default: new L.Icon.Default(),
 };
 
+const CATEGORY_ICONS = {
+  rafting: Waves,
+  kayak: Sailboat,
+  sup: Sailboat,
+  enoturismo: Bike,
+  ciclismo: Bike,
+  trekking: Mountain,
+  escalada: Mountain,
+  cabalgata: TentTree,
+  parapente: Wind,
+  canopy: Cable,
+  tirolesa: Cable,
+  fotografia: Camera,
+  astronomia: Star,
+  astronomo: Star,
+  globo_aerostatico: Flag,
+};
+
+function makeFeaturedIcon(category = "default") {
+  const Icon = CATEGORY_ICONS[category] || Binoculars;
+  const html = renderToStaticMarkup(
+    <div className="x-featured-marker">
+      <div className="x-featured-marker__halo" />
+      <div className="x-featured-marker__badge">
+        <Icon size={22} strokeWidth={2.4} />
+      </div>
+    </div>,
+  );
+
+  return L.divIcon({
+    className: "x-featured-marker-root",
+    html,
+    iconSize: [50, 58],
+    iconAnchor: [25, 52],
+    popupAnchor: [0, -46],
+  });
+}
+
 const iconFor = (p) =>
-  p?.icon
-    ? makeIcon(p.icon)
-    : ICONS[(p?.category || "").toLowerCase()] ?? ICONS.default;
+  p?.premium
+    ? makeFeaturedIcon((p?.category || "").toLowerCase())
+    : p?.icon
+      ? makeIcon(p.icon)
+      : ICONS[(p?.category || "").toLowerCase()] ?? ICONS.default;
 
 // Icono para resultados del buscador
 const DEST_ICON = makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]);

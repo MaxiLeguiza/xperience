@@ -16,6 +16,7 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import WeatherCard from "../components/clima/WeatherCard";
 import QrRecorridoModal from "../features/qr/QrRecorridoModal";
 import Notification_central from "./Notifications/Notification_central";
+import { ChevronUp, Flame, Star } from "lucide-react";
 
 import "./MapView.css";
 
@@ -100,27 +101,7 @@ function LocateControl() {
         cursor: "pointer",
         borderRadius: "4px",
         boxShadow: "0 2px 6px rgba(0,0,0,.25)",
-      });
-
-      // Boton secundario: ingresar lat,lng manualmente (fallback)
-      const manual = L.DomUtil.create("a", "", container);
-      manual.href = "#";
-      manual.title = "Ingresar coordenadas (fallback)";
-      manual.innerHTML = "🧭";
-      Object.assign(manual.style, {
-        width: "32px",
-        height: "32px",
-        lineHeight: "32px",
-        textAlign: "center",
-        background: "#fff",
-        fontSize: "18px",
-        cursor: "pointer",
-        borderRadius: "4px",
-        marginTop: "6px",
-        boxShadow: "0 2px 6px rgba(0,0,0,.25)",
-      });
-
-      L.DomEvent.on(btn, "click", async (e) => {
+      });L.DomEvent.on(btn, "click", async (e) => {
         L.DomEvent.stop(e);
         followingRef.current = !followingRef.current;
         btn.style.background = followingRef.current ? "#e8f0fe" : "#fff";
@@ -183,25 +164,7 @@ function LocateControl() {
             timeout: 20000,
           },
         );
-      });
-
-      L.DomEvent.on(manual, "click", (e) => {
-        L.DomEvent.stop(e);
-        const raw = prompt("Ingresa lat,lng (por ej: -32.8895,-68.8458)");
-        if (!raw) return;
-        const parts = raw.split(",").map((v) => parseFloat(v.trim()));
-        if (parts.length === 2 && parts.every((n) => Number.isFinite(n))) {
-          const ll = L.latLng(parts[0], parts[1]);
-          setVisualPos(ll, 30);
-          map.setView(ll, 15);
-          followingRef.current = false;
-          btn.style.background = "#fff";
-        } else {
-          alert("Formato invalido. Usa lat,lng");
-        }
-      });
-
-      return container;
+      });return container;
     };
     control.addTo(map);
 
@@ -231,6 +194,71 @@ function GeoWatcher({ onChange }) {
 }
 
 /* ----------------------------------------------- */
+
+function ActivityPanel({ activities = [], onSelect, onReserve }) {
+  const [expanded, setExpanded] = useState(true);
+  const cards = activities.slice(0, 8);
+
+  return (
+    <aside className={`x-activities-panel ${expanded ? "is-expanded" : "is-collapsed"}`}>
+      <button
+        type="button"
+        className="x-activities-panel__toggle"
+        onClick={() => setExpanded((current) => !current)}
+        aria-label={expanded ? "Contraer actividades" : "Expandir actividades"}
+        title={expanded ? "Contraer actividades" : "Expandir actividades"}
+      >
+        <ChevronUp size={17} />
+      </button>
+
+      <div className="x-activities-panel__header">
+        <div>
+          <span className="x-activities-panel__eyebrow">Actividades</span>
+          <h3>Mas elegidas de la semana</h3>
+        </div>
+        <div className="x-activities-panel__flame">
+          <Flame size={18} />
+        </div>
+      </div>
+
+      <div className="x-activities-panel__carousel" aria-hidden={!expanded}>
+        {cards.map((activity, index) => (
+          <button
+            key={activity.id}
+            type="button"
+            className={`x-activity-card ${activity.premium ? "is-premium" : ""}`}
+            onClick={() => onSelect(activity)}
+          >
+            <div className="x-activity-card__visual">
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <Star size={17} />
+            </div>
+
+            <div className="x-activity-card__body">
+              <div className="x-activity-card__topline">
+                <span>{(activity.category || "aventura").replace(/_/g, " ")}</span>
+              </div>
+              <strong>{activity.name}</strong>
+              <p>
+                {activity.weeklyReservations || Math.round((activity.rating || 4) * 18)} reservas
+              </p>
+            </div>
+
+            <div
+              className="x-activity-card__reserve"
+              onClick={(event) => {
+                event.stopPropagation();
+                onReserve(activity);
+              }}
+            >
+              Reservar
+            </div>
+          </button>
+        ))}
+      </div>
+    </aside>
+  );
+}
 
 export default function MapView({ items = [] }) {
   const navigate = useNavigate();
@@ -413,6 +441,19 @@ export default function MapView({ items = [] }) {
     if (q.trim()) count++;
     return count;
   }, [filters, q]);
+
+  const weeklyActivities = useMemo(() => {
+    return [...points]
+      .map((point) => ({
+        ...point,
+        weeklyReservations:
+          point.weeklyReservations || Math.round((point.rating || 4) * 18),
+      }))
+      .sort((a, b) => {
+        if (Boolean(a.premium) !== Boolean(b.premium)) return a.premium ? -1 : 1;
+        return b.weeklyReservations - a.weeklyReservations;
+      });
+  }, [points]);
 
   return (
     <div className="x-map-wrapper">
@@ -667,6 +708,31 @@ export default function MapView({ items = [] }) {
           </div>
         )}
 
+        <div className="x-map-right-stack">
+          <ActivityPanel
+            activities={weeklyActivities}
+            onSelect={(activity) => {
+              setSelected(activity);
+              setRouteTo(null);
+              setShowWeatherCard(false);
+            }}
+            onReserve={handleReserve}
+          />
+
+          {(selected || routeTo) && (
+            <WeatherCard
+              latitude={
+                (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) ||
+                null
+              }
+              longitude={
+                (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) ||
+                null
+              }
+            />
+          )}
+        </div>
+
         {/* MAPA */}
         <MapContainer
           center={center}
@@ -715,6 +781,11 @@ export default function MapView({ items = [] }) {
                       <p className="text-[11px] text-gray-600">
                         {p.address || "Mendoza"}
                       </p>
+                      {p.influencer && (
+                        <p className="mt-2 rounded-lg bg-orange-50 px-2 py-1.5 text-[11px] font-semibold leading-snug text-orange-700">
+                          Recorrido realizado por el influencer {p.influencer}.
+                        </p>
+                      )}
                     </div>
                     <span className="text-xs bg-gray-100 text-gray-700 font-semibold px-2 py-1 rounded-lg">
                       ★ {formatRating(p.rating)}
@@ -781,21 +852,6 @@ export default function MapView({ items = [] }) {
           </span>
         )}
 
-        {(selected || routeTo) && (
-          <div className="absolute right-4 bottom-4 z-[500]">
-            <WeatherCard
-              latitude={
-                (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) ||
-                null
-              }
-              longitude={
-                (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) ||
-                null
-              }
-            />
-          </div>
-        )}
-
         {openQR && recorridoId && (
           <QrRecorridoModal
             open
@@ -819,3 +875,4 @@ style.innerHTML = `
   animation: slide-down 0.25s ease-out;
 }`;
 document.head.appendChild(style);
+

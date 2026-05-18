@@ -67,6 +67,9 @@
     "price": 22000,
     "rating": 4.7,
     "address": "Dique Potrerillos, Mendoza",
+    "premium": true,
+    "influencer": "Luisito Comunica",
+    "weeklyReservations": 128,
     "location": { "lat": -33.02147, "lng": -69.10932 }
   },
   {
@@ -181,6 +184,9 @@
     "season": "primavera",
     "ageGroup": "adultos",
     "capacity": 10,
+    "premium": true,
+    "influencer": "Drew Binsky",
+    "weeklyReservations": 96,
     "location": { "lat": -32.9773, "lng": -68.7804 }
   },
   {

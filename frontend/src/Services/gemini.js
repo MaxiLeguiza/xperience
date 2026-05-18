@@ -1,15 +1,10 @@
-    import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
-    const API_KEY = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+let ai = null;
 
-    if (!API_KEY) {
-    console.warn("⚠️ Falta VITE_GEMINI_API_KEY en .env");
-    }
-
-    const ai = new GoogleGenAI({ apiKey: API_KEY });
-
-    // 🧠 Variable global para mantener viva la sesión del chat y recordar el contexto
-    let chatSession = null;
+// 🧠 Variable global para mantener viva la sesión del chat y recordar el contexto
+let chatSession = null;
 
     /**
      * 🔁 Retry con Exponential Backoff para evadir errores 429 (Límite de cuota)
@@ -34,7 +29,11 @@
     /**
      * 🤖 Inicializa el chat con instrucciones de sistema minificadas (Ahorro extremo de tokens)
      */
-    function getChatSession() {
+function getChatSession() {
+    if (!API_KEY) throw new Error("API Key no configurada");
+    if (!ai) {
+        ai = new GoogleGenAI({ apiKey: API_KEY });
+    }
     if (!chatSession) {
         chatSession = ai.chats.create({
         // Usamos 2.5-flash: El modelo más rápido, inteligente conversacionalmente y económico
@@ -60,9 +59,7 @@
     /**
      * 🚀 Función principal exportada para el Frontend
      */
-    export async function askGemini(prompt) {
-    if (!API_KEY) throw new Error("API Key no configurada");
-
+export async function askGemini(prompt) {
     try {
         // 1. Obtenemos la sesión activa (o la creamos si es el primer mensaje)
         const chat = getChatSession();
