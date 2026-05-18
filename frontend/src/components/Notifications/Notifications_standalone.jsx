@@ -134,6 +134,7 @@ export const Notifications = () => {
   const { latitude, longitude } = useIPLocation();
 
   // 2. 💡 EFECTO PARA LLAMAR AL CLIMA (Solo se ejecuta si hay lat/lng)
+  /*
   useEffect(() => {
     if (latitude && longitude) {
       const fetchWeather = async () => {
@@ -177,6 +178,7 @@ export const Notifications = () => {
       fetchWeather();
     }
   }, [latitude, longitude]); // Se dispara cuando las coordenadas son cargadas
+  */
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 

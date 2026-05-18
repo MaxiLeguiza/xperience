@@ -15,6 +15,7 @@ import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import WeatherCard from "../components/clima/WeatherCard";
 import QrRecorridoModal from "../features/qr/QrRecorridoModal";
+import Notification_central from "./Notifications/Notification_central";
 
 import "./MapView.css";
 
@@ -250,6 +251,7 @@ export default function MapView({ items = [] }) {
   const [showFilters, setShowFilters] = useState(false);
   const [openQR, setOpenQR] = useState(false);
   const [pendingDest, setPendingDest] = useState(null);
+  const [showWeatherCard, setShowWeatherCard] = useState(true);
 
   const recorridoId = selected?.id || null;
 
@@ -438,6 +440,13 @@ export default function MapView({ items = [] }) {
           </div>
           <span className="ml-1 text-gray-400 text-xs">▾</span>
         </button>
+
+        {/* Tarjeta de clima flotante */}
+        {showWeatherCard && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[600px] max-w-[90vw] z-[2000] flex justify-center">
+            <Notification_central location="Mi ubicación" onClose={() => setShowWeatherCard(false)} />
+          </div>
+        )}
 
         {/* Panel de filtros “glass” */}
         {showFilters && (
@@ -686,7 +695,12 @@ export default function MapView({ items = [] }) {
               key={p.id}
               position={p.pos}
               icon={iconFor(p)}
-              eventHandlers={{ click: () => setSelected(p) }}
+              eventHandlers={{
+                click: () => {
+                  setSelected(p);
+                  setShowWeatherCard(false);
+                },
+              }}
             >
               <Popup>
                 <div className="min-w-[240px] space-y-3">

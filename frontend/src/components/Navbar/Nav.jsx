@@ -16,16 +16,16 @@ function Nav() {
 
     return (
         <header className="bg-card-dark shadow-md sticky top-0 z-50">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
+            <div className="w-full px-9">
+                <div className="flex items-center justify-between h-16 relative">
                     {/* LOGO */}
-                    <div className="flex items-center min-w-[100px]">
+                    <div className="flex items-center min-w-[100px] z-10">
                         <Link to={auth ? "/home" : "/"}>
                             <h1 className="text-3xl font-bold text-primary "> Xperience</h1>
                         </Link>
                     </div>
                     {/* LINKS DE NAVEGACIÓN */}
-                    <nav className="hidden md:flex items-center space-x-4 mx-auto w-auto">
+                    <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center space-x-4">
                         {links.map((link) => {
                             const isActive = activeLink === link.label;
                             const linkClass = `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive
@@ -60,7 +60,7 @@ function Nav() {
                     </nav>
 
                     {/* BOTÓN DE LOGIN */}
-                    <div className='min-w-[100px]'>
+                    <div className='min-w-[100px] z-10'>
                             <AuthSection/>
                     </div>
                 </div>
