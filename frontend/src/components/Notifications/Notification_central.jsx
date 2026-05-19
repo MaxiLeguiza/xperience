@@ -149,17 +149,17 @@ export default function Notification_central({ location = "Mi ubicación", onClo
   if (loading) {
     return (
       <div
-        className="relative overflow-hidden rounded-2xl px-4 py-3 text-white shadow-xl w-full font-sans animate-pulse flex items-center gap-4"
+        className="relative overflow-hidden rounded-full px-4 h-14 text-white shadow-xl w-full font-sans animate-pulse flex items-center gap-4"
         style={{ background: '#1F2937' }}
       >
-        <div className="w-12 h-12 rounded-xl bg-white/20 flex-shrink-0" />
-        <div className="flex flex-col gap-2 flex-1">
-          <div className="h-3 w-24 bg-white/20 rounded" />
-          <div className="h-5 w-20 bg-white/20 rounded" />
+        <div className="w-10 h-10 rounded-full bg-white/20 flex-shrink-0" />
+        <div className="flex flex-col gap-1.5 flex-1">
+          <div className="h-2.5 w-24 bg-white/20 rounded" />
+          <div className="h-4 w-20 bg-white/20 rounded" />
         </div>
-        <div className="flex flex-col gap-2 flex-1">
-          <div className="h-3 w-full bg-white/20 rounded" />
-          <div className="h-3 w-3/4 bg-white/20 rounded" />
+        <div className="flex flex-col gap-1.5 flex-1">
+          <div className="h-2 w-full bg-white/20 rounded" />
+          <div className="h-2 w-3/4 bg-white/20 rounded" />
         </div>
       </div>
     );
@@ -168,7 +168,7 @@ export default function Notification_central({ location = "Mi ubicación", onClo
   if (error || !vm) {
     return (
       <div
-        className="relative overflow-hidden rounded-2xl px-4 py-3 text-white shadow-xl w-full font-sans flex items-center gap-3"
+        className="relative overflow-hidden rounded-full px-4 h-14 text-white shadow-xl w-full font-sans flex items-center gap-3"
         style={{ background: '#1F2937' }}
       >
         <p className="text-white/70 text-sm">{error ?? 'Cargando ubicación...'}</p>
@@ -179,18 +179,18 @@ export default function Notification_central({ location = "Mi ubicación", onClo
   // ── Tarjeta con datos reales — layout horizontal ──────────────────────────
   return (
     <div
-      className="relative overflow-hidden rounded-2xl px-4 py-3 text-white shadow-xl w-fit min-[1350px]:w-full font-sans transition-all duration-500 flex items-center gap-4"
+      className="relative overflow-hidden rounded-full px-4 h-14 text-white shadow-xl w-fit min-[1350px]:w-full font-sans transition-all duration-500 flex items-center gap-4"
       style={{ background: '#1F2937' }}
     >
       {/* Imagen de clima dinámica */}
-      <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden"
+      <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
            style={{ background: 'linear-gradient(135deg, #1e3a5f, #2d5986)' }}>
-        <WeatherIcon type={vm.type} isDay={vm.isDay} sizePx={44} />
+        <WeatherIcon type={vm.type} isDay={vm.isDay} sizePx={36} />
       </div>
 
       {/* Ubicación + Temperatura + Condición */}
       <div className="flex-shrink-0 flex flex-col justify-center min-w-0">
-        <p className="text-[11px] font-semibold tracking-wide text-white/60 uppercase">
+        <p className="text-[10px] font-semibold tracking-wide text-white/60 uppercase">
           {location}
         </p>
         <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -200,10 +200,10 @@ export default function Notification_central({ location = "Mi ubicación", onClo
       </div>
 
       {/* Divisor */}
-      <div className="hidden min-[1350px]:block self-stretch w-px bg-white/10 mx-1 flex-shrink-0" />
+      <div className="hidden min-[1350px]:block self-stretch w-px bg-white/10 mx-1 flex-shrink-0 my-2" />
 
       {/* Sugerencia */}
-      <p className="hidden min-[1350px]:block flex-1 text-[11px] text-white/70 leading-snug min-w-0">
+      <p className="hidden min-[1350px]:block flex-1 text-[11px] text-white/70 leading-snug min-w-0 line-clamp-2">
         {vm.suggestion}
       </p>
 

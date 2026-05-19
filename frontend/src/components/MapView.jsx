@@ -200,52 +200,95 @@ function ActivityPanel({ activities = [], onSelect, onReserve }) {
   const cards = activities.slice(0, 8);
 
   return (
-    <aside className={`x-activities-panel ${expanded ? "is-expanded" : "is-collapsed"}`}>
-      <button
-        type="button"
-        className="x-activities-panel__toggle"
+    <aside
+      className={`pointer-events-auto bg-[#0b0f19]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 ease-in-out flex flex-col ${
+        expanded ? "w-[800px] max-w-[90vw]" : "w-[300px]"
+      }`}
+    >
+      {/* Header / Toggle */}
+      <div
+        className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-white/5 transition-colors"
         onClick={() => setExpanded((current) => !current)}
-        aria-label={expanded ? "Contraer actividades" : "Expandir actividades"}
-        title={expanded ? "Contraer actividades" : "Expandir actividades"}
       >
-        <ChevronUp size={17} />
-      </button>
-
-      <div className="x-activities-panel__header">
-        <div>
-          <span className="x-activities-panel__eyebrow">Actividades</span>
-          <h3>Mas elegidas de la semana</h3>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-md">
+            <Flame size={16} />
+          </div>
+          <div>
+            <span className="block text-[10px] uppercase tracking-wider text-orange-400 font-bold">
+              Actividades
+            </span>
+            <h3 className="text-sm font-semibold text-white leading-tight">
+              Más elegidas de la semana
+            </h3>
+          </div>
         </div>
-        <div className="x-activities-panel__flame">
-          <Flame size={18} />
-        </div>
+        <button
+          type="button"
+          className="text-gray-400 hover:text-white transition-colors"
+          aria-label={expanded ? "Contraer" : "Expandir"}
+        >
+          <ChevronUp
+            size={20}
+            className={`transition-transform duration-300 ${
+              expanded ? "rotate-180" : ""
+            }`}
+          />
+        </button>
       </div>
 
-      <div className="x-activities-panel__carousel" aria-hidden={!expanded}>
+      {/* Carousel */}
+      <div
+        className={`flex overflow-x-auto gap-4 px-5 pb-5 custom-scrollbar transition-opacity duration-300 ${
+          expanded ? "opacity-100" : "opacity-0 hidden"
+        }`}
+      >
         {cards.map((activity, index) => (
           <button
             key={activity.id}
             type="button"
-            className={`x-activity-card ${activity.premium ? "is-premium" : ""}`}
+            className={`flex-shrink-0 w-[200px] text-left group relative rounded-xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] ${
+              activity.premium
+                ? "bg-gradient-to-b from-orange-500/10 to-[#0b0f19] border-orange-500/30 hover:border-orange-500/60"
+                : "bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10"
+            }`}
             onClick={() => onSelect(activity)}
           >
-            <div className="x-activity-card__visual">
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <Star size={17} />
+            {/* Visual Header */}
+            <div className="px-4 pt-4 flex justify-between items-start">
+              <span className="text-3xl font-black text-white/10 group-hover:text-white/20 transition-colors">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <Star
+                size={16}
+                className={
+                  activity.premium ? "text-orange-400" : "text-gray-500"
+                }
+              />
             </div>
 
-            <div className="x-activity-card__body">
-              <div className="x-activity-card__topline">
-                <span>{(activity.category || "aventura").replace(/_/g, " ")}</span>
-              </div>
-              <strong>{activity.name}</strong>
-              <p>
-                {activity.weeklyReservations || Math.round((activity.rating || 4) * 18)} reservas
+            {/* Body */}
+            <div className="px-4 pb-4 mt-2">
+              <span className="block text-[10px] uppercase tracking-wider text-orange-400 font-semibold mb-1 truncate">
+                {(activity.category || "aventura").replace(/_/g, " ")}
+              </span>
+              <strong className="block text-sm text-white font-bold mb-1 truncate">
+                {activity.name}
+              </strong>
+              <p className="text-[11px] text-gray-400">
+                {activity.weeklyReservations ||
+                  Math.round((activity.rating || 4) * 18)}{" "}
+                reservas
               </p>
             </div>
 
+            {/* Reserve Action */}
             <div
-              className="x-activity-card__reserve"
+              className={`text-center py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                activity.premium
+                  ? "bg-orange-500 text-white group-hover:bg-orange-600"
+                  : "bg-white/10 text-white group-hover:bg-white/20"
+              }`}
               onClick={(event) => {
                 event.stopPropagation();
                 onReserve(activity);
@@ -458,36 +501,39 @@ export default function MapView({ items = [] }) {
   return (
     <div className="x-map-wrapper">
       <div className="x-map-card">
-        {/* Boton flotante de filtros */}
-        <button
-          onClick={() => setShowFilters((v) => !v)}
-          className="absolute top-4 left-5 z-[2000] bg-white/95 px-3 py-2 rounded-full shadow-lg border border-white/60
-                   flex items-center gap-3 hover:bg-orange-50 hover:border-orange-200 transition backdrop-blur-md"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-md text-lg">
-            🧭
-          </span>
-          <div className="text-left">
-            <span className="block text-[11px] uppercase tracking-wide text-orange-600 font-semibold">
-              Filtros
+        {/* Top Left Controls Container */}
+        <div className="absolute top-4 left-5 z-[2000] flex items-start gap-4">
+          {/* Boton flotante de filtros */}
+          <button
+            onClick={() => setShowFilters((v) => !v)}
+            className="bg-white/95 px-3 py-2 rounded-full shadow-lg border border-white/60
+                     flex items-center gap-3 hover:bg-orange-50 hover:border-orange-200 transition backdrop-blur-md shrink-0 h-14"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-md text-lg">
+              🧭
             </span>
-            <span className="block text-[11px] text-gray-500 leading-tight">
-              {activeFiltersCount > 0
-                ? `${activeFiltersCount} activo${
-                    activeFiltersCount > 1 ? "s" : ""
-                  }`
-                : "Busca tus aventuras"}
-            </span>
-          </div>
-          <span className="ml-1 text-gray-400 text-xs">▾</span>
-        </button>
+            <div className="text-left">
+              <span className="block text-[11px] uppercase tracking-wide text-orange-600 font-semibold">
+                Filtros
+              </span>
+              <span className="block text-[11px] text-gray-500 leading-tight">
+                {activeFiltersCount > 0
+                  ? `${activeFiltersCount} activo${
+                      activeFiltersCount > 1 ? "s" : ""
+                    }`
+                  : "Busca tus aventuras"}
+              </span>
+            </div>
+            <span className="ml-1 text-gray-400 text-xs">▾</span>
+          </button>
 
-        {/* Tarjeta de clima flotante */}
-        {showWeatherCard && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[600px] max-w-[90vw] z-[2000] flex justify-center">
-            <Notification_central location="Mi ubicación" onClose={() => setShowWeatherCard(false)} />
-          </div>
-        )}
+          {/* Tarjeta de clima flotante */}
+          {showWeatherCard && (
+            <div className="w-[600px] max-w-[60vw] mt-0">
+              <Notification_central location="Mi ubicación" onClose={() => setShowWeatherCard(false)} />
+            </div>
+          )}
+        </div>
 
         {/* Panel de filtros “glass” */}
         {showFilters && (
@@ -708,29 +754,33 @@ export default function MapView({ items = [] }) {
           </div>
         )}
 
-        <div className="x-map-right-stack">
-          <ActivityPanel
-            activities={weeklyActivities}
-            onSelect={(activity) => {
-              setSelected(activity);
-              setRouteTo(null);
-              setShowWeatherCard(false);
-            }}
-            onReserve={handleReserve}
-          />
-
+        <div className="absolute bottom-6 right-6 z-[2000] flex flex-col items-end gap-4 pointer-events-none">
           {(selected || routeTo) && (
-            <WeatherCard
-              latitude={
-                (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) ||
-                null
-              }
-              longitude={
-                (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) ||
-                null
-              }
-            />
+            <div className="pointer-events-auto">
+              <WeatherCard
+                latitude={
+                  (routeTo?.pos?.[0] ?? routeTo?.lat ?? selected?.pos?.[0]) ||
+                  null
+                }
+                longitude={
+                  (routeTo?.pos?.[1] ?? routeTo?.lng ?? selected?.pos?.[1]) ||
+                  null
+                }
+              />
+            </div>
           )}
+
+          <div className="pointer-events-auto">
+            <ActivityPanel
+              activities={weeklyActivities}
+              onSelect={(activity) => {
+                setSelected(activity);
+                setRouteTo(null);
+                setShowWeatherCard(false);
+              }}
+              onReserve={handleReserve}
+            />
+          </div>
         </div>
 
         {/* MAPA */}
@@ -739,7 +789,7 @@ export default function MapView({ items = [] }) {
           zoom={12}
           scrollWheelZoom
           zoomControl={false}
-          className="x-map-leaflet"
+          className="x-map-leaflet absolute inset-0 w-full h-full z-0"
         >
           <ZoomControl position="topright" />
           <GeoWatcher onChange={setUserPos} />
