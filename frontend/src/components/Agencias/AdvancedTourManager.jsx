@@ -2,7 +2,7 @@
 // 🔥 VERSIÓN MEJORADA CON CLOUDINARY Y BACKEND
 // -------------------------------------------------
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Nav from "../Navbar/Nav";
 import MapSelectorModal from "./MapSelectorModal";
 import { useCloudinary } from "../../hooks/useCloudinary";
@@ -16,9 +16,12 @@ export default function AdvancedTourManager() {
     const navigate = useNavigate();
     const { auth } = useAuth();
     const { uploadMultiple, uploading: cloudinaryUploading, error: cloudinaryError } = useCloudinary();
+    const [searchParams] = useSearchParams();
     const fileInputRef = useRef(null);
 
     // 🔥 ESTADOS
+    const [editTourId, setEditTourId] = useState(null);
+    const [loadingTour, setLoadingTour] = useState(false);
     const [form, setForm] = useState({
         title: "",
         category: "Trekking",
@@ -99,6 +102,53 @@ export default function AdvancedTourManager() {
 
         fetchInfluencers();
     }, []);
+
+    useEffect(() => {
+        const editId = searchParams.get("edit");
+        if (!editId) return;
+
+        const fetchTourForEdit = async () => {
+            setLoadingTour(true);
+            try {
+                const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                const token = localStorage.getItem("token");
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+                const response = await axios.get(`${API_URL}/api/recorrido/${editId}`, { headers });
+                const tour = response.data;
+
+                setEditTourId(editId);
+                setForm({
+                    title: tour.title || tour.name || "",
+                    category: tour.category || "Trekking",
+                    price: tour.price ?? "",
+                    capacity: tour.capacity ?? 10,
+                    difficulty: tour.difficulty || "media",
+                    description: tour.description || "",
+                    influencerId: String(tour.influencerId || tour.influencer?._id || tour.influencer?.id || "none"),
+                    durationMinutes: tour.durationMinutes ?? "",
+                    distanceKm: tour.distanceKm ?? "",
+                });
+
+                setImages(Array.isArray(tour.images) ? tour.images : []);
+
+                if (Array.isArray(tour.waypoints) && tour.waypoints.length > 0) {
+                    setWaypoints(tour.waypoints.map((wp, index) => ({
+                        id: wp.id || wp._id || `wp-${index}`,
+                        name: wp.name || wp.label || `Parada ${index + 1}`,
+                        lat: wp.lat ?? wp.latitude ?? 0,
+                        lng: wp.lng ?? wp.longitude ?? wp.lon ?? 0,
+                    })));
+                }
+            } catch (error) {
+                console.error("Error cargando tour para editar", error);
+                setMessage({ type: "error", text: "No se pudo cargar la ruta para editar." });
+            } finally {
+                setLoadingTour(false);
+            }
+        };
+
+        fetchTourForEdit();
+    }, [searchParams]);
 
     // 🔥 MANEJO DE IMÁGENES
     const handleImageUpload = async (e) => {
@@ -208,9 +258,14 @@ export default function AdvancedTourManager() {
             };
 
             const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-            const response = await axios.post(`${API_URL}/api/recorrido`, payload);
+            const token = localStorage.getItem("token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const url = editTourId ? `${API_URL}/api/recorrido/${editTourId}` : `${API_URL}/api/recorrido`;
+            const response = editTourId
+                ? await axios.patch(url, payload, { headers })
+                : await axios.post(url, payload, { headers });
 
-            setMessage({ type: "success", text: "¡Ruta creada exitosamente!" });
+            setMessage({ type: "success", text: editTourId ? "¡Ruta actualizada exitosamente!" : "¡Ruta creada exitosamente!" });
             setTimeout(() => navigate("/agencia/dashboard"), 1500);
         } catch (err) {
             const errorMsg = err.response?.data?.message || err.message || "Error al guardar la ruta";
@@ -231,18 +286,18 @@ export default function AdvancedTourManager() {
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <div>
-                            <h1 className="text-xl font-black text-slate-900 leading-tight">Crear Ruta Profesional</h1>
+                            <h1 className="text-xl font-black text-slate-900 leading-tight">{editTourId ? 'Editar Ruta Profesional' : 'Crear Ruta Profesional'}</h1>
                         </div>
                     </div>
                     <button
                         onClick={handleSave}
-                        disabled={saving || cloudinaryUploading}
+                        disabled={saving || cloudinaryUploading || loadingTour}
                         className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold py-2.5 px-6 rounded-full shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2 text-sm"
                     >
-                        {saving || cloudinaryUploading ? (
+                        {saving || cloudinaryUploading || loadingTour ? (
                             <><Loader className="w-4 h-4 animate-spin" /> Guardando...</>
                         ) : (
-                            <><Save className="w-4 h-4" /> Publicar Ruta</>
+                            <><Save className="w-4 h-4" /> {editTourId ? 'Actualizar ruta' : 'Publicar Ruta'}</>
                         )}
                     </button>
                 </div>
