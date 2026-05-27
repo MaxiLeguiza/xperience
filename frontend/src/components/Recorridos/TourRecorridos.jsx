@@ -1,9 +1,8 @@
 // TourRecorridos.jsx
 // -------------------------------------------------------------
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-// Componentes de Leaflet
-import { MapContainer, TileLayer, Marker } from "react-leaflet"; 
+import { MapContainer, TileLayer, Marker, Polyline } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -21,28 +20,93 @@ const customMarker = new L.divIcon({
   iconAnchor: [9, 9]
 });
 
+const waypointIcon = (index) => new L.divIcon({
+  className: "waypoint-marker",
+  html: `<div style="width: 32px; height: 32px; background-color: #1e293b; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">${index}</div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16]
+});
+
 function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
+  if (!influencers || influencers.length === 0) return null;
+
+  const containerRef = useRef(null);
+
+  const scrollBy = (amount) => {
+    const container = containerRef.current;
+    if (!container) return;
+    container.scrollBy({ left: amount, behavior: 'smooth' });
+  };
+
   return (
-    <div className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 flex-shrink-0">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-slate-800">Influencers top</h3>
+    <div className="bg-white p-8 rounded-[24px] shadow-sm border border-slate-100 flex-shrink-0">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold text-slate-800">Influencers top</h3>
         {selectedId && (
-          <button onClick={() => onSelect(null)} className="text-xs font-bold text-orange-500 hover:text-orange-600 transition-colors">Limpiar filtro</button>
+          <button onClick={() => onSelect(null)} className="text-sm font-bold text-orange-500 hover:text-orange-600 transition-colors">
+            Limpiar filtro
+          </button>
         )}
       </div>
-      <div className="flex items-center gap-4 overflow-x-auto pb-2 snap-x no-scrollbar">
-        {influencers.map((inf) => {
-          const isSelected = selectedId === inf.id;
-          return (
-            <button key={inf.id} onClick={() => onSelect(inf)} className={`snap-start flex-shrink-0 w-48 p-3 rounded-2xl border transition-all duration-300 text-left flex gap-3 items-center group ${isSelected ? "ring-2 ring-orange-500 border-transparent bg-orange-50/50 shadow-md shadow-orange-500/10" : "border-slate-100 hover:border-orange-200 hover:shadow-sm hover:bg-slate-50"}`}>
-              <img src={inf.avatar} alt={inf.name} className={`w-12 h-12 rounded-full object-cover transition-transform duration-300 ${isSelected ? 'scale-105 ring-2 ring-orange-500 ring-offset-2 ring-offset-orange-50' : 'group-hover:scale-105'}`} />
-              <div className="flex-1 overflow-hidden">
-                <p className={`text-sm font-bold truncate ${isSelected ? 'text-orange-700' : 'text-slate-700'}`}>{inf.name}</p>
-                <p className="text-xs text-slate-400 truncate">{inf.social}</p>
-              </div>
-            </button>
-          );
-        })}
+
+      <div className="relative group">
+
+        {/* FLECHA IZQUIERDA: Reemplazada por un SVG limpio y simetría arreglada (-left-5) */}
+        <button
+          aria-label="Anterior"
+          onClick={() => containerRef.current?.scrollBy({ left: -Math.max(160, Math.floor((containerRef.current?.clientWidth || 320) / 3)), behavior: 'smooth' })}
+          className="absolute -left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md border border-slate-100 text-slate-500 hover:text-orange-500 hover:bg-orange-50 hover:border-orange-200 opacity-0 group-hover:opacity-100 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* CONTENEDOR: Padding ajustado para que las sombras del hover no se corten */}
+        <div ref={containerRef} className="flex items-center gap-5 overflow-x-auto pb-4 pt-2 px-2 mt-2 no-scrollbar scroll-smooth">
+          {influencers.map((inf) => {
+            const isSelected = selectedId === inf.id;
+            return (
+              /* TARJETA: Corregidos bugs de Tailwind, añadido efecto táctil de elevación al hacer hover */
+              <button
+                key={inf.id}
+                onClick={() => onSelect(inf)}
+                // group/card permite controlar el hover interno de cada tarjeta por separado
+                className={`flex-shrink-0 w-60 p-3.5 rounded-2xl border transition-all duration-300 text-left flex gap-4 items-center group/card ${isSelected
+                    ? "ring-2 ring-orange-500 border-transparent bg-orange-50/50 shadow-md shadow-orange-500/10"
+                    : "border-slate-100 hover:border-orange-200 hover:shadow-md hover:bg-slate-50 hover:-translate-y-0.5"
+                  }`}
+              >
+                <img
+                  src={inf.avatar}
+                  alt={inf.name}
+                  className={`w-14 h-14 rounded-full object-cover transition-transform duration-300 shadow-sm ${isSelected
+                      ? 'scale-105 ring-2 ring-orange-500 ring-offset-2 ring-offset-orange-50'
+                      : 'group-hover/card:scale-105'
+                    }`}
+                />
+                <div className="flex-1 overflow-hidden">
+                  <p className={`text-base font-bold truncate transition-colors ${isSelected ? 'text-orange-700' : 'text-slate-800 group-hover/card:text-orange-600'}`}>
+                    {inf.name}
+                  </p>
+                  <p className="text-sm text-slate-500 truncate mt-0.5">{inf.social}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* FLECHA DERECHA: Reemplazada por SVG y simetría arreglada (-right-5) */}
+        <button
+          aria-label="Siguiente"
+          onClick={() => containerRef.current?.scrollBy({ left: Math.max(160, Math.floor((containerRef.current?.clientWidth || 320) / 3)), behavior: 'smooth' })}
+          className="absolute -right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md border border-slate-100 text-slate-500 hover:text-orange-500 hover:bg-orange-50 hover:border-orange-200 opacity-0 group-hover:opacity-100 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
       </div>
     </div>
   );
@@ -51,80 +115,93 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
 function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRoute }) {
   if (!tour) return null;
 
-  const baseComments = useMemo(() => tour.comments && Array.isArray(tour.comments) && tour.comments.length ? tour.comments : [
-    { user: "Carlos A.", rating: 4, text: "¡Una experiencia increíble! Muy recomendable.", timestamp: Date.now() - 172800000 }, 
-    { user: "Ana L.", rating: 5, text: "Todo estuvo excelente, me encantó el recorrido.", timestamp: Date.now() - 432000000 }  
-  ], [tour]);
+  // Estados para comentarios integrados con NestJS
+  const [comments, setComments] = useState([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [comments, setComments] = useState(baseComments);
   const [newComment, setNewComment] = useState("");
   const [newRating, setNewRating] = useState(0);
 
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editCommentText, setEditCommentText] = useState("");
-  const [editCommentRating, setEditCommentRating] = useState(0);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-  const storageKey = "tourComments";
-  const [initialized, setInitialized] = useState(false);
-
+  // Cargar comentarios frescos desde el backend al abrir el modal
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      const map = raw ? JSON.parse(raw) : {};
-      const stored = map[tour.id] || [];
-      setComments([...baseComments, ...stored]);
-    } catch { setComments(baseComments); } finally { setInitialized(true); }
-  }, [baseComments, tour.id]);
+    if (!tour || !tour.id) return;
 
-  const totalVotes = comments.length || 1;
-  const averageRating = comments.reduce((sum, comment) => sum + comment.rating, 0) / totalVotes;
-  const ratingCounts = [1, 2, 3, 4, 5].map((rating) => comments.filter((comment) => comment.rating === rating).length);
-  const gallery = [tour.image, tour.image2, ...(tour.images || [])].filter(Boolean);
+    const fetchFreshTour = async () => {
+      setIsLoadingComments(true);
+      try {
+        const response = await fetch(`${API_URL}/api/recorrido/${tour.id}`);
+        if (!response.ok) throw new Error("Error al cargar datos del recorrido");
 
-  const handleSubmitComment = (e) => {
-    e.preventDefault();
-    if (!newRating || !newComment.trim()) return;
-    
-    const entry = { 
-      user: auth?.nombre || "Visitante", 
-      rating: newRating, 
-      text: newComment.trim(),
-      timestamp: Date.now() 
+        const data = await response.json();
+        const sortedComments = (data.comments || []).sort((a, b) => b.timestamp - a.timestamp);
+        setComments(sortedComments);
+      } catch (error) {
+        console.error("Error obteniendo reseñas:", error);
+        const initialSorted = (tour.comments || []).sort((a, b) => b.timestamp - a.timestamp);
+        setComments(initialSorted);
+      } finally {
+        setIsLoadingComments(false);
+      }
     };
 
-    setComments((prev) => {
-      const next = [entry, ...prev];
-      if (initialized) {
-        try {
-          const raw = localStorage.getItem(storageKey);
-          const map = raw ? JSON.parse(raw) : {};
-          map[tour.id] = next.filter((c) => !baseComments.some((b) => b.timestamp === c.timestamp));
-          localStorage.setItem(storageKey, JSON.stringify(map));
-        } catch { }
+    fetchFreshTour();
+  }, [tour, API_URL]);
+
+  const totalVotes = comments.length || 1;
+  const averageRating = comments.length > 0 ? comments.reduce((sum, c) => sum + c.rating, 0) / totalVotes : 0;
+  const ratingCounts = [1, 2, 3, 4, 5].map((rating) => comments.filter((c) => c.rating === rating).length);
+
+  const gallery = Array.from(new Set([
+    tour.image,
+    tour.image2,
+    ...(Array.isArray(tour.images) ? tour.images : [])
+  ].filter(Boolean)));
+
+  // ENVIAR NUEVO COMENTARIO AL BACKEND
+  const handleSubmitComment = async (e) => {
+    e.preventDefault();
+    if (!newRating || !newComment.trim() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    const payload = {
+      user: auth?.nombre || "Visitante",
+      userId: String(auth?.id || "anon"),
+      rating: newRating,
+      text: newComment.trim()
+    };
+
+    const endpoint = `${API_URL}/api/recorrido/${tour.id}/comment`;
+    console.log("Enviando POST a:", endpoint);
+    console.log("Payload:", payload);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error("Respuesta de error de NestJS:", errorData);
+        throw new Error(errorData?.message || "Endpoint no encontrado o ID inválido");
       }
-      return next;
-    });
-    setNewComment(""); setNewRating(0);
-  };
 
-  const handleSaveEdit = (index) => {
-    if (!editCommentText.trim() || !editCommentRating) return;
+      const updatedTour = await response.json();
+      const sortedComments = (updatedTour.comments || []).sort((a, b) => b.timestamp - a.timestamp);
+      setComments(sortedComments);
 
-    setComments((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], text: editCommentText.trim(), rating: editCommentRating };
-
-      if (initialized) {
-        try {
-          const raw = localStorage.getItem(storageKey);
-          const map = raw ? JSON.parse(raw) : {};
-          map[tour.id] = next.filter((c) => !baseComments.some((b) => b.timestamp === c.timestamp));
-          localStorage.setItem(storageKey, JSON.stringify(map));
-        } catch { }
-      }
-      return next;
-    });
-    setEditingIndex(null);
+      setNewComment("");
+      setNewRating(0);
+    } catch (error) {
+      console.error("Error capturado:", error);
+      alert(`Error al publicar: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatDateTime = (timestamp) => {
@@ -164,27 +241,99 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
                   {!tour.isPackage && <span className="flex items-center gap-1.5"><span className="text-xl">⏱️</span> {tour.durationMinutes} min</span>}
                   {!tour.isPackage && <span className="flex items-center gap-1.5"><span className="text-xl">📍</span> {tour.distanceKm} km</span>}
                 </div>
+
+                {/* 🔥 NUEVO BLOQUE: Muestra el Influencer si está asociado */}
+                {(tour.influencerId || tour.influencer) && (
+                  <div className="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-pink-50 p-4 rounded-2xl border border-orange-100/50 shadow-sm mt-4">
+                    <div className="relative">
+                      <img
+                        src={tour.influencer?.avatar || "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80"}
+                        alt="Influencer"
+                        className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-md"
+                      />
+                      <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-0.5 rounded-full border-2 border-white">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500 uppercase tracking-widest mb-0.5">
+                        Recomendado por
+                      </p>
+                      <p className="text-sm font-bold text-slate-800">
+                        {tour.influencer?.name || tour.author}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800 mb-2">Acerca del {tour.isPackage ? "paquete" : "recorrido"}</h3>
+                  <h3 className="text-lg font-bold text-slate-800 mb-2 mt-4">Acerca del {tour.isPackage ? "paquete" : "recorrido"}</h3>
                   <p className="text-slate-600 leading-relaxed text-sm md:text-base">{tour.description}</p>
                 </div>
 
                 {!tour.isPackage && (
                   <div className="mt-6 border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
                     <div className="bg-slate-50 px-4 py-3 border-b border-slate-100">
-                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ubicación del evento</h4>
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                        {tour.waypoints && tour.waypoints.length > 1 ? "Ruta del Recorrido" : "Ubicación del evento"}
+                      </h4>
                     </div>
                     <div className="h-48 w-full relative z-0">
-                      <MapContainer 
-                        center={tour.pos || [-32.8895, -68.8458]} 
-                        zoom={12} 
-                        scrollWheelZoom={false} 
+                      <MapContainer
+                        center={
+                          tour.waypoints && tour.waypoints.length > 0
+                            ? [tour.waypoints[0].lat, tour.waypoints[0].lng]
+                            : tour.pos || [-32.8895, -68.8458]
+                        }
+                        zoom={12}
+                        scrollWheelZoom={false}
                         style={{ height: "100%", width: "100%", zIndex: 0 }}
                       >
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                        <Marker position={tour.pos || [-32.8895, -68.8458]} icon={customMarker} />
+
+                        {tour.waypoints && tour.waypoints.length > 0 ? (
+                          <>
+                            {tour.waypoints.length > 1 && (
+                              <Polyline
+                                positions={tour.waypoints.map(wp => [wp.lat, wp.lng])}
+                                color="#f97316"
+                                weight={3}
+                                opacity={0.7}
+                                dashArray="5, 5"
+                              />
+                            )}
+                            {tour.waypoints.map((wp, idx) => (
+                              <Marker
+                                key={`wp-${wp.id}-${idx}`}
+                                position={[wp.lat, wp.lng]}
+                                icon={waypointIcon(idx + 1)}
+                                title={wp.name}
+                              />
+                            ))}
+                          </>
+                        ) : (
+                          <Marker position={tour.pos || [-32.8895, -68.8458]} icon={customMarker} />
+                        )}
                       </MapContainer>
                     </div>
+
+                    {tour.waypoints && tour.waypoints.length > 0 && (
+                      <div className="bg-slate-50/50 border-t border-slate-100 p-3 max-h-28 overflow-y-auto">
+                        <div className="space-y-2">
+                          {tour.waypoints.map((wp, idx) => (
+                            <div key={`wp-list-${wp.id}`} className="flex items-start gap-2 text-sm">
+                              <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                {idx + 1}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-bold text-slate-800 text-xs truncate">{wp.name}</p>
+                                <p className="text-slate-500 text-[10px]">{wp.lat.toFixed(4)}, {wp.lng.toFixed(4)}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -225,15 +374,16 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
             {/* SECCIÓN DE RESEÑAS */}
             <div>
               <h3 className="text-2xl font-bold text-slate-800 mb-6">Reseñas</h3>
+
               <div className="flex flex-col md:flex-row gap-8 mb-8">
                 <div className="flex flex-col items-center justify-center md:w-1/3">
                   <p className="text-6xl font-black text-slate-800">{averageRating.toFixed(1)}</p>
                   <div className="text-orange-400 text-xl tracking-widest my-2">{"★".repeat(Math.round(averageRating))}{"☆".repeat(5 - Math.round(averageRating))}</div>
-                  <p className="text-xs font-bold text-slate-400">{totalVotes} calificaciones</p>
+                  <p className="text-xs font-bold text-slate-400">{comments.length} calificaciones</p>
                 </div>
                 <div className="flex-1 space-y-2.5">
                   {[5, 4, 3, 2, 1].map((rating) => {
-                    const percentage = (ratingCounts[rating - 1] / totalVotes) * 100;
+                    const percentage = comments.length > 0 ? (ratingCounts[rating - 1] / totalVotes) * 100 : 0;
                     return (
                       <div key={rating} className="flex items-center gap-3">
                         <span className="text-sm font-bold text-slate-500 w-3">{rating}</span>
@@ -245,6 +395,7 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
                   })}
                 </div>
               </div>
+
               <form className="bg-slate-50 border border-slate-100 p-6 rounded-2xl space-y-4 mb-8" onSubmit={handleSubmitComment}>
                 <h4 className="text-base font-bold text-slate-800">Deja tu experiencia</h4>
                 <div className="flex items-center gap-3 mb-1">
@@ -252,90 +403,68 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
                   <div className="flex flex-row-reverse gap-1 text-2xl">
                     {[5, 4, 3, 2, 1].map((rating) => (
                       <React.Fragment key={rating}>
-                        <input id={`star${rating}`} type="radio" name="rating" value={rating} hidden checked={newRating === rating} onChange={() => setNewRating(rating)} />
+                        <input id={`star${rating}`} type="radio" name="rating" value={rating} hidden checked={newRating === rating} onChange={() => setNewRating(rating)} disabled={isSubmitting} />
                         <label htmlFor={`star${rating}`} className={`cursor-pointer transition-colors ${newRating >= rating ? "text-orange-400" : "text-slate-300 hover:text-orange-200"}`}>★</label>
                       </React.Fragment>
                     ))}
                   </div>
                 </div>
-                <textarea className="w-full p-4 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all resize-none text-sm" placeholder="¿Qué te pareció esta expedición?..." rows="3" value={newComment} onChange={(e) => setNewComment(e.target.value)}></textarea>
-                <div className="flex justify-end"><button type="submit" disabled={!newComment.trim() || !newRating} className="bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors text-sm">Publicar reseña</button></div>
+                <textarea
+                  className="w-full p-4 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all resize-none text-sm disabled:opacity-50"
+                  placeholder="¿Qué te pareció esta expedición?..."
+                  rows="3"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  disabled={isSubmitting}
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={!newComment.trim() || !newRating || isSubmitting}
+                    className="bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors text-sm flex items-center gap-2"
+                  >
+                    {isSubmitting ? "Publicando..." : "Publicar reseña"}
+                  </button>
+                </div>
               </form>
-              
-              <div className="space-y-6">
-                {comments.map((comment, index) => {
-                  const isOwner = comment.user === (auth?.nombre || "Visitante");
-                  const isWithin24Hours = comment.timestamp && (Date.now() - comment.timestamp) < 24 * 60 * 60 * 1000;
-                  const canEdit = isOwner && isWithin24Hours;
-                  const isEditing = editingIndex === index;
 
-                  return (
-                    <div key={index} className="flex gap-4">
-                      <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-base flex-shrink-0">
-                        {comment.user.charAt(0).toUpperCase()}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-2 sm:gap-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-base font-bold text-slate-800">{comment.user}</p>
-                            <span className="text-[10px] font-bold text-slate-400 mt-0.5">
-                              {formatDateTime(comment.timestamp)}
-                            </span>
+              {isLoadingComments ? (
+                <div className="flex justify-center items-center py-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                  <span className="ml-3 text-sm text-slate-500 font-bold">Cargando reseñas...</span>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {comments.length === 0 ? (
+                    <p className="text-center text-slate-500 text-sm py-4 italic">No hay reseñas aún. ¡Sé el primero en opinar!</p>
+                  ) : (
+                    comments.map((comment, index) => {
+                      const currentCommentId = comment._id || index;
+                      return (
+                        <div key={currentCommentId} className="flex gap-4">
+                          <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-base flex-shrink-0">
+                            {comment.user.charAt(0).toUpperCase()}
                           </div>
-                          
-                          {canEdit && !isEditing && (
-                            <button 
-                              onClick={() => {
-                                setEditingIndex(index);
-                                setEditCommentText(comment.text);
-                                setEditCommentRating(comment.rating);
-                              }} 
-                              className="text-[10px] font-bold text-orange-500 hover:text-orange-600 uppercase tracking-widest"
-                            >
-                              Editar reseña
-                            </button>
-                          )}
-                        </div>
-
-                        {isEditing ? (
-                          <div className="bg-white border border-slate-200 p-4 rounded-2xl mt-2 shadow-sm">
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="text-xs font-bold text-slate-500">Calificación:</span>
-                              <div className="flex flex-row-reverse gap-1 text-lg">
-                                {[5, 4, 3, 2, 1].map((rating) => (
-                                  <React.Fragment key={rating}>
-                                    <input id={`edit-star-${index}-${rating}`} type="radio" hidden checked={editCommentRating === rating} onChange={() => setEditCommentRating(rating)} />
-                                    <label htmlFor={`edit-star-${index}-${rating}`} className={`cursor-pointer transition-colors ${editCommentRating >= rating ? "text-orange-400" : "text-slate-300 hover:text-orange-200"}`}>★</label>
-                                  </React.Fragment>
-                                ))}
+                          <div className="flex-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-2 sm:gap-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-base font-bold text-slate-800">{comment.user}</p>
+                                <span className="text-[10px] font-bold text-slate-400 mt-0.5">
+                                  {formatDateTime(comment.timestamp)}
+                                </span>
                               </div>
                             </div>
-                            <textarea 
-                              className="w-full p-3 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all resize-none text-sm" 
-                              rows="2" 
-                              value={editCommentText} 
-                              onChange={(e) => setEditCommentText(e.target.value)}
-                            />
-                            <div className="flex justify-end gap-3 mt-3">
-                              <button onClick={() => setEditingIndex(null)} className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">Cancelar</button>
-                              <button onClick={() => handleSaveEdit(index)} disabled={!editCommentText.trim() || !editCommentRating} className="bg-orange-500 text-white font-bold px-4 py-2 rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors text-xs">Guardar cambios</button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
                             <span className="text-orange-400 text-xs tracking-widest block mb-1">
                               {"★".repeat(comment.rating)}{"☆".repeat(5 - comment.rating)}
                             </span>
                             <p className="text-sm text-slate-600 leading-relaxed">{comment.text}</p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -358,13 +487,14 @@ export default function TourRecorridos({ onRouteBuilt }) {
 
   const [itinerary, setItinerary] = useState([]);
 
-  // 🔥 EXTRACCIÓN DE ROL A PRUEBA DE FALLOS:
-  // Busca en auth, en auth.user, o directamente en el localStorage si el contexto no lo guardó bien.
   let storedRole = "user";
   try {
-    const localData = JSON.parse(localStorage.getItem('user') || localStorage.getItem('auth') || '{}');
-    storedRole = localData?.role || localData?.user?.role || "user";
-  } catch (error) {}
+    const localAuthRaw = localStorage.getItem('user') || localStorage.getItem('auth');
+    if (localAuthRaw) {
+      const localData = JSON.parse(localAuthRaw);
+      storedRole = localData?.role || localData?.user?.role || "user";
+    }
+  } catch (error) { }
 
   const currentRole = String(auth?.role || auth?.user?.role || storedRole).toLowerCase().trim();
   const isCreatorOrAgency = currentRole === "agencia" || currentRole === "influencer";
@@ -373,44 +503,133 @@ export default function TourRecorridos({ onRouteBuilt }) {
     ...auth,
     id: auth?.id || auth?.user?.id || "u999",
     nombre: auth?.nombre || auth?.user?.nombre || "Usuario",
-    role: currentRole, 
-    social: "@user", 
+    role: currentRole,
+    social: "@user",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80"
   };
 
   useEffect(() => {
-    const mockTours = [
-      { id: "pkg1", title: "Aventura Extrema V.I.P", author: "Luisito Comunica", durationMinutes: 0, distanceKm: 0, price: 58000, description: "Paquete exclusivo que une Rafting y Canopy en un solo día.", image: "https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: false, isPackage: true, influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" }, rating: 5.0, pos: [-32.8895, -68.8458] },
-      { id: "pkg2", title: "Ruta del Vino y Relax", author: "Maxi Leguiza", durationMinutes: 0, distanceKm: 0, price: 45000, description: "Un paquete relajante creado por nuestro guía local para disfrutar de las mejores termas y bodegas.", image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, isPackage: true, influencer: null, rating: 4.8, pos: [-33.0033, -68.8683] },
-      { id: "t1", title: "Kayak en Potrerillos", author: "Dante Ruiz", durationMinutes: 150, distanceKm: 8, price: 22000, description: "Remada guiada en el dique con vistas abiertas...", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.8, pos: [-32.9525, -69.1866] },
-      { id: "t2", title: "Rafting Río Mendoza", author: "Maxi Leguiza", durationMinutes: 210, distanceKm: 15, price: 36000, description: "Salida con rápidos...", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i2", name: "Drew Binsky", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80", social: "@drewbinsky" }, rating: 5.0, pos: [-32.9000, -69.2000] },
-      { id: "t3", title: "Cabalgata en Uspallata", author: "Ema Caceres", durationMinutes: 180, distanceKm: 12, price: 18000, description: "Recorrido amable...", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: false, influencer: { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" }, rating: 4.2, pos: [-32.5833, -69.3500] },
-      { id: "t4", title: "Termas de Cacheuta Full Day", author: "Maria Luna", durationMinutes: 300, distanceKm: 18, price: 26000, description: "Día completo de termas...", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1439853949127-fa647821eba0?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: null, rating: 4.6, pos: [-33.0238, -69.1152] },
-      { id: "t5", title: "Trekking en Vallecitos", author: "Ana Gomez", durationMinutes: 320, distanceKm: 18, price: 24000, description: "Ascenso con tramos exigentes...", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1465311440653-ba9b1d9b0f5b?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" }, rating: 4.8, pos: [-32.9667, -69.3167] },
-      { id: "t6", title: "Canopy en Potrerillos", author: "Sofia Ramirez", durationMinutes: 110, distanceKm: 5, price: 21000, description: "Circuito aéreo con buenas vistas...", image: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=1200&q=80", image2: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80", allowMultiRoute: true, influencer: { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" }, rating: 4.5, pos: [-32.9525, -69.1866] },
-    ];
+    const fetchTours = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+        const response = await fetch(`${API_URL}/api/recorrido`);
 
-    setTours(mockTours);
-    setFilteredTours(mockTours);
-    setInfluencers([
-      { id: "i1", name: "Luisito Comunica", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80", social: "@luisitocomunica" },
-      { id: "i2", name: "Drew Binsky", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80", social: "@drewbinsky" },
-      { id: "i3", name: "Charly Sinewan", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=100&q=80", social: "@charlysinewan" }
-    ]);
+        if (!response.ok) {
+          throw new Error(`Error fetching tours: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        const dbTours = Array.isArray(data) ? data.map(tour => ({
+          id: tour._id || tour.id,
+          title: tour.title || tour.name || "Sin título",
+          name: tour.name || tour.title || "Sin título",
+          author: tour.author || "Guía Local",
+          authorId: tour.authorId,
+          durationMinutes: tour.durationMinutes || 0,
+          distanceKm: tour.distanceKm || 0,
+          price: Number(tour.price) || 0,
+          capacity: tour.capacity || 10,
+          description: tour.description || "",
+          images: Array.isArray(tour.images) ? tour.images : [],
+          image: Array.isArray(tour.images) && tour.images.length > 0 ? tour.images[0] : (tour.image || null),
+          image2: Array.isArray(tour.images) && tour.images.length > 1 ? tour.images[1] : (tour.image2 || null),
+          waypoints: tour.waypoints || [],
+          allowMultiRoute: tour.allowMultiRoute !== false,
+          isPackage: tour.isPackage === true,
+          // 🔥 IMPORTANTE: Asegurar que influencerId está correctamente asignado
+          influencerId: tour.influencerId || (tour.influencer && tour.influencer._id),
+          // influencer es el objeto completo con datos del influencer
+          influencer: tour.influencer && tour.influencer._id
+            ? {
+              id: tour.influencer._id || tour.influencer.id,
+              name: tour.influencer.name || tour.influencer.nombre,
+              avatar:
+                tour.influencer.avatar ||
+                "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80",
+              social: tour.influencer.social || "@influencer",
+            }
+            : null,
+          rating: tour.rating || 4.5,
+          pos: tour.location ? [tour.location.lat, tour.location.lng] : [tour.waypoints?.[0]?.lat || -32.8895, tour.waypoints?.[0]?.lng || -68.8458],
+          category: tour.category,
+          difficulty: tour.difficulty,
+          role: tour.role,
+          comments: Array.isArray(tour.comments) ? tour.comments : []
+        })) : [];
+
+        setTours(dbTours);
+        setFilteredTours(dbTours);
+
+        const uniqueInfluencers = [];
+        const influencerIds = new Set();
+        dbTours.forEach(tour => {
+          const infId = tour.influencerId || (tour.influencer && tour.influencer.id);
+          if (infId && !influencerIds.has(infId)) {
+            influencerIds.add(infId);
+            uniqueInfluencers.push({
+              id: infId,
+              // Prefer the influencer object data when available, fallback to tour author
+              name: (tour.influencer && (tour.influencer.name || tour.influencer.nombre)) || tour.author,
+              // Use real avatar if provided by the influencer object, otherwise fall back to common image fields
+              avatar:
+                (tour.influencer && (tour.influencer.avatar || tour.influencer.image || tour.influencer.photo)) ||
+                tour.image ||
+                "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80",
+              social: (tour.influencer && (tour.influencer.social || tour.influencer.handle)) || "@influencer"
+            });
+          }
+        });
+
+        setInfluencers(uniqueInfluencers);
+      } catch (error) {
+        console.error("Error loading tours:", error);
+        setTours([]);
+        setFilteredTours([]);
+        setInfluencers([]);
+      }
+    };
+
+    fetchTours();
   }, []);
 
-  function applyFilters() {
-    let results = tours.filter((tour) => {
-      const matchText = filters.q === "" || tour.title.toLowerCase().includes(filters.q.toLowerCase());
-      const matchPriceMin = filters.priceMin === "" || tour.price >= Number(filters.priceMin);
-      const matchInfluencer = !selectedInfluencerId || (tour.influencer && tour.influencer.id === selectedInfluencerId);
-      return matchText && matchPriceMin && matchInfluencer;
-    });
-    if (filters.sortPriceAsc) results = [...results].sort((a, b) => a.price - b.price);
-    setFilteredTours(results);
-  }
+  const applyFilters = useCallback(() => {
+    if (!tours || tours.length === 0) return;
 
-  useEffect(() => { applyFilters(); }, [filters, tours, selectedInfluencerId]);
+    try {
+      let results = tours.filter((tour) => {
+        const searchTerm = (filters.q || "").trim().toLowerCase();
+        const tourTitle = (tour.title || tour.name || "").toLowerCase();
+        const matchText = searchTerm === "" || tourTitle.includes(searchTerm);
+
+        const tourPrice = Number(tour.price) || 0;
+        const minPrice = (filters.priceMin !== "" && filters.priceMin !== null) ? Number(filters.priceMin) : null;
+        const maxPrice = (filters.priceMax !== "" && filters.priceMax !== null) ? Number(filters.priceMax) : null;
+
+        const matchPriceMin = minPrice === null || tourPrice >= minPrice;
+        const matchPriceMax = maxPrice === null || tourPrice <= maxPrice;
+
+        const matchInfluencer = !selectedInfluencerId ||
+          tour.influencerId === selectedInfluencerId ||
+          (tour.influencer && tour.influencer.id === selectedInfluencerId);
+
+        return matchText && matchPriceMin && matchPriceMax && matchInfluencer;
+      });
+
+      if (filters.sortPriceAsc) {
+        results = [...results].sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+      }
+
+      setFilteredTours(results);
+    } catch (error) {
+      console.error("Error crítico procesando filtros:", error);
+      setFilteredTours(tours);
+    }
+  }, [tours, filters, selectedInfluencerId]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const handleToggleRoute = (tour) => {
     setItinerary(prev => prev.some(t => t.id === tour.id) ? prev.filter(t => t.id !== tour.id) : [...prev, tour]);
@@ -422,7 +641,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
       nombre: tour.title || tour.name,
       precio: tour.price,
       capacidad: tour.capacity || 10,
-      image: tour.image || tour.image2,
+      image: tour.image || tour.image2 || (Array.isArray(tour.images) ? tour.images[0] : null),
       durationMinutes: tour.durationMinutes,
       author: tour.author,
       influencer: tour.influencer || null
@@ -439,19 +658,18 @@ export default function TourRecorridos({ onRouteBuilt }) {
             <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">
               Encuentra actividades y experiencias <span className="text-orange-500">inolvidables</span>
             </h1>
-            
-            {/* GRUPO DE BOTONES */}
+
             <div className="flex items-center gap-3">
-              {/* Solo Agencias ven este botón */}
               {isCreatorOrAgency && (
                 <button onClick={() => navigate('/agencia/dashboard')} className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 px-5 text-sm rounded-full shadow-md transition-all hidden sm:block">
                   Mi Panel de Agencia
                 </button>
               )}
-              {/* Todos los usuarios ven el botón de crear ruta rápida */}
-              <button onClick={() => setCreateOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-5 text-sm rounded-full shadow-[0_4px_14px_0_rgba(249,115,22,0.39)]">
-                Crear Ruta
-              </button>
+              {currentRole === "user" && (
+                <button onClick={() => setCreateOpen(true)} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-5 text-sm rounded-full shadow-[0_4px_14px_0_rgba(249,115,22,0.39)]">
+                  Crear Mi Ruta
+                </button>
+              )}
             </div>
 
           </div>
@@ -460,12 +678,11 @@ export default function TourRecorridos({ onRouteBuilt }) {
 
       <div className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 flex flex-col gap-6 min-h-0">
         <div className="flex-shrink-0">
-          <Filters filters={filters} setFilters={setFilters} applyFilters={applyFilters} />
+          <Filters filters={filters} setFilters={setFilters} />
         </div>
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-0">
           <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 h-full overflow-y-auto no-scrollbar pb-6 pr-2">
-
             <RecommendedPackages tours={tours} onSelectTour={setSelectedTour} />
             <RecommendedInfluencers influencers={influencers} onSelect={(inf) => setSelectedInfluencerId(inf ? inf.id : null)} selectedId={selectedInfluencerId} />
           </div>
@@ -481,7 +698,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
                         Paquete Múltiple
                       </div>
                     )}
-                    {t.influencer ? (
+                    {t.influencerId || t.influencer ? (
                       <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white text-[10px] font-black uppercase px-4 py-1.5 rounded-full shadow-lg border border-white/20 backdrop-blur-sm">
                         Recomendación Influencer
                       </div>
@@ -492,13 +709,19 @@ export default function TourRecorridos({ onRouteBuilt }) {
                     )}
                   </div>
 
-                  <div className={`rounded-[26px] p-1 h-full ${t.influencer ? 'bg-gradient-to-br from-orange-200 to-orange-50' : 'bg-transparent'}`}>
-                    <TourCard tour={t} onSelect={() => setSelectedTour(t)} />
+                  <div className={`rounded-[26px] p-1 h-full ${t.influencerId || t.influencer ? 'bg-gradient-to-br from-orange-200 to-orange-50' : 'bg-transparent'}`}>
+                    <TourCard
+                      tour={{
+                        ...t,
+                        image: t.image || t.image2 || (Array.isArray(t.images) ? t.images[0] : null)
+                      }}
+                      onSelect={() => setSelectedTour(t)}
+                    />
                   </div>
                 </div>
               ))
             ) : (
-              <div className="bg-white rounded-[24px] border border-slate-100 p-12 text-center shadow-sm">No encontramos resultados</div>
+              <div className="bg-white rounded-[24px] border border-slate-100 p-12 text-center shadow-sm">No encontramos resultados en la base de datos</div>
             )}
           </main>
         </div>
@@ -510,7 +733,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
             <div className="bg-orange-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-black text-lg shadow-inner">{itinerary.length}</div>
             <div className="hidden sm:block text-left">
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Ruta múltiple</p>
-              <p className="text-base font-black text-white leading-none">${itinerary.reduce((acc, t) => acc + (t.price || 0), 0)}</p>
+              <p className="text-base font-black text-white leading-none">${itinerary.reduce((acc, t) => acc + (Number(t.price) || 0), 0)}</p>
             </div>
           </div>
           <div className="w-px h-8 bg-slate-700"></div>
@@ -531,13 +754,18 @@ export default function TourRecorridos({ onRouteBuilt }) {
         </div>
       )}
 
-      {/* Todo el mundo puede acceder a crear ruta base */}
       <CreateTourModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onCreated={(newTour) => { setTours((t) => [newTour, ...t]); setFilteredTours((t) => [newTour, ...t]); }}
         existingTours={tours}
         currentUser={currentUserObj}
+        influencer={{
+          id: currentUserObj.id,
+          name: currentUserObj.nombre,
+          avatar: currentUserObj.avatar,
+          social: currentUserObj.social
+        }}
       />
 
       <TourDetailModal

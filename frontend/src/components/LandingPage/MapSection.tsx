@@ -142,7 +142,7 @@ export function MapSection() {
                 <div className="flex items-center gap-2 mb-3">
                   <Navigation className="w-4 h-4 text-slate-600" />
                   <h4 className="text-sm">
-                    Ubicaciones Activas ({locations.length})
+                    Ubicaciones Activas
                   </h4>
                 </div>
 
@@ -164,7 +164,7 @@ export function MapSection() {
                             {location.sport}
                           </p>
                         </div>
-                        <button
+                       {/**<button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleRemoveLocation(location.id);
@@ -172,7 +172,7 @@ export function MapSection() {
                           className="text-red-500 hover:text-red-700"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </button> */} 
                       </div>
                     </div>
                   ))}

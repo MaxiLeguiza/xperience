@@ -7,14 +7,25 @@ import React, { useState, useEffect } from "react";
 
 export default function Filters({ filters, setFilters, applyFilters }) {
   // 1. Estado local "borrador" para guardar los cambios mientras se escribe
-  const [localFilters, setLocalFilters] = useState(filters);
+  const [localFilters, setLocalFilters] = useState({
+    q: filters.q || "",
+    priceMin: filters.priceMin || "",
+    priceMax: filters.priceMax || "",
+    sortPriceAsc: filters.sortPriceAsc || false
+  });
 
   // 2. Efecto para sincronizar el estado si se reinician los filtros desde afuera
   useEffect(() => {
-    setLocalFilters(filters);
+    setLocalFilters({
+      q: filters.q || "",
+      priceMin: filters.priceMin || "",
+      priceMax: filters.priceMax || "",
+      sortPriceAsc: filters.sortPriceAsc || false
+    });
   }, [filters]);
 
   const handleNumberChange = (key, value) => {
+    // Mantenemos el string vacío si borran el número, o convertimos a número
     const numberValue = value === "" ? "" : Number(value);
     setLocalFilters((f) => ({ ...f, [key]: numberValue }));
   };
@@ -63,8 +74,9 @@ export default function Filters({ filters, setFilters, applyFilters }) {
           <input
             type="number"
             placeholder="Mín"
+            min="0"
             className="w-16 bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            value={localFilters.priceMin || ""}
+            value={localFilters.priceMin}
             onChange={(e) => handleNumberChange("priceMin", e.target.value)}
             onKeyDown={handleKeyDown}
           />
@@ -72,8 +84,9 @@ export default function Filters({ filters, setFilters, applyFilters }) {
           <input
             type="number"
             placeholder="Máx"
+            min="0"
             className="w-16 bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            value={localFilters.priceMax || ""}
+            value={localFilters.priceMax}
             onChange={(e) => handleNumberChange("priceMax", e.target.value)}
             onKeyDown={handleKeyDown}
           />
@@ -102,7 +115,7 @@ export default function Filters({ filters, setFilters, applyFilters }) {
         {/* 4. Botón Aplicar */}
         <button
           onClick={handleApplyClick}
-          className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white py-2.5 px-6 rounded-full text-sm font-bold transition-colors whitespace-nowrap"
+          className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white py-2.5 px-6 rounded-full text-sm font-bold transition-colors whitespace-nowrap shadow-md"
         >
           Aplicar
         </button>

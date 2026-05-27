@@ -7,7 +7,6 @@ function Nav() {
     const { auth } = useAuth();
     // Estado para guardar el link seleccionado
     const [activeLink, setActiveLink] = useState();
-
     const links = [
         { label: "Actividades", href: "/recorridos" },
         { label: "Influencers", href: "/ListInfluencer" },

@@ -1,26 +1,57 @@
 // AgencyDashboard.jsx
-// -------------------------------------------------------------
-// UI/UX Premium Claro: Panel privado para Agencias y Creadores.
-// -------------------------------------------------------------
-
-import React, { useState, useMemo } from "react";
+// 🔥 VERSIÓN MEJORADA CON CARGA DESDE API
+// -----------------------------------------------
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Nav from "../Navbar/Nav";
+import { useAuth } from "../../hooks/useAuth";
 import {
     TrendingUp, Map, Users, Edit3, Trash2, Plus,
-    MoreVertical, Calendar, DollarSign
+    MoreVertical, Calendar, DollarSign, Loader
 } from "lucide-react";
+import axios from "axios";
 
 export default function AgencyDashboard() {
     const navigate = useNavigate();
+    const { auth } = useAuth();
 
-    // 🔥 MOCK DATA: Rutas exclusivas creadas por esta agencia
-    const [myTours] = useState([
-        { id: "pkg2", title: "Ruta del Vino y Relax", category: "Enoturismo", price: 45000, capacity: 15, reserved: 12, status: "active" },
-        { id: "t2", title: "Rafting Río Mendoza", category: "Rafting", price: 36000, capacity: 20, reserved: 20, status: "sold_out" },
-        { id: "t6", title: "Canopy en Potrerillos", category: "Canopy", price: 21000, capacity: 10, reserved: 3, status: "active" },
-        { id: "t8", title: "Expedición Aconcagua (Base)", category: "Trekking", price: 85000, capacity: 8, reserved: 0, status: "draft" }
-    ]);
+    const [myTours, setMyTours] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // 🔥 CARGAR RUTAS DESDE LA API
+    useEffect(() => {
+        const fetchTours = async () => {
+            try {
+                setLoading(true);
+                const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+                const response = await axios.get(`${API_URL}/api/recorrido`);
+                
+                // Filtrar solo las rutas del usuario autenticado
+                const authorId = auth?.id || auth?.user?.id;
+                const authorName = auth?.nombre || auth?.user?.nombre;
+                
+                const userTours = response.data.filter(tour => 
+                    tour.authorId === authorId || tour.author === authorName
+                );
+                
+                setMyTours(userTours);
+                setError(null);
+            } catch (err) {
+                console.error("Error cargando rutas:", err);
+                setError("No se pudieron cargar las rutas");
+                setMyTours([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (auth?.id || auth?.user?.id || auth?.nombre || auth?.user?.nombre) {
+            fetchTours();
+        } else {
+            setLoading(false);
+        }
+    }, [auth]);
 
     // Cálculos de Resumen
     const stats = useMemo(() => {
@@ -29,15 +60,35 @@ export default function AgencyDashboard() {
         let activeRoutes = 0;
 
         myTours.forEach(tour => {
-            totalEarnings += (tour.price * tour.reserved);
-            totalReservations += tour.reserved;
-            if (tour.status === "active" || tour.status === "sold_out") activeRoutes++;
+            const price = Number(tour.price) || 0;
+            const reserved = Number(tour.reserved) || 0;
+            
+            totalEarnings += (price * reserved);
+            totalReservations += reserved;
+            
+            // Asumimos que si no tiene status, está activa por defecto
+            if (tour.status === "active" || tour.status === "sold_out" || !tour.status) {
+                activeRoutes++;
+            }
         });
 
         return { totalEarnings, totalReservations, activeRoutes };
     }, [myTours]);
 
-    const formatPrice = (val) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(val);
+    const formatPrice = (val) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(val || 0);
+
+    const handleDelete = async (tourId) => {
+        if (!window.confirm("¿Estás seguro de que deseas eliminar esta ruta?")) return;
+
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+            await axios.delete(`${API_URL}/api/recorrido/${tourId}`);
+            setMyTours(myTours.filter(t => t._id !== tourId && t.id !== tourId));
+        } catch (err) {
+            console.error("Error eliminando ruta:", err);
+            alert("Error al eliminar la ruta");
+        }
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-900">
@@ -102,61 +153,101 @@ export default function AgencyDashboard() {
                 <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
                     <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                         <h2 className="text-lg font-black text-slate-800">Mis Rutas</h2>
-                        <button className="text-sm font-bold text-orange-500 hover:text-orange-600 transition-colors">Ver historial</button>
+                        <button onClick={() => window.location.reload()} className="text-sm font-bold text-orange-500 hover:text-orange-600 transition-colors">
+                            {loading ? "Cargando..." : "Actualizar"}
+                        </button>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50/50">
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ruta / Actividad</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Estado</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ocupación (Stock)</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ingreso Est.</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {myTours.map((tour) => {
-                                    const percent = Math.round((tour.reserved / tour.capacity) * 100);
-                                    return (
-                                        <tr key={tour.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <p className="text-sm font-bold text-slate-800">{tour.title}</p>
-                                                <p className="text-[11px] font-medium text-slate-500 mt-0.5">{tour.category}</p>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {tour.status === 'active' && <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-100">Activa</span>}
-                                                {tour.status === 'sold_out' && <span className="bg-rose-50 text-rose-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-rose-100">Agotada</span>}
-                                                {tour.status === 'draft' && <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-200">Borrador</span>}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-full bg-slate-100 rounded-full h-2 max-w-[100px]">
-                                                        <div className={`h-2 rounded-full ${percent >= 100 ? 'bg-rose-500' : 'bg-orange-500'}`} style={{ width: `${percent}%` }}></div>
+                    {loading ? (
+                        <div className="px-6 py-12 text-center">
+                            <Loader className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-3" />
+                            <p className="text-slate-500 font-medium">Cargando tus rutas...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="px-6 py-12 text-center">
+                            <p className="text-rose-500 font-bold mb-3">{error}</p>
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="text-sm font-bold text-orange-500 hover:text-orange-600"
+                            >
+                                Intentar nuevamente
+                            </button>
+                        </div>
+                    ) : myTours.length === 0 ? (
+                        <div className="px-6 py-12 text-center">
+                            <Map className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                            <p className="text-slate-500 font-medium">Aún no has creado ninguna ruta</p>
+                            <button 
+                                onClick={() => navigate('/agencia/crear-ruta')}
+                                className="text-sm font-bold text-orange-500 hover:text-orange-600 mt-3"
+                            >
+                                Crear tu primera ruta
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50/50">
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ruta / Actividad</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Estado</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ocupación (Stock)</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Ingreso Est.</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {myTours.map((tour) => {
+                                        const tourId = tour._id || tour.id;
+                                        const percent = tour.capacity ? Math.round(((tour.reserved || 0) / tour.capacity) * 100) : 0;
+                                        return (
+                                            <tr key={tourId} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <p className="text-sm font-bold text-slate-800">{tour.title || tour.name}</p>
+                                                    <p className="text-[11px] font-medium text-slate-500 mt-0.5">{tour.category}</p>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {tour.status === 'active' && <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-100">Activa</span>}
+                                                    {tour.status === 'sold_out' && <span className="bg-rose-50 text-rose-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-rose-100">Agotada</span>}
+                                                    {tour.status === 'draft' && <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-200">Borrador</span>}
+                                                    {!tour.status && <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-200">Publicada</span>}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-full bg-slate-100 rounded-full h-2 max-w-[100px]">
+                                                            <div className={`h-2 rounded-full ${percent >= 100 ? 'bg-rose-500' : 'bg-orange-500'}`} style={{ width: `${percent}%` }}></div>
+                                                        </div>
+                                                        <span className="text-xs font-bold text-slate-600">{tour.reserved || 0}/{tour.capacity || 0}</span>
                                                     </div>
-                                                    <span className="text-xs font-bold text-slate-600">{tour.reserved}/{tour.capacity}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-sm font-bold text-slate-800">{formatPrice(tour.price * tour.reserved)}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button onClick={() => navigate(`/agencia/crear-ruta?edit=${tour.id}`)} className="p-2 text-slate-400 hover:text-orange-500 transition-colors bg-white hover:bg-orange-50 rounded-lg" title="Editar">
-                                                        <Edit3 className="w-4 h-4" />
-                                                    </button>
-                                                    <button className="p-2 text-slate-400 hover:text-rose-500 transition-colors bg-white hover:bg-rose-50 rounded-lg" title="Eliminar">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className="text-sm font-bold text-slate-800">{formatPrice(tour.price * (tour.reserved || 0))}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button 
+                                                            onClick={() => navigate(`/agencia/crear-ruta?edit=${tourId}`)} 
+                                                            className="p-2 text-slate-400 hover:text-orange-500 transition-colors bg-white hover:bg-orange-50 rounded-lg" 
+                                                            title="Editar"
+                                                        >
+                                                            <Edit3 className="w-4 h-4" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDelete(tourId)}
+                                                            className="p-2 text-slate-400 hover:text-rose-500 transition-colors bg-white hover:bg-rose-50 rounded-lg" 
+                                                            title="Eliminar"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>

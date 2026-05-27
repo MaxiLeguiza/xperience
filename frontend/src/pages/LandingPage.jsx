@@ -15,7 +15,7 @@ export default function App() {
     return (
         <div className="min-h-screen bg-white">
             {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-md shadow-lg">
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900 backdrop-blur-md shadow-lg">
                 <div className="max-w-7xl mx-auto px-4 py-3">
                     <div className="flex items-center justify-between">
                         {/* Logo */}
@@ -106,9 +106,6 @@ export default function App() {
                         <Link to="/registrar" className="inline-block px-8 py-4 bg-white text-black rounded-lg hover:bg-white/90 transition-all hover:scale-105 hover:shadow-2xl font-bold">
                             Crear Cuenta Gratis
                         </Link>
-                        <button className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition-all hover:scale-105 font-bold">
-                            Explorar Comunidad
-                        </button>
                     </div>
                 </div>
             </section>

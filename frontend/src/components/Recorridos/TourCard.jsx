@@ -1,7 +1,7 @@
 // TourCard.jsx
 // -------------------------------------------------------------
 // Tarjeta que muestra los datos de un recorrido (Diseño Premium Claro).
-// Lógica intacta. UI/UX actualizada con sombras suaves, bordes redondeados y micro-interacciones.
+// Mejorado para coincidir exactamente con el diseño de la captura proporcionada.
 // -------------------------------------------------------------
 import React from "react";
 import { useNavigate } from "react-router-dom";
@@ -41,95 +41,103 @@ export default function TourCardHorizontal({ tour, onSelect }) {
   return (
     <div
       onClick={() => onSelect(tour)}
-      // Contenedor principal: Fondo blanco, bordes redondeados premium, sombra suave y efecto hover en grupo
-      className="group bg-white rounded-[24px] border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-300 flex flex-col sm:flex-row overflow-hidden cursor-pointer"
+      // Contenedor principal: Bordes súper redondeados (32px), sombra suave que crece al hacer hover
+      className="group bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 flex flex-col sm:flex-row overflow-hidden cursor-pointer w-full"
     >
-      {/* Imagen a la izquierda (con zoom sutil en hover) */}
+      {/* Imagen a la izquierda: Ancho fijo para mantener la tarjeta mediana y armoniosa */}
       {tour.image && (
-        <div className="sm:w-2/5 md:w-1/3 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden">
+        <div className="w-full sm:w-[320px] flex-shrink-0 relative overflow-hidden min-h-[220px]">
           <img
             src={tour.image}
             alt={tour.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          {/* Pequeño degradado oscuro abajo para que la imagen tenga profundidad */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          {/* Degradado oscuro sutil abajo para dar profundidad */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
         </div>
       )}
 
       {/* Contenido a la derecha */}
-      <div className="p-6 md:p-8 flex flex-col justify-between flex-1">
+      <div className="p-6 flex flex-col justify-between flex-1">
         
-        {/* Encabezado: título, autor y duración */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 leading-tight">
+        <div>
+          {/* Fila 1: Título y Duración */}
+          <div className="flex justify-between items-start gap-4">
+            <h2 className="text-2xl font-black text-slate-900 leading-tight line-clamp-2">
               {tour.title}
             </h2>
-            <p className="text-sm font-medium text-slate-500 mt-2 flex items-center gap-1.5">
+            
+            {/* Duración (Estilo texto con ícono naranja, como en la imagen) */}
+            <div className="flex items-center gap-1.5 text-slate-500 flex-shrink-0 mt-1">
               <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Por: {tour.author}
+              <span className="text-sm font-bold">{formatDuration(tour.durationMinutes)}</span>
+            </div>
+          </div>
+          
+          {/* Descripción de una oración */}
+          {tour.description && (
+            <p className="text-sm text-slate-500 mt-2 line-clamp-2 leading-relaxed">
+              {tour.description}
             </p>
-          </div>
+          )}
 
-          {/* Badge de Duración Premium */}
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 text-slate-700 px-4 py-2 rounded-full flex-shrink-0">
-            <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          {/* Autor (Naranja y Mayúsculas, como en la imagen) */}
+          <p className="text-[11px] font-bold text-orange-500 mt-4 flex items-center gap-1.5 uppercase tracking-wider">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className="text-sm font-bold">{formatDuration(tour.durationMinutes)}</span>
-          </div>
+            Por: {tour.author}
+          </p>
         </div>
 
-        {/* Separador sutil */}
-        <div className="border-t border-slate-100 my-5"></div>
-
-        <div className="flex flex-col sm:flex-row justify-between items-end gap-6">
-          {/* Influencer: Diseño en "píldora" */}
-          <div className="w-full sm:w-auto">
-            {tour.influencer && (
+        {/* Fila Base: Influencer, Precio y Botón */}
+        <div className="flex flex-col sm:flex-row justify-between items-end gap-4 mt-6">
+          
+          {/* Bloque Influencer */}
+          <div className="w-full sm:w-auto min-h-[40px]">
+            {tour.influencer ? (
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
                   Recomendado por
                 </p>
-                <div className="flex items-center gap-3 bg-slate-50/50 border border-slate-100 p-2 pr-4 rounded-full w-max">
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 p-1.5 pr-4 rounded-full w-max">
                   <img
                     src={tour.influencer.avatar}
                     alt={tour.influencer.name}
-                    className="w-9 h-9 rounded-full object-cover ring-2 ring-white shadow-sm"
+                    className="w-7 h-7 rounded-full object-cover ring-2 ring-white shadow-sm"
                   />
-                  <span className="text-sm font-bold text-slate-800">
+                  <span className="text-xs font-bold text-slate-800">
                     {tour.influencer.name}
                   </span>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
 
-          {/* Precio y Botón */}
-          <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+          {/* Bloque Precio + Botón */}
+          <div className="flex items-center gap-5 w-full sm:w-auto justify-between sm:justify-end">
             <div className="text-right">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Precio</p>
-              <p className="text-3xl font-black text-orange-500 leading-none">
-                <span className="text-lg font-bold mr-1">$</span>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Precio</p>
+              <p className="text-2xl font-black text-orange-500 leading-none">
+                <span className="text-sm font-bold mr-0.5">$</span>
                 {tour.price}
               </p>
             </div>
             
             <button
               onClick={handleReservar}
-              // Botón rediseñado: Naranja de la marca, sombra de brillo, y animación al hacer hover
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-8 rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] hover:-translate-y-0.5 flex items-center gap-2"
+              // Botón "Reservar ->" exacto al de la captura
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:-translate-y-0.5 flex items-center gap-2 text-sm"
             >
               Reservar
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
             </button>
           </div>
+
         </div>
         
       </div>
