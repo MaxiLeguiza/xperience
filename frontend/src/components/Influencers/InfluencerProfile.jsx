@@ -41,6 +41,7 @@ function InfluencerProfile() {
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [tours, setTours] = useState([]);
   const [toursLoading, setToursLoading] = useState(false);
+  const [selectedTour, setSelectedTour] = useState(null);
 
   const currentUserId = auth?.id || auth?.user?.id || "default_user";
   const isAgency = auth?.role === "agencia" || auth?.user?.role === "agencia";
@@ -59,9 +60,12 @@ function InfluencerProfile() {
         // Cargar países
         setSelectedCountries(response.data.countries || []);
 
-        // Cargar tours
+        // Cargar tours: si el influencer tiene array 'tours' poblado, úsalo; si está vacío, buscar por influencerId/author
         if (response.data.tours && response.data.tours.length > 0) {
           fetchTours(response.data.tours);
+        } else {
+          // Fallback: buscar recorridos que tengan influencerId o authorId igual al influencer
+          fetchToursByInfluencer(response.data._id || response.data.id);
         }
       } catch (error) {
         console.error("Error al obtener el influencer:", error);
@@ -77,18 +81,97 @@ function InfluencerProfile() {
   const fetchTours = async (tourIds) => {
     try {
       setToursLoading(true);
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-      // Obtener detalles de cada tour
-      const toursData = await Promise.all(
-        tourIds.map(tourId =>
-          clienteAxios.get(`${API_URL}/api/recorrido/${tourId}`).catch(() => null)
+      if (!Array.isArray(tourIds) || tourIds.length === 0) {
+        setTours([]);
+        return;
+      }
+
+      // Algunos endpoints devuelven ya los objetos completos, otros sólo IDs.
+      const directTours = tourIds.filter(t => t && typeof t === 'object' && (t._id || t.id));
+      const idsToFetch = tourIds.filter(t => !(t && typeof t === 'object' && (t._id || t.id)));
+
+      // Normalizar tours directos
+      const normalizedDirect = directTours.map(t => ({
+        _id: t._id || t.id,
+        id: t._id || t.id,
+        name: t.name || t.title,
+        title: t.title || t.name,
+        description: t.description || t.summary || '',
+        images: Array.isArray(t.images) ? t.images : (t.image ? [t.image] : []),
+        image: (Array.isArray(t.images) && t.images[0]) || t.image || null,
+        price: t.price,
+        durationMinutes: t.durationMinutes,
+        distanceKm: t.distanceKm,
+        difficulty: t.difficulty,
+        comments: Array.isArray(t.comments) ? t.comments : []
+      }));
+
+      // Traer por ID sólo los que faltan
+      const fetched = await Promise.all(
+        idsToFetch.map(id =>
+          clienteAxios.get(`/api/recorrido/${id}`).then(res => res.data).catch(() => null)
         )
       );
 
-      setTours(toursData.filter(t => t && t.data).map(t => t.data));
+      const fetchedClean = fetched.filter(Boolean).map(t => ({
+        _id: t._id || t.id,
+        id: t._id || t.id,
+        name: t.name || t.title,
+        title: t.title || t.name,
+        description: t.description || t.summary || '',
+        images: Array.isArray(t.images) ? t.images : (t.image ? [t.image] : []),
+        image: (Array.isArray(t.images) && t.images[0]) || t.image || null,
+        price: t.price,
+        durationMinutes: t.durationMinutes,
+        distanceKm: t.distanceKm,
+        difficulty: t.difficulty,
+        comments: Array.isArray(t.comments) ? t.comments : []
+      }));
+
+      // Unir, manteniendo el orden original: primero directTours (en el mismo orden), luego fetched
+      const combined = [...normalizedDirect, ...fetchedClean];
+      setTours(combined);
     } catch (error) {
       console.error("Error cargando tours:", error);
+      setTours([]);
+    } finally {
+      setToursLoading(false);
+    }
+  };
+
+  const fetchToursByInfluencer = async (influencerId) => {
+    try {
+      setToursLoading(true);
+      const all = await clienteAxios.get('/api/recorrido').then(r => r.data).catch(() => []);
+      if (!Array.isArray(all) || all.length === 0) {
+        setTours([]);
+        return;
+      }
+
+      const matched = all.filter(t => {
+        return (t.influencerId && String(t.influencerId) === String(influencerId)) ||
+               (t.influencer && (t.influencer._id === influencerId || t.influencer.id === influencerId)) ||
+               (t.authorId && String(t.authorId) === String(influencerId)) ||
+               (t.author && (t.author._id === influencerId || t.author.id === influencerId));
+      }).map(t => ({
+        _id: t._id || t.id,
+        id: t._id || t.id,
+        name: t.name || t.title,
+        title: t.title || t.name,
+        description: t.description || t.summary || '',
+        images: Array.isArray(t.images) ? t.images : (t.image ? [t.image] : []),
+        image: (Array.isArray(t.images) && t.images[0]) || t.image || null,
+        price: t.price,
+        durationMinutes: t.durationMinutes,
+        distanceKm: t.distanceKm,
+        difficulty: t.difficulty,
+        comments: Array.isArray(t.comments) ? t.comments : []
+      }));
+
+      setTours(matched);
+    } catch (error) {
+      console.error('Error buscando tours por influencer:', error);
       setTours([]);
     } finally {
       setToursLoading(false);
@@ -298,72 +381,95 @@ function InfluencerProfile() {
 
           {/* COLUMNA DERECHA: TOURS/RECORRIDOS */}
           <section className="lg:col-span-8 xl:col-span-8">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
-                Recorridos & Actividades
-              </h3>
-              <div className="bg-orange-100 text-orange-600 text-xs font-bold px-3 py-1 rounded-full">
-                {tours?.length || 0} Rutas
-              </div>
+           <div className="mb-10">
+  {/* Cabecera mejorada con mejor alineación y contraste en el badge */}
+  <div className="flex items-center justify-between mb-6">
+    <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+      Recorridos & Actividades
+    </h3>
+    <div className="bg-orange-50 text-orange-600 ring-1 ring-orange-500/20 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+      {tours?.length || 0} Rutas
+    </div>
+  </div>
+
+  {toursLoading ? (
+    /* Estado de carga con un toque más orgánico */
+    <div className="flex flex-col items-center justify-center py-16 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+      <Loader2 className="w-8 h-8 text-orange-500 animate-spin mb-3" />
+      <p className="text-sm font-medium text-slate-400 animate-pulse">Buscando recorridos...</p>
+    </div>
+  ) : tours?.length > 0 ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {tours.map((tour) => (
+        <div
+          key={tour._id || tour.id}
+          role="button"
+          tabIndex={0}
+          onClick={() => setSelectedTour(tour)}
+          onKeyDown={(e) => e.key === 'Enter' && setSelectedTour(tour)}
+          className="group bg-white rounded-2xl shadow-sm border border-slate-200/70 overflow-hidden relative cursor-pointer hover:shadow-xl hover:shadow-orange-500/5 hover:border-orange-300 transition-all duration-300 p-3 sm:p-4 flex gap-4 sm:gap-5 items-center text-left"
+        >
+          {/* Contenedor de Imagen: Ligeramente más grande y proporcionado */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 border border-slate-100">
+            <img
+              src={(tour.images && tour.images[0]) || tour.image || "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=600&q=80"}
+              alt={tour.name || tour.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
+          </div>
+
+          {/* Contenedor de Información */}
+          <div className="flex-1 min-w-0 py-1">
+            
+            {/* Título y Precio: Llevamos el precio arriba a la derecha para jerarquía visual */}
+            <div className="flex justify-between items-start gap-3 mb-1">
+              <h4 className="font-bold text-base text-slate-900 truncate group-hover:text-orange-600 transition-colors">
+                {tour.name || tour.title}
+              </h4>
+              <span className="font-black text-slate-900 bg-slate-50 px-2.5 py-1 rounded-lg text-sm tracking-tight border border-slate-200/60 shadow-sm flex-shrink-0">
+                ${tour.price || '0'}
+              </span>
             </div>
 
-            {toursLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
-              </div>
-            ) : tours?.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {tours.map((tour) => (
-                  <div key={tour._id || tour.id} className="group bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden relative cursor-pointer hover:shadow-lg transition-shadow">
-                    <div className="overflow-hidden h-72 w-full relative">
-                      <img
-                        src={(tour.images && tour.images[0]) || "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=600&q=80"}
-                        alt={tour.name || tour.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      />
+            {/* Descripción: line-clamp-2 es la forma nativa y perfecta de cortar texto en Tailwind */}
+            <p className="text-sm text-slate-500 mb-3.5 line-clamp-2 leading-relaxed pr-2">
+              {tour.description || tour.summary || 'Descubre esta increíble experiencia.'}
+            </p>
 
-                      <div className="absolute top-4 left-4 z-20">
-                        <span className="bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-white/20">
-                          {tour.category || "Actividad"}
-                        </span>
-                      </div>
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                        <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                          <h4 className="font-bold text-xl text-white mb-3 leading-tight drop-shadow-lg">{tour.name || tour.title}</h4>
-                          <div className="grid grid-cols-2 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 text-white/90">
-                            <div className="flex items-center gap-1.5">
-                              <MapPin className="w-4 h-4 flex-shrink-0" />
-                              <span className="text-xs font-bold">{tour.difficulty || "Media"}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold">${tour.price || "0"}</span>
-                            </div>
-                            {tour.durationMinutes && (
-                              <div className="flex items-center gap-1.5">
-                                <Clock className="w-4 h-4 flex-shrink-0" />
-                                <span className="text-xs font-bold">{tour.durationMinutes} min</span>
-                              </div>
-                            )}
-                            {tour.distanceKm && (
-                              <div className="flex items-center gap-1.5">
-                                <Route className="w-4 h-4 flex-shrink-0" />
-                                <span className="text-xs font-bold">{tour.distanceKm} km</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-[24px] border border-slate-100 p-12 text-center">
-                <Map className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500 font-medium">Este creador aún no tiene recorridos publicados.</p>
-              </div>
-            )}
+            {/* Metadatos: Convertidos en pequeñas "píldoras" (badges) para mejor escaneabilidad */}
+            <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
+              <span className="flex items-center gap-1.5 bg-slate-100/80 px-2 py-1 rounded-md">
+                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                {tour.difficulty || 'Media'}
+              </span>
+              {tour.durationMinutes && (
+                <span className="flex items-center gap-1.5 bg-slate-100/80 px-2 py-1 rounded-md">
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  {tour.durationMinutes}m
+                </span>
+              )}
+              {tour.distanceKm && (
+                <span className="flex items-center gap-1.5 bg-slate-100/80 px-2 py-1 rounded-md">
+                  <Route className="w-3.5 h-3.5 text-slate-400" />
+                  {tour.distanceKm}km
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    /* Estado Vacío: Mejor ilustrado y con texto más amigable */
+    <div className="bg-slate-50/50 rounded-[32px] border border-dashed border-slate-200 p-16 text-center transition-colors hover:bg-slate-50">
+      <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mx-auto mb-5">
+        <Map className="w-8 h-8 text-slate-300" />
+      </div>
+      <h4 className="text-lg font-bold text-slate-800 mb-1">Aún no hay rutas</h4>
+      <p className="text-slate-500 font-medium text-sm">Este creador está preparando nuevos recorridos increíbles.</p>
+    </div>
+  )}
+</div>
           </section>
         </div>
       </main>
@@ -467,6 +573,88 @@ function InfluencerProfile() {
           </div>
         </div>
       )}
+      {selectedTour && (
+        <TourDetailModal tour={selectedTour} onClose={() => setSelectedTour(null)} />
+      )}
+    </div>
+  );
+}
+
+function TourDetailModal({ tour, onClose }) {
+  if (!tour) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
+      <div
+        className="absolute inset-0"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <div className="relative w-full max-w-3xl rounded-[32px] bg-white shadow-2xl overflow-hidden border border-slate-200">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
+          aria-label="Cerrar modal de recorrido"
+        >
+          ✕
+        </button>
+
+        <div className="overflow-hidden">
+          <img
+            src={(tour.images && tour.images[0]) || tour.image || "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=1200&q=80"}
+            alt={tour.name || tour.title}
+            className="h-72 w-full object-cover"
+          />
+        </div>
+
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-3xl font-black text-slate-900">
+                {tour.name || tour.title}
+              </h2>
+              <p className="mt-2 text-sm text-slate-500 max-w-2xl">
+                {tour.description || tour.summary || 'Sin descripción disponible.'}
+              </p>
+            </div>
+            <div className="rounded-3xl bg-orange-50 px-4 py-3 text-right shadow-sm shadow-orange-500/10">
+              <p className="text-xs uppercase tracking-[0.2em] text-orange-600 font-black">Precio</p>
+              <p className="mt-2 text-3xl font-black text-slate-900">${tour.price || '0'}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-3xl bg-slate-50 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">Dificultad</p>
+              <p className="mt-2 text-sm font-semibold text-slate-800">{tour.difficulty || 'Media'}</p>
+            </div>
+            <div className="rounded-3xl bg-slate-50 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">Duración</p>
+              <p className="mt-2 text-sm font-semibold text-slate-800">{tour.durationMinutes ? `${tour.durationMinutes} min` : 'N/A'}</p>
+            </div>
+            <div className="rounded-3xl bg-slate-50 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">Distancia</p>
+              <p className="mt-2 text-sm font-semibold text-slate-800">{tour.distanceKm ? `${tour.distanceKm} km` : 'N/A'}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            {tour.location && (
+              <span className="inline-flex items-center gap-2 rounded-3xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
+                <MapPin className="h-4 w-4" />
+                {tour.location}
+              </span>
+            )}
+            {tour.language && (
+              <span className="inline-flex items-center gap-2 rounded-3xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
+                <Globe className="h-4 w-4" />
+                {tour.language}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
