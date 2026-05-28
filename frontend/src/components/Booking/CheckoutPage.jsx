@@ -20,18 +20,38 @@ export default function CheckoutPage({ onBack }) {
   const location = useLocation();
   const handleBack = onBack || (() => navigate(-1));
 
-  const initialItems = location.state?.selectedItems || [];
+  const reservaFromExito = location.state?.reserva || null;
+  const fromExito = Boolean(location.state?.fromExito || reservaFromExito);
+
+  const formatDateForInput = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+  };
+
+  const initialItems = (location.state?.selectedItems?.length ? location.state.selectedItems : null)
+    || (reservaFromExito?.items?.length ? reservaFromExito.items : []);
   const [selectedItems, setSelectedItems] = useState(initialItems);
 
-  const [paymentMethod, setPaymentMethod] = useState('mercadopago');
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(
+    location.state?.paymentMethod || reservaFromExito?.metodoPago || 'mercadopago',
+  );
+  const [couponCode, setCouponCode] = useState(location.state?.couponCode || '');
+  const [appliedCoupon, setAppliedCoupon] = useState(location.state?.appliedCoupon || null);
   const [errorCoupon, setErrorCoupon] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState('');
-  const [cantidadPersonas, setCantidadPersonas] = useState(1);
+  const [cantidadPersonas, setCantidadPersonas] = useState(
+    location.state?.cantidadPersonas || reservaFromExito?.cantidadPersonas || 1,
+  );
   const [formData, setFormData] = useState({
-    nombre: '', apellido: '', email: '', telefono: '', fecha: '', notas: '',
+    nombre: reservaFromExito?.nombre || reservaFromExito?.cliente?.nombre || '',
+    apellido: reservaFromExito?.apellido || reservaFromExito?.cliente?.apellido || '',
+    email: reservaFromExito?.email || reservaFromExito?.cliente?.email || '',
+    telefono: reservaFromExito?.telefono || reservaFromExito?.cliente?.telefono || '',
+    fecha: formatDateForInput(location.state?.fecha || reservaFromExito?.fecha || reservaFromExito?.fechaReserva || reservaFromExito?.date),
+    notas: reservaFromExito?.notas || reservaFromExito?.comentarios || '',
   });
 
   const emailConfig = { emailAgencia: 'contacto@xperience.com' };
@@ -199,28 +219,31 @@ export default function CheckoutPage({ onBack }) {
           </h1>
         </div>
 
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
-          
-          <div className="lg:col-span-7 flex flex-col gap-4 h-full overflow-y-auto no-scrollbar pb-6 pr-2">
-            
-            {/* Formulario Titular - Paddings reducidos p-5 en vez de p-6 */}
-            <section className="bg-white rounded-[20px] p-5 shadow-sm border border-slate-200 flex-shrink-0">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                  <User className="text-orange-600 w-4 h-4" />
+          {fromExito && (
+            <div className="mb-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+              Estás modificando la reserva anterior. Revisa los datos y ajusta lo que quieras cambiar.
+            </div>
+          )}
+
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+            <div className="lg:col-span-7 flex flex-col gap-4 h-full overflow-y-auto no-scrollbar pb-6 pr-2">
+              <section className="bg-white rounded-[20px] p-5 shadow-sm border border-slate-200 flex-shrink-0">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                    <User className="text-orange-600 w-4 h-4" />
+                  </div>
+                  <h2 className="text-lg font-bold text-slate-900">Información del titular</h2>
                 </div>
-                <h2 className="text-lg font-bold text-slate-900">Información del titular</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input name="nombre" value={formData.nombre} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Nombre" />
-                <input name="apellido" value={formData.apellido} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Apellido" />
-                <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Correo electrónico" />
-                <input type="tel" name="telefono" value={formData.telefono} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Teléfono" />
-                <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" />
-                <div />
-                <textarea name="notas" value={formData.notas} onChange={handleChange} className="md:col-span-2 w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none min-h-[60px] resize-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Notas adicionales (opcional)" />
-              </div>
-            </section>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <input name="nombre" value={formData.nombre} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Nombre" />
+                  <input name="apellido" value={formData.apellido} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Apellido" />
+                  <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Correo electrónico" />
+                  <input type="tel" name="telefono" value={formData.telefono} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Teléfono" />
+                  <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" />
+                  <div />
+                  <textarea name="notas" value={formData.notas} onChange={handleChange} className="md:col-span-2 w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none min-h-[60px] resize-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Notas adicionales (opcional)" />
+                </div>
+              </section>
 
             {/* Formulario Método de Pago */}
             <section className="bg-white rounded-[20px] p-5 shadow-sm border border-slate-200 flex-shrink-0">

@@ -80,34 +80,37 @@ export default function Exito() {
   };
 
   const handleModify = () => {
-    navigate('/carrito', { state: { selectedItems: reserva?.items || [] } });
+    navigate('/carrito', {
+      state: {
+        selectedItems: reserva?.items || [],
+        reserva,
+        fromExito: true,
+      },
+    });
   };
 
   if (!state) return null;
 
   return (
-    <div className="min-h-screen bg-[#090e15] text-white">
-      {/*<header className="bg-slate-900/80 backdrop-blur-md flex justify-between items-center px-6 py-4 fixed top-0 w-full z-50 border-b border-white/5">
-        <div className="text-2xl font-black text-orange-500">Xperience</div>
-        <div className="flex gap-4 text-gray-400">
-          <Icon name="share" />
-          <Icon name="print" />
-        </div>
-      </header>*/}
+    /* Reducción de min-h-screen a h-screen y overflow-hidden para forzar 1 pantalla */
+    <div className="h-screen overflow-hidden bg-[#e4e4eb] text-white flex flex-col">
       <Nav />
 
-      <main className="pt-24 pb-16 px-4 max-w-6xl mx-auto">
-        <section className="text-center mb-12">
-          <div className="relative mb-6 flex justify-center">
+      {/* Ajuste de pt-24 a pt-20, reducción general de paddings y altura dinámica */}
+      <main className="pt-20 pb-4 px-4 max-w-6xl mx-auto flex-1 flex flex-col justify-center w-full">
+        {/* Reducción de mb-12 a mb-6 */}
+        <section className="text-center mb-6">
+          <div className="relative mb-3 flex justify-center">
+            {/* Reducción de tamaños del círculo del ícono: w-24->w-16, w-20->w-12 */}
             <div
-              className={`absolute w-24 h-24 blur-2xl rounded-full ${
+              className={`absolute w-16 h-16 blur-xl rounded-full ${
                 summary.status === 'cancelada'
                   ? 'bg-red-500/30'
                   : 'bg-orange-500/30'
               }`}
             />
             <div
-              className={`relative w-20 h-20 rounded-full flex items-center justify-center ${
+              className={`relative w-12 h-12 rounded-full flex items-center justify-center ${
                 summary.status === 'cancelada'
                   ? 'bg-red-500'
                   : 'bg-orange-500'
@@ -117,28 +120,33 @@ export default function Exito() {
                 name={
                   summary.status === 'cancelada' ? 'cancel' : 'check_circle'
                 }
-                className="text-black text-4xl"
+                className="text-black text-2xl"
               />
             </div>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-black mb-3">
+          {/* Reducción de fuente del título: text-4xl->text-2xl */}
+          <h1 className="text-2xl md:text-3xl font-black text-black mb-2">
             {summary.status === 'cancelada'
               ? 'Reserva Cancelada'
               : 'Reserva Confirmada'}
           </h1>
 
-          <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          {/* Reducción de fuente de la descripción y márgenes */}
+          <p className="text-black text-sm max-w-2xl mx-auto leading-tight">
             {summary.status === 'cancelada'
-              ? `La reserva fue cancelada correctamente. Se envio un correo a ${summary.email} con la confirmacion de la cancelacion.`
-              : `Tu expedicion fue procesada con exito. Se envio un correo a ${summary.email} con todos los detalles de la reserva.`}
+              ? `La reserva fue cancelada correctamente. Se envio un correo a ${summary.email} con la confirmacion.`
+              : `Tu expedicion fue procesada con exito. Se envio un correo a ${summary.email} con los detalles.`}
           </p>
         </section>
 
-        <div className="grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-7 space-y-6">
-            <div className="bg-[#141a22] rounded-2xl overflow-hidden border border-white/5 shadow-2xl">
-              <div className="relative h-64">
+        {/* Reducción de gap-8 a gap-4 */}
+        <div className="grid lg:grid-cols-12 gap-4">
+          {/* Reducción de space-y-6 a space-y-4 */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="bg-[#141a22] rounded-xl overflow-hidden border border-white/5 shadow-xl">
+              {/* Reducción de altura de la imagen: h-64 -> h-36 */}
+              <div className="relative h-36">
                 <img
                   src={summary.image}
                   alt={summary.title}
@@ -146,9 +154,9 @@ export default function Exito() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
 
-                <div className="absolute bottom-5 left-5">
+                <div className="absolute bottom-3 left-4">
                   <span
-                    className={`text-black text-xs px-3 py-1 rounded-full font-black uppercase tracking-wider ${
+                    className={`text-black text-[10px] px-2 py-1 rounded-full font-black uppercase tracking-wider ${
                       summary.status === 'cancelada'
                         ? 'bg-red-400'
                         : 'bg-cyan-400'
@@ -158,11 +166,12 @@ export default function Exito() {
                       ? 'Cancelada'
                       : 'Confirmada'}
                   </span>
-                  <h2 className="text-2xl font-bold mt-3">{summary.title}</h2>
+                  <h2 className="text-lg font-bold mt-1">{summary.title}</h2>
                 </div>
               </div>
 
-              <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-5 text-sm">
+              {/* Reducción de padding p-6 -> p-4 y gap-5 -> gap-3 */}
+              <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                 <Info icon="calendar_today" label="Fecha" value={summary.date} />
                 <Info
                   icon="group"
@@ -178,31 +187,34 @@ export default function Exito() {
               </div>
             </div>
 
-            <div className="bg-[#1f2630] p-5 rounded-2xl border border-cyan-400/30 flex gap-3">
+            {/* Reducción de padding p-5 -> p-4 */}
+            <div className="bg-[#1f2630] p-4 rounded-xl border border-cyan-400/30 flex gap-3 items-center">
               <Icon
                 name={summary.status === 'cancelada' ? 'mail' : 'info'}
                 className="text-cyan-400"
               />
               <div>
-                <h3 className="font-bold">
+                <h3 className="font-bold text-sm">
                   {summary.status === 'cancelada'
                     ? 'Cancelacion confirmada'
                     : 'Informacion de Preparacion'}
                 </h3>
-                <p className="text-sm text-gray-400">
+                <p className="text-xs text-gray-400 mt-1">
                   {summary.status === 'cancelada'
-                    ? 'El cliente recibira el correo de cancelacion y ya no deberia presentarse al recorrido.'
-                    : 'El cliente recibio un correo con los datos de la reserva y el codigo generado.'}
+                    ? 'El cliente recibira el correo y ya no deberia presentarse al recorrido.'
+                    : 'El cliente recibio un correo con los datos de la reserva y el codigo.'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-[#1f2630] p-6 rounded-2xl border border-white/5">
-              <h3 className="font-bold mb-4 text-lg">Gestionar mi Reserva</h3>
+          <div className="lg:col-span-5 space-y-4">
+            {/* Reducción de padding p-6 -> p-4 */}
+            <div className="bg-[#1f2630] p-4 rounded-xl border border-white/5">
+              <h3 className="font-bold mb-3 text-base">Gestionar mi Reserva</h3>
 
-              <div className="space-y-4">
+              {/* Reducción de espacio entre botones */}
+              <div className="space-y-2">
                 <Action
                   icon="edit_calendar"
                   title="Modificar"
@@ -222,8 +234,8 @@ export default function Exito() {
                   }
                   subtitle={
                     summary.status === 'cancelada'
-                      ? 'El correo de cancelacion ya fue enviado'
-                      : 'Cancelar y enviar correo'
+                      ? 'El correo ya fue enviado'
+                      : 'Cancelar y notificar'
                   }
                   onClick={handleCancel}
                   disabled={summary.status === 'cancelada' || isCancelling}
@@ -232,32 +244,34 @@ export default function Exito() {
               </div>
 
               {cancelError && (
-                <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">
                   {cancelError}
                 </div>
               )}
             </div>
 
-            <div className="bg-[#141a22] p-6 rounded-2xl border border-white/5">
-              <h3 className="font-bold mb-3">Siguiente paso</h3>
-              <p className="text-sm text-gray-400 leading-relaxed">
+            {/* Reducción de padding p-6 -> p-4 */}
+            <div className="bg-[#141a22] p-4 rounded-xl border border-white/5">
+              <h3 className="font-bold mb-1 text-sm">Siguiente paso</h3>
+              <p className="text-xs text-gray-400 leading-tight">
                 {summary.status === 'cancelada'
                   ? 'Si queres volver a vender este cupo, ya podes ofrecerlo de nuevo porque la reserva quedo liberada.'
-                  : 'Si el cliente pide cambios, podes volver al checkout desde modificar o cancelar la reserva desde este panel.'}
+                  : 'Si el cliente pide cambios, podes volver al checkout o cancelar la reserva desde aca.'}
               </p>
             </div>
           </div>
         </div>
-
-        <div className="fixed bottom-10 right-10 hidden md:block">
-          <button
-            onClick={() => navigate('/home')}
-            className="bg-orange-500 px-6 py-3 rounded-xl font-bold hover:scale-105 transition"
-          >
-            Explorar mas aventuras
-          </button>
-        </div>
       </main>
+
+      {/* Botón flotante ajustado en tamaño y posición para no tapar contenido crítico */}
+      <div className="absolute bottom-4 right-4 hidden md:block">
+        <button
+          onClick={() => navigate('/home')}
+          className="bg-orange-500 px-4 py-2 text-sm rounded-lg font-bold hover:scale-105 transition shadow-lg"
+        >
+          Explorar mas aventuras
+        </button>
+      </div>
     </div>
   );
 }
@@ -268,18 +282,20 @@ function Icon({ name, className = '' }) {
   );
 }
 
+/* Reducción de paddings p-3 -> p-2 */
 function Info({ icon, label, value }) {
   return (
-    <div className="rounded-xl bg-black/15 px-4 py-3">
-      <p className="text-gray-400 text-xs uppercase tracking-wider">{label}</p>
-      <div className="flex items-center gap-2 mt-2 break-all">
-        <Icon name={icon} className="text-orange-500" />
+    <div className="rounded-lg bg-black/20 px-3 py-2">
+      <p className="text-gray-400 text-[10px] uppercase tracking-wider">{label}</p>
+      <div className="flex items-center gap-1 mt-1 break-all text-sm font-medium">
+        <Icon name={icon} className="text-orange-500 text-base" />
         <span>{value}</span>
       </div>
     </div>
   );
 }
 
+/* Reducción de paddings p-4 -> p-3 */
 function Action({
   icon,
   title,
@@ -292,7 +308,7 @@ function Action({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full flex justify-between items-center p-4 rounded-xl transition text-left ${
+      className={`w-full flex justify-between items-center p-3 rounded-lg transition text-left ${
         disabled
           ? 'bg-[#111822] opacity-60 cursor-not-allowed'
           : danger
@@ -303,14 +319,14 @@ function Action({
       <div className="flex gap-3 items-center">
         <Icon
           name={icon}
-          className={danger && !disabled ? 'text-red-300' : 'text-white'}
+          className={danger && !disabled ? 'text-red-400 text-xl' : 'text-white text-xl'}
         />
         <div>
-          <p className="font-bold">{title}</p>
-          <p className="text-xs text-gray-400">{subtitle}</p>
+          <p className="font-bold text-sm">{title}</p>
+          <p className="text-[11px] text-gray-400">{subtitle}</p>
         </div>
       </div>
-      <Icon name="chevron_right" />
+      <Icon name="chevron_right" className="text-xl text-gray-500" />
     </button>
   );
 }
