@@ -16,9 +16,11 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { useIPLocation } from "../../hooks/useIPLocation";
+import { useMaxWidth } from "../../hooks/useMaxWidth";
 import { Link } from "react-router-dom";
 import Card from "./ui/card";
 import CardUi from "./ui/card";
+import Notification_central from "./Notification_central";
 
 // 🚨 IMPORTAR EL HOOK DE UBICACIÓN 🚨
 // Asegúrate de que este archivo (o el código) está accesible.
@@ -91,6 +93,8 @@ const formatTimeAgo = (date) => {
 export const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [showWeatherCard, setShowWeatherCard] = useState(true);
+  const isNarrowViewport = useMaxWidth(640);
 
   // Generar notificaciones de ejemplo al inicio
   useEffect(() => {
@@ -374,7 +378,20 @@ export const Notifications = () => {
               </div>
             </div>
 
-            {/* 2. Lista de notificaciones */}
+            {/* 2. Clima (móvil ≤640px — misma lógica que Notification_central) */}
+            {isNarrowViewport && showWeatherCard && (
+              <div className="p-4 border-b border-gray-200 bg-gray-50/80">
+                <p className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold mb-2">
+                  Clima y recomendaciones
+                </p>
+                <Notification_central
+                  variant="panel"
+                  onClose={() => setShowWeatherCard(false)}
+                />
+              </div>
+            )}
+
+            {/* 3. Lista de notificaciones */}
             <div className="max-h-96 overflow-y-auto divide-y divide-gray-200">
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
@@ -388,7 +405,7 @@ export const Notifications = () => {
               {/* <Recommendation/> */}
             </div>
 
-            {/* 3. Footer */}
+            {/* 4. Footer */}
             {notifications.length > 0 && (
               <div className="p-3 border-t border-gray-200">
                 <button

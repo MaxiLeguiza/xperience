@@ -16,6 +16,7 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import WeatherCard from "../components/clima/WeatherCard";
 import QrRecorridoModal from "../features/qr/QrRecorridoModal";
 import Notification_central from "./Notifications/Notification_central";
+import { useMaxWidth } from "../hooks/useMaxWidth";
 import { ChevronUp, Flame, Star } from "lucide-react";
 
 import "./MapView.css";
@@ -201,8 +202,8 @@ function ActivityPanel({ activities = [], onSelect, onReserve }) {
 
   return (
     <aside
-      className={`pointer-events-auto bg-[#0b0f19]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 ease-in-out flex flex-col ${
-        expanded ? "w-[800px] max-w-[90vw]" : "w-[300px]"
+      className={`pointer-events-auto bg-[#0b0f19]/90 backdrop-blur-xl border-t md:border border-white/10 shadow-2xl rounded-t-2xl md:rounded-2xl overflow-hidden transition-all duration-300 ease-in-out flex flex-col ${
+        expanded ? "w-full md:w-[800px] md:max-w-[90vw]" : "w-full md:w-[300px]"
       }`}
     >
       {/* Header / Toggle */}
@@ -247,7 +248,7 @@ function ActivityPanel({ activities = [], onSelect, onReserve }) {
           <button
             key={activity.id}
             type="button"
-            className={`flex-shrink-0 w-[200px] text-left group relative rounded-xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] ${
+            className={`flex-shrink-0 w-[150px] md:w-[200px] text-left group relative rounded-xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] ${
               activity.premium
                 ? "bg-gradient-to-b from-orange-500/10 to-[#0b0f19] border-orange-500/30 hover:border-orange-500/60"
                 : "bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10"
@@ -323,6 +324,7 @@ export default function MapView({ items = [] }) {
   const [openQR, setOpenQR] = useState(false);
   const [pendingDest, setPendingDest] = useState(null);
   const [showWeatherCard, setShowWeatherCard] = useState(true);
+  const isNarrowViewport = useMaxWidth(640);
 
   const recorridoId = selected?.id || null;
 
@@ -502,7 +504,7 @@ export default function MapView({ items = [] }) {
     <div className="x-map-wrapper">
       <div className="x-map-card">
         {/* Top Left Controls Container */}
-        <div className="absolute top-4 left-5 z-[2000] flex items-start gap-4">
+        <div className="absolute top-4 left-3 md:left-5 z-[2000] flex items-start gap-4 max-w-[calc(100vw-24px)]">
           {/* Boton flotante de filtros */}
           <button
             onClick={() => setShowFilters((v) => !v)}
@@ -512,7 +514,7 @@ export default function MapView({ items = [] }) {
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-md text-lg">
               🧭
             </span>
-            <div className="text-left">
+            <div className="text-left hidden md:block">
               <span className="block text-[11px] uppercase tracking-wide text-orange-600 font-semibold">
                 Filtros
               </span>
@@ -529,8 +531,8 @@ export default function MapView({ items = [] }) {
 
           {/* Tarjeta de clima flotante */}
           {showWeatherCard && (
-            <div className="w-[600px] max-w-[60vw] mt-0">
-              <Notification_central location="Mi ubicación" onClose={() => setShowWeatherCard(false)} />
+            <div className="w-full md:w-[600px] max-w-full md:max-w-[60vw] mt-0">
+              <Notification_central onClose={() => setShowWeatherCard(false)} />
             </div>
           )}
         </div>
@@ -538,7 +540,7 @@ export default function MapView({ items = [] }) {
         {/* Panel de filtros “glass” */}
         {showFilters && (
           <div
-            className="absolute top-16 left-5 w-[340px] max-w-[90vw] z-[2000]
+            className="absolute top-16 left-2 md:left-5 w-[calc(100vw-16px)] md:w-[340px] z-[2000]
                         rounded-2xl border border-white/40 bg-white/90 shadow-2xl
                         backdrop-blur-xl animate-slide-down"
           >
@@ -754,7 +756,7 @@ export default function MapView({ items = [] }) {
           </div>
         )}
 
-        <div className="absolute bottom-6 right-6 z-[2000] flex flex-col items-end gap-4 pointer-events-none">
+        <div className="absolute bottom-0 md:bottom-6 right-0 md:right-6 w-full md:w-auto z-[2000] flex flex-col md:items-end gap-4 pointer-events-none">
           {(selected || routeTo) && (
             <div className="pointer-events-auto">
               <WeatherCard

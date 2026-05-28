@@ -23,3 +23,14 @@
   height: 100%;
   z-index: 0;
 }
+
+/* Responsive: Pantalla completa en celulares y tablets */
+@media (max-width: 768px) {
+  .x-map-wrapper {
+    min-height: 100vh;
+  }
+  
+  .x-map-card {
+    border-radius: 0;
+  }
+}
