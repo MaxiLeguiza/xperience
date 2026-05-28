@@ -2,7 +2,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 85vh; /* que el mapa ocupe casi toda la pestaña */
+  min-height: 85vh; /* que el mapa ocupe casi toda la pestana */
 }
 
 .x-map-card {
@@ -24,13 +24,272 @@
   z-index: 0;
 }
 
-/* Responsive: Pantalla completa en celulares y tablets */
-@media (max-width: 768px) {
+.x-map-right-stack {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 500;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.x-map-right-stack > * {
+  pointer-events: auto;
+}
+
+.x-activities-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(250, 204, 21, 0.18), transparent 32%),
+    linear-gradient(150deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94) 54%, rgba(126, 34, 206, 0.62));
+  box-shadow: 0 22px 55px rgba(2, 6, 23, 0.35);
+  color: #fff;
+  backdrop-filter: blur(16px);
+  transition: max-height 0.28s ease, transform 0.24s ease, opacity 0.24s ease;
+}
+
+.x-activities-panel.is-expanded {
+  max-height: 265px;
+}
+
+.x-activities-panel.is-collapsed {
+  max-height: 84px;
+}
+
+.x-activities-panel__toggle {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  transition: transform 0.22s ease, background 0.22s ease;
+}
+
+.x-activities-panel.is-collapsed .x-activities-panel__toggle {
+  transform: rotate(180deg);
+}
+
+.x-activities-panel__toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.x-activities-panel__header {
+  min-height: 84px;
+  padding: 18px 54px 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.x-activities-panel__eyebrow {
+  display: block;
+  color: rgba(253, 224, 71, 0.78);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.x-activities-panel h3 {
+  margin: 5px 0 0;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.x-activities-panel__flame {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #fde68a;
+  background: rgba(253, 224, 71, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(253, 224, 71, 0.18);
+}
+
+.x-activities-panel__carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 18px 18px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.x-activities-panel.is-collapsed .x-activities-panel__carousel {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.x-activity-card {
+  width: 172px;
+  min-width: 172px;
+  min-height: 142px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.x-activity-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(253, 224, 71, 0.35);
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.x-activity-card.is-premium {
+  background:
+    linear-gradient(145deg, rgba(253, 224, 71, 0.19), rgba(255, 255, 255, 0.08) 42%),
+    rgba(255, 255, 255, 0.08);
+  border-color: rgba(253, 224, 71, 0.34);
+}
+
+.x-activity-card__visual {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fde68a;
+}
+
+.x-activity-card__visual span {
+  font-size: 20px;
+  font-weight: 950;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.x-activity-card__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.x-activity-card strong {
+  display: block;
+  margin-top: 7px;
+  min-height: 34px;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.18;
+}
+
+.x-activity-card p {
+  margin: 7px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.x-activity-card__reserve {
+  margin-top: 10px;
+  width: fit-content;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.x-featured-marker-root {
+  background: transparent;
+  border: 0;
+}
+
+.x-featured-marker {
+  position: relative;
+  width: 50px;
+  height: 58px;
+}
+
+.x-featured-marker__halo {
+  position: absolute;
+  inset: 5px 2px 0;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 69, 0, 0.34), transparent 64%);
+  filter: blur(2px);
+  animation: featured-pulse 1.8s ease-in-out infinite;
+}
+
+.x-featured-marker__badge {
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  border-radius: 16px 16px 16px 6px;
+  background: linear-gradient(145deg, #ff9f1c, #ff4500 54%, #b91c1c);
+  color: #fff7ed;
+  box-shadow: 0 12px 24px rgba(255, 69, 0, 0.34);
+  transform: rotate(-8deg);
+}
+
+@keyframes featured-pulse {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+}
+
+@media (max-width: 780px) {
   .x-map-wrapper {
     min-height: 100vh;
   }
-  
+
   .x-map-card {
     border-radius: 0;
+  }
+
+  .x-map-right-stack {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+  }
+
+  .x-activities-panel {
+    border-radius: 20px;
   }
 }
