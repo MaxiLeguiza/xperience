@@ -64,7 +64,9 @@ export class ReservaService {
   }
 
   // Método específico para reservas de Efectivo sin autenticación
-  async createReservaEfectivo(createReservaEfectivoDto: CreateReservaEfectivoDto) {
+  async createReservaEfectivo(
+    createReservaEfectivoDto: CreateReservaEfectivoDto,
+  ) {
     try {
       // Crear objeto básico de reserva con los campos que el schema acepta
       const reservaData = {
@@ -123,7 +125,8 @@ export class ReservaService {
       console.log('✅ Reserva de Efectivo creada exitosamente:', reserva._id);
       return {
         success: true,
-        message: 'Reserva confirmada. Se enviará un correo de pre-confirmación.',
+        message:
+          'Reserva confirmada. Se enviará un correo de pre-confirmación.',
         reserva: reserva,
       };
     } catch (error) {
@@ -134,6 +137,14 @@ export class ReservaService {
 
   findAll() {
     return this.reservaModel.find();
+  }
+
+  // Agrega esto en tu reserva.service.ts
+  async findByUser(email: string) {
+    // Busca los documentos donde el campo "email" coincida con el email
+    const misReservas = await this.reservaModel.find({ email: email }).exec();
+
+    return misReservas;
   }
 
   async findOne(id: string) {

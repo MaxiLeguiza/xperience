@@ -17,7 +17,7 @@ export class MailService {
           <ul>
             <li><strong>Descripción:</strong> ${reserva.descripcion}</li>
             <li><strong>Fecha de Llegada:</strong> ${reserva.fechaLlegada}</li>
-            <li><strong>Personas:</strong> ${reserva.cantidadPersonas}</li>
+            <li><strong>Cantidad de personas:</strong> ${reserva.cantidadPersonas}</li>
             <li><strong>Código de Seguimiento:</strong> <span style="color: blue;">${reserva._id}</span></li>
           </ul>
           <p>¡Te esperamos!</p>
