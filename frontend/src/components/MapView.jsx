@@ -197,7 +197,7 @@ function GeoWatcher({ onChange }) {
 /* ----------------------------------------------- */
 
 function ActivityPanel({ activities = [], onSelect }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const cards = activities.slice(0, 5);
 
   return (
