@@ -45,6 +45,7 @@ const Login = () => {
 
         setLoading(true);
         try {
+            console.log("Intentando login con:", { email: emailTrim, password: password });
             const { data } = await clienteAxios.post("/api/user/login", {
                 email: emailTrim,
                 password,
