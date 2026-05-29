@@ -93,9 +93,9 @@ export default function Home() {
     <div className="bg-gray-100 font-display text-gray-800 min-h-screen flex flex-col">
       <Nav />
 
-      <main className="flex-grow w-full px-9 py-3 overflow-hidden">
+      <main className="flex-grow w-full p-0 md:px-9 md:py-3 overflow-hidden">
         {/* ESTE div es el que le da altura real al mapa */}
-        <div className="w-full h-[calc(100vh-90px)] min-h-[80vh] relative">
+        <div className="w-full h-[calc(100vh-60px)] md:h-[calc(100vh-90px)] min-h-[80vh] relative">
           <MapView items={recorridos} />
 
           {loading && (

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 
-const FALLBACK_LAT = -32.8895;
-const FALLBACK_LNG = -68.8458;
+// Maipú, Mendoza — respaldo si el GPS no responde
+const FALLBACK_LAT = -33.0094;
+const FALLBACK_LNG = -68.7661;
 
 export function useIPLocation() {
     const [location, setLocation] = useState({ 
