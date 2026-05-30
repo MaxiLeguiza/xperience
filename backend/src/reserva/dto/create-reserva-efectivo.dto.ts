@@ -85,6 +85,10 @@ export class CreateReservaEfectivoDto {
   @IsNumber()
   descuentoAplicado: number;
 
+  @IsOptional()
+  @IsNumber()
+  cargoServicio?: number;
+
   @IsString()
   metodoPago: string;
 

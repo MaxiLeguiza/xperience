@@ -43,6 +43,8 @@ export class CreateReservaDto {
   nombre: string;
 
   @IsOptional()
+  @IsString()
+  apellido?: string;
 
   @IsEmail()
   email: string;
@@ -83,6 +85,10 @@ export class CreateReservaDto {
   @IsOptional()
   @IsNumber()
   descuentoAplicado?: number;
+
+  @IsOptional()
+  @IsNumber()
+  cargoServicio?: number;
 
   @IsOptional()
   @IsString()

@@ -85,6 +85,11 @@ export class Reserva extends Document {
   descuentoAplicado?: number;
 
   @Prop({
+    default: 0,
+  })
+  cargoServicio?: number;
+
+  @Prop({
     type: Object,
   })
   datosTarjeta?: {

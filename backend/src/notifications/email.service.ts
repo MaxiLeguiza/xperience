@@ -12,6 +12,7 @@ type ReservaEmailData = {
   paymentMethod?: string;
   cantidadPersonas?: number;
   descuento?: number;
+  cargoServicio?: number;
   emailAgencia?: string;
   notas?: string;
   reservaId?: string;
@@ -67,8 +68,19 @@ export class EmailService {
             .join('')
         : '<li>(sin items)</li>';
 
+    const formatMoney = (value?: number) =>
+      new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        maximumFractionDigits: 0,
+      }).format(Number(value || 0));
+
     const fecha = new Date(data.fecha).toLocaleDateString('es-AR');
     const nombreCompleto = [data.nombre, data.apellido].filter(Boolean).join(' ');
+    const descuentoText = Number(data.descuento || 0) > 0 ? `Descuento: -${formatMoney(data.descuento)}\n` : '';
+    const cargoServicioText = Number(data.cargoServicio || 0) > 0 ? `Cargo por servicio: ${formatMoney(data.cargoServicio)}\n` : '';
+    const descuentoHtml = Number(data.descuento || 0) > 0 ? `<p><strong>Descuento:</strong> -${formatMoney(data.descuento)}</p>` : '';
+    const cargoServicioHtml = Number(data.cargoServicio || 0) > 0 ? `<p><strong>Cargo por servicio:</strong> ${formatMoney(data.cargoServicio)}</p>` : '';
 
     const subject = 'Confirmacion de reserva - Xperience';
     const text = `Hola ${nombreCompleto || data.nombre},
@@ -79,14 +91,12 @@ Codigo de reserva: ${data.reservaId ?? 'Se asignara al confirmar'}
 Fecha: ${fecha}
 Metodo de pago: ${data.paymentMethod || 'credito'}
 Cantidad de personas: ${data.cantidadPersonas ?? 'No informada'}
-Descuento: $${data.descuento ?? 0}
-Email de agencia: ${data.emailAgencia || 'No informado'}
 Telefono: ${data.telefono || 'No informado'}
 Notas: ${data.notas || 'Sin notas adicionales'}
 Items:
 ${itemsText}
 
-Total: $${data.total}
+${descuentoText}${cargoServicioText}Total a pagar: ${formatMoney(data.total)}
 
 Gracias por elegir Xperience.`;
 
@@ -98,13 +108,13 @@ Gracias por elegir Xperience.`;
         <p><strong>Fecha:</strong> ${fecha}</p>
         <p><strong>Metodo de pago:</strong> ${data.paymentMethod || 'credito'}</p>
         <p><strong>Cantidad de personas:</strong> ${data.cantidadPersonas ?? 'No informada'}</p>
-        <p><strong>Descuento:</strong> $${data.descuento ?? 0}</p>
-        <p><strong>Email de agencia:</strong> ${data.emailAgencia || 'No informado'}</p>
         <p><strong>Telefono:</strong> ${data.telefono || 'No informado'}</p>
         <p><strong>Notas:</strong> ${data.notas || 'Sin notas adicionales'}</p>
         <p><strong>Items:</strong></p>
         <ul>${itemsHtml}</ul>
-        <p><strong>Total:</strong> $${data.total}</p>
+        ${descuentoHtml}
+        ${cargoServicioHtml}
+        <p style="font-size:18px;"><strong>Total a pagar:</strong> ${formatMoney(data.total)}</p>
         <p>Gracias por elegir Xperience.</p>
       </div>
     `;
