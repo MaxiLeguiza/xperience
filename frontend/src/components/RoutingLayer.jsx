@@ -45,7 +45,7 @@ const ICONS = {
   escalada: makeIcon("/images/markers/trekking.png", [40, 40], [20, 40]),
   insti: makeIcon("/images/markers/insti.png", [40, 40], [20, 40]),
   kayak: makeIcon("/images/markers/kayak.svg", [40, 40], [20, 40]),
-  sup: makeIcon("/images/markers/kayak.svg", [40, 40], [20, 40]),
+  sup: makeIcon("/images/markers/sup.png", [40, 40], [20, 40]),
   running: makeIcon("/images/markers/running.svg", [40, 40], [20, 40]),
   astronomo: makeIcon("/images/markers/astronomo.png", [40, 40], [20, 40]),
   astronomia: makeIcon("/images/markers/astronomo.png", [40, 40], [20, 40]),
@@ -78,13 +78,12 @@ const CATEGORY_ICONS = {
   globo_aerostatico: Flag,
 };
 
-function makeFeaturedIcon(category = "default") {
-  const Icon = CATEGORY_ICONS[category] || Binoculars;
+function makeFeaturedIcon(iconObj) {
   const html = renderToStaticMarkup(
     <div className="x-featured-marker">
       <div className="x-featured-marker__halo" />
       <div className="x-featured-marker__badge">
-        <Icon size={22} strokeWidth={2.4} />
+        <img src={iconObj.options.iconUrl} alt="marker" style={{ width: '28px', height: '28px' }} />
       </div>
     </div>,
   );
@@ -100,7 +99,7 @@ function makeFeaturedIcon(category = "default") {
 
 const iconFor = (p) =>
   p?.premium
-    ? makeFeaturedIcon((p?.category || "").toLowerCase())
+    ? makeFeaturedIcon(ICONS[(p?.category || "").toLowerCase()] ?? ICONS.default)
     : p?.icon
       ? makeIcon(p.icon)
       : ICONS[(p?.category || "").toLowerCase()] ?? ICONS.default;
