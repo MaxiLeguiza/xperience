@@ -28,14 +28,16 @@ export class ReservaController {
     console.log('-----------------------------');
 
     const userEmail = req.user?.email;
-    const dtoWithUser = { ...createReservaDto, user: userEmail }; // ajustar clave "user" si tu esquema usa otra
+    const dtoWithUser = { ...createReservaDto, email: userEmail }; // ajustar clave "user" si tu esquema usa otra
 
     return this.reservaService.create(dtoWithUser);
   }
 
   @Post('public/efectivo')
   // NO REQUIERE AUTENTICACIÓN - Para reservas de pago en efectivo
-  createReservaEfectivo(@Body() createReservaEfectivoDto: CreateReservaEfectivoDto) {
+  createReservaEfectivo(
+    @Body() createReservaEfectivoDto: CreateReservaEfectivoDto,
+  ) {
     console.log('--- NUEVA RESERVA EFECTIVO (SIN AUTENTICACIÓN) ---');
     console.log(createReservaEfectivoDto);
     console.log('-------------------------------------------------');
@@ -46,6 +48,13 @@ export class ReservaController {
   @Get()
   findAll() {
     return this.reservaService.findAll();
+  }
+
+  @Get('mis-reservas')
+  @UseGuards(JwtAuthGuard) // Protegemos esta ruta también
+  findMyReservas(@Req() req: any) {
+    const userEmail = req.user?.email;
+    return this.reservaService.findByUser(userEmail);
   }
 
   @Get(':id')

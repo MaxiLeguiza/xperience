@@ -16,7 +16,8 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import WeatherCard from "../components/clima/WeatherCard";
 import QrRecorridoModal from "../features/qr/QrRecorridoModal";
 import Notification_central from "./Notifications/Notification_central";
-import { ChevronUp, Flame, Star } from "lucide-react";
+import { useMaxWidth } from "../hooks/useMaxWidth";
+import { ChevronUp, Flame, MapPin } from "lucide-react";
 
 import "./MapView.css";
 
@@ -195,30 +196,30 @@ function GeoWatcher({ onChange }) {
 
 /* ----------------------------------------------- */
 
-function ActivityPanel({ activities = [], onSelect, onReserve }) {
-  const [expanded, setExpanded] = useState(true);
-  const cards = activities.slice(0, 8);
+function ActivityPanel({ activities = [], onSelect }) {
+  const [expanded, setExpanded] = useState(false);
+  const cards = activities.slice(0, 5);
 
   return (
     <aside
-      className={`pointer-events-auto bg-[#0b0f19]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden transition-all duration-300 ease-in-out flex flex-col ${
-        expanded ? "w-[800px] max-w-[90vw]" : "w-[300px]"
+      className={`pointer-events-auto bg-[#0b0f19]/90 backdrop-blur-xl border-t md:border border-white/10 shadow-2xl rounded-t-2xl md:rounded-2xl overflow-hidden transition-all duration-300 ease-in-out flex flex-col ${
+        expanded ? "w-full md:w-[320px] md:max-w-[90vw]" : "w-full md:w-[280px]"
       }`}
     >
       {/* Header / Toggle */}
       <div
-        className="flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-white/5 transition-colors"
+        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
         onClick={() => setExpanded((current) => !current)}
       >
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-md">
-            <Flame size={16} />
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-[#d86015] text-white shadow-md shadow-orange-500/20">
+            <Flame size={15} />
           </div>
           <div>
             <span className="block text-[10px] uppercase tracking-wider text-orange-400 font-bold">
               Actividades
             </span>
-            <h3 className="text-sm font-semibold text-white leading-tight">
+            <h3 className="text-[13px] font-semibold text-white leading-tight">
               Más elegidas de la semana
             </h3>
           </div>
@@ -237,42 +238,36 @@ function ActivityPanel({ activities = [], onSelect, onReserve }) {
         </button>
       </div>
 
-      {/* Carousel */}
+      {/* Compact list */}
       <div
-        className={`flex overflow-x-auto gap-4 px-5 pb-5 custom-scrollbar transition-opacity duration-300 ${
+        className={`flex flex-col gap-2 px-4 pb-4 transition-opacity duration-300 ${
           expanded ? "opacity-100" : "opacity-0 hidden"
         }`}
       >
-        {cards.map((activity, index) => (
+        {cards.map((activity) => (
           <button
             key={activity.id}
             type="button"
-            className={`flex-shrink-0 w-[200px] text-left group relative rounded-xl overflow-hidden border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] ${
+            className={`w-full text-left group rounded-xl border px-3 py-2.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgb(0,0,0,0.35)] flex items-center gap-3 ${
               activity.premium
-                ? "bg-gradient-to-b from-orange-500/10 to-[#0b0f19] border-orange-500/30 hover:border-orange-500/60"
+                ? "bg-gradient-to-r from-orange-500/15 to-white/[0.04] border-orange-500/30 hover:border-orange-500/60"
                 : "bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10"
             }`}
             onClick={() => onSelect(activity)}
           >
-            {/* Visual Header */}
-            <div className="px-4 pt-4 flex justify-between items-start">
-              <span className="text-3xl font-black text-white/10 group-hover:text-white/20 transition-colors">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <Star
-                size={16}
-                className={
-                  activity.premium ? "text-orange-400" : "text-gray-500"
-                }
-              />
+            <div
+              className={`h-10 w-10 shrink-0 rounded-lg grid place-items-center border ${
+                activity.premium
+                  ? "bg-orange-500/15 border-orange-400/30 text-orange-300"
+                  : "bg-white/8 border-white/10 text-slate-300"
+              }`}
+            >
+              <MapPin size={17} />
             </div>
 
             {/* Body */}
-            <div className="px-4 pb-4 mt-2">
-              <span className="block text-[10px] uppercase tracking-wider text-orange-400 font-semibold mb-1 truncate">
-                {(activity.category || "aventura").replace(/_/g, " ")}
-              </span>
-              <strong className="block text-sm text-white font-bold mb-1 truncate">
+            <div className="min-w-0 flex-1">
+              <strong className="block text-sm text-white font-bold truncate">
                 {activity.name}
               </strong>
               <p className="text-[11px] text-gray-400">
@@ -280,21 +275,6 @@ function ActivityPanel({ activities = [], onSelect, onReserve }) {
                   Math.round((activity.rating || 4) * 18)}{" "}
                 reservas
               </p>
-            </div>
-
-            {/* Reserve Action */}
-            <div
-              className={`text-center py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                activity.premium
-                  ? "bg-orange-500 text-white group-hover:bg-orange-600"
-                  : "bg-white/10 text-white group-hover:bg-white/20"
-              }`}
-              onClick={(event) => {
-                event.stopPropagation();
-                onReserve(activity);
-              }}
-            >
-              Reservar
             </div>
           </button>
         ))}
@@ -323,6 +303,7 @@ export default function MapView({ items = [] }) {
   const [openQR, setOpenQR] = useState(false);
   const [pendingDest, setPendingDest] = useState(null);
   const [showWeatherCard, setShowWeatherCard] = useState(true);
+  const isNarrowViewport = useMaxWidth(640);
 
   const recorridoId = selected?.id || null;
 
@@ -441,10 +422,12 @@ export default function MapView({ items = [] }) {
 
   const buildCartItem = (p) => {
     const priceValue = resolvePrice(p);
+    const capacityValue = Number(p.capacity || p.capacidad) || 10;
     return {
       id: p.id,
       nombre: p.name,
-      capacidad: p.capacity || p.capacidad || 1,
+      capacidad: capacityValue,
+      capacity: capacityValue,
       precio: `$${Math.round(priceValue)}`,
     };
   };
@@ -502,7 +485,7 @@ export default function MapView({ items = [] }) {
     <div className="x-map-wrapper">
       <div className="x-map-card">
         {/* Top Left Controls Container */}
-        <div className="absolute top-4 left-5 z-[2000] flex items-start gap-4">
+        <div className="absolute top-4 left-3 md:left-5 z-[2000] flex items-start gap-4 max-w-[calc(100vw-24px)]">
           {/* Boton flotante de filtros */}
           <button
             onClick={() => setShowFilters((v) => !v)}
@@ -512,7 +495,7 @@ export default function MapView({ items = [] }) {
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-pink-500 text-white shadow-md text-lg">
               🧭
             </span>
-            <div className="text-left">
+            <div className="text-left hidden md:block">
               <span className="block text-[11px] uppercase tracking-wide text-orange-600 font-semibold">
                 Filtros
               </span>
@@ -529,8 +512,8 @@ export default function MapView({ items = [] }) {
 
           {/* Tarjeta de clima flotante */}
           {showWeatherCard && (
-            <div className="w-[600px] max-w-[60vw] mt-0">
-              <Notification_central location="Mi ubicación" onClose={() => setShowWeatherCard(false)} />
+            <div className="w-full md:w-[600px] max-w-full md:max-w-[60vw] mt-0">
+              <Notification_central onClose={() => setShowWeatherCard(false)} />
             </div>
           )}
         </div>
@@ -538,7 +521,7 @@ export default function MapView({ items = [] }) {
         {/* Panel de filtros “glass” */}
         {showFilters && (
           <div
-            className="absolute top-16 left-5 w-[340px] max-w-[90vw] z-[2000]
+            className="absolute top-16 left-2 md:left-5 w-[calc(100vw-16px)] md:w-[340px] z-[2000]
                         rounded-2xl border border-white/40 bg-white/90 shadow-2xl
                         backdrop-blur-xl animate-slide-down"
           >
@@ -754,7 +737,7 @@ export default function MapView({ items = [] }) {
           </div>
         )}
 
-        <div className="absolute bottom-6 right-6 z-[2000] flex flex-col items-end gap-4 pointer-events-none">
+        <div className="absolute bottom-0 md:bottom-6 right-0 md:right-6 w-full md:w-auto z-[2000] flex flex-col md:items-end gap-4 pointer-events-none">
           {(selected || routeTo) && (
             <div className="pointer-events-auto">
               <WeatherCard
@@ -778,7 +761,6 @@ export default function MapView({ items = [] }) {
                 setRouteTo(null);
                 setShowWeatherCard(false);
               }}
-              onReserve={handleReserve}
             />
           </div>
         </div>

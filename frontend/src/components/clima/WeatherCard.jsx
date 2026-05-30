@@ -158,7 +158,7 @@ export default function WeatherCard({ latitude, longitude }) {
 
   if (loading) {
     return (
-      <div className="m-2 w-[320px] rounded-3xl border border-white/20 bg-slate-950/90 p-5 text-white shadow-2xl backdrop-blur-md">
+      <div className="w-full md:w-[320px] rounded-3xl border border-white/20 bg-slate-950/90 p-4 text-white shadow-2xl backdrop-blur-md">
         <div className="animate-pulse space-y-3">
           <div className="h-5 w-32 rounded bg-white/10" />
           <div className="h-10 w-20 rounded bg-white/10" />
@@ -173,7 +173,7 @@ export default function WeatherCard({ latitude, longitude }) {
 
   if (error) {
     return (
-      <div className="m-2 w-[320px] rounded-3xl border border-red-200 bg-red-50/95 p-4 text-red-700 shadow-lg backdrop-blur-md">
+      <div className="w-full md:w-[320px] rounded-3xl border border-red-200 bg-red-50/95 p-4 text-red-700 shadow-lg backdrop-blur-md">
         {error}
       </div>
     );
@@ -182,14 +182,14 @@ export default function WeatherCard({ latitude, longitude }) {
   if (!viewModel) return null;
 
   return (
-    <div className="m-2 w-[320px] overflow-hidden rounded-3xl border border-white/20 bg-[linear-gradient(155deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(249,115,22,0.92)_100%)] p-5 text-white shadow-2xl backdrop-blur-md">
-      <div className="flex items-start justify-between gap-4">
+    <div className="w-full md:w-[320px] overflow-hidden rounded-3xl border border-white/20 bg-[linear-gradient(155deg,_rgba(15,23,42,0.96),_rgba(30,41,59,0.96)_45%,_rgba(249,115,22,0.92)_100%)] p-4 text-white shadow-2xl backdrop-blur-md">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] uppercase tracking-[0.28em] text-orange-200/80">
             Clima actual
           </p>
-          <h2 className="mt-1 text-lg font-semibold">{viewModel.condition}</h2>
-          <p className="mt-1 text-sm text-white/65">
+          <h2 className="mt-1 text-base font-semibold">{viewModel.condition}</h2>
+          <p className="mt-1 text-xs text-white/65">
             Datos estimados para esta ubicacion del recorrido
           </p>
         </div>
@@ -203,14 +203,14 @@ export default function WeatherCard({ latitude, longitude }) {
           >
             {expanded ? "^" : "v"}
           </button>
-          <div className="text-4xl">{viewModel.icon}</div>
+          <div className="text-3xl">{viewModel.icon}</div>
         </div>
       </div>
 
-      <div className="mt-4 flex items-end justify-between">
+      <div className="mt-3 flex items-end justify-between">
         <div>
-          <p className="text-5xl font-black">{viewModel.temperature}°</p>
-          <p className="mt-1 text-sm text-white/75">
+          <p className="text-4xl font-black">{viewModel.temperature}°</p>
+          <p className="mt-1 text-xs text-white/75">
             Sensacion {viewModel.apparentTemperature}°
           </p>
         </div>
@@ -226,8 +226,8 @@ export default function WeatherCard({ latitude, longitude }) {
 
       {expanded ? (
         <>
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-2xl bg-white/10 p-3">
+          <div className="mt-3 grid grid-cols-2 gap-2.5 text-sm">
+            <div className="rounded-2xl bg-white/10 p-2.5">
               <p className="text-white/55">Viento</p>
               <p className="mt-1 font-semibold">{viewModel.windSpeed} km/h</p>
               <p className="text-xs text-white/60">
@@ -235,7 +235,7 @@ export default function WeatherCard({ latitude, longitude }) {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-3">
+            <div className="rounded-2xl bg-white/10 p-2.5">
               <p className="text-white/55">Humedad</p>
               <p className="mt-1 font-semibold">{viewModel.humidity}%</p>
               <p className="text-xs text-white/60">
@@ -243,7 +243,7 @@ export default function WeatherCard({ latitude, longitude }) {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-3">
+            <div className="rounded-2xl bg-white/10 p-2.5">
               <p className="text-white/55">Precipitacion</p>
               <p className="mt-1 font-semibold">{viewModel.precipitation} mm</p>
               <p className="text-xs text-white/60">
@@ -251,7 +251,7 @@ export default function WeatherCard({ latitude, longitude }) {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-3">
+            <div className="rounded-2xl bg-white/10 p-2.5">
               <p className="text-white/55">Presion</p>
               <p className="mt-1 font-semibold">{viewModel.pressure} hPa</p>
               <p className="text-xs text-white/60">
@@ -260,7 +260,7 @@ export default function WeatherCard({ latitude, longitude }) {
             </div>
           </div>
 
-          <p className="mt-4 text-xs text-white/60">
+          <p className="mt-3 text-xs text-white/60">
             Actualizado{" "}
             {viewModel.updatedAt
               ? new Date(viewModel.updatedAt).toLocaleTimeString()
@@ -268,7 +268,7 @@ export default function WeatherCard({ latitude, longitude }) {
           </p>
         </>
       ) : (
-        <div className="relative mt-4 h-5">
+        <div className="relative mt-3 h-2">
           <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-b from-transparent to-slate-900/25" />
         </div>
       )}

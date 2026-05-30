@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { X } from 'lucide-react';
+import { MapPin, X } from 'lucide-react';
 import { useIPLocation } from '../../hooks/useIPLocation';
+import { useReverseGeocoding } from '../../hooks/useReverseGeocoding';
 
 // ─── Diccionario de códigos de clima (Open-Meteo) ────────────────────────────
 const WEATHER_LABELS = {
@@ -30,20 +31,20 @@ const WEATHER_LABELS = {
 const SUGGESTIONS = {
   sun:   (temp, isDay) =>
     !isDay
-      ? "🌌 Noche despejada — ideal para Astroturismo y Observación de Estrellas. Contemplá el cielo lejos de las luces de la ciudad."
-      : "☀️ Hace buen día — perfectas condiciones para ciclismo y actividades al aire libre en plena naturaleza.",
+      ? "🌌 — Ideal para Astroturismo y Observación de Estrellas. Contemplá el cielo lejos de las luces de la ciudad."
+      : "☀️ — Perfectas condiciones para ciclismo y actividades al aire libre en plena naturaleza.",
   cloud: (temp, isDay) =>
     !isDay
-      ? "🌌 Noche con cielo cubierto — aun así es un buen momento para salidas tranquilas o explorar miradores nocturnos."
-      : "⛅ Cielo cubierto — perfecto para una caminata tranquila o explorar un mirador sin el sol directo.",
+      ? "🌌 — Buen momento para salidas tranquilas o explorar miradores nocturnos."
+      : "⛅ — El momento exacto para subirse a una bici de montaña y conquistar los senderos.",
   rain:  (temp, isDay) =>
     temp <= 12
-      ? "🥊 La app detectó lluvia y frío — filtramos 🚣 Rafting. Los espacios indoor son tu mejor opción: Taekwondo, Kick-Boxing y Entrenamiento Funcional te esperan."
-      : "🚣 La app detectó lluvia — filtramos actividades de río como Rafting. Buscá opciones bajo techo o equipate con ropa impermeable.",
+      ? "🥊 — 🚣 Rafting. Los espacios indoor son tu mejor opción: Taekwondo, Kick-Boxing y Entrenamiento Funcional te esperan."
+      : "🚣 — Actividades de río como Rafting. Buscá opciones bajo techo o equipate con ropa impermeable.",
   snow:  () =>
-    "🏂 Nieve en camino — Snowboard y Esquí son tu plan perfecto. El snowboard es la actividad emblemática del invierno, ¡aprovechá la montaña!",
+    "🏂 — Snowboard y Esquí son tu plan perfecto. El snowboard es la actividad emblemática del invierno, ¡aprovechá la montaña!",
   storm: () =>
-    "⛈️ Hay tormenta — evitá actividades al aire libre por seguridad. Buscá experiencias indoor hasta que mejore el clima.",
+    "⛈️ — Evitá actividades al aire libre por seguridad. Buscá experiencias indoor hasta que mejore el clima.",
 };
 
 // ─── Gradientes por tipo de clima ────────────────────────────────────────────
@@ -90,8 +91,15 @@ function buildWeatherUrl(lat, lng) {
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
-export default function Notification_central({ location = "Mi ubicación", onClose }) {
+// variant: "map" (barra en mapa) | "panel" (dentro del panel de notificaciones en móvil)
+export default function Notification_central({ location = "Mi ubicación", onClose, variant = 'map' }) {
+  const isPanel = variant === 'panel';
+  const shellClass = isPanel
+    ? 'relative overflow-hidden rounded-xl px-4 py-3 text-white shadow-xl w-full font-sans'
+    : 'relative overflow-hidden rounded-full px-4 h-14 text-white shadow-xl w-fit min-[1350px]:w-full font-sans';
   const { latitude, longitude } = useIPLocation();
+  const { locationName } = useReverseGeocoding(latitude, longitude);
+  const displayLocation = locationName || location;
   const [raw, setRaw]       = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState(null);
@@ -149,7 +157,7 @@ export default function Notification_central({ location = "Mi ubicación", onClo
   if (loading) {
     return (
       <div
-        className="relative overflow-hidden rounded-full px-4 h-14 text-white shadow-xl w-full font-sans animate-pulse flex items-center gap-4"
+        className={`${shellClass} animate-pulse flex items-center gap-4`}
         style={{ background: '#1F2937' }}
       >
         <div className="w-10 h-10 rounded-full bg-white/20 flex-shrink-0" />
@@ -168,7 +176,7 @@ export default function Notification_central({ location = "Mi ubicación", onClo
   if (error || !vm) {
     return (
       <div
-        className="relative overflow-hidden rounded-full px-4 h-14 text-white shadow-xl w-full font-sans flex items-center gap-3"
+        className={`${shellClass} flex items-center gap-3`}
         style={{ background: '#1F2937' }}
       >
         <p className="text-white/70 text-sm">{error ?? 'Cargando ubicación...'}</p>
@@ -176,46 +184,55 @@ export default function Notification_central({ location = "Mi ubicación", onClo
     );
   }
 
-  // ── Tarjeta con datos reales — layout horizontal ──────────────────────────
+  // ── Tarjeta con datos reales ────────────────────────────────────────────────
   return (
     <div
-      className="relative overflow-hidden rounded-full px-4 h-14 text-white shadow-xl w-fit min-[1350px]:w-full font-sans transition-all duration-500 flex items-center gap-4"
+      className={`${shellClass} transition-all duration-500 ${isPanel ? 'flex flex-col gap-3' : 'flex items-center gap-4'}`}
       style={{ background: '#1F2937' }}
     >
-      {/* Imagen de clima dinámica */}
-      <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-           style={{ background: 'linear-gradient(135deg, #1e3a5f, #2d5986)' }}>
-        <WeatherIcon type={vm.type} isDay={vm.isDay} sizePx={36} />
-      </div>
-
-      {/* Ubicación + Temperatura + Condición */}
-      <div className="flex-shrink-0 flex flex-col justify-center min-w-0">
-        <p className="text-[10px] font-semibold tracking-wide text-white/60 uppercase">
-          {location}
-        </p>
-        <div className="flex items-baseline gap-1.5 mt-0.5">
-          <span className="text-sm font-bold leading-none">{vm.temperature}°C</span>
-          <span className="text-[11px] text-white/80">{vm.condition}</span>
-        </div>
-      </div>
-
-      {/* Divisor */}
-      <div className="hidden min-[1350px]:block self-stretch w-px bg-white/10 mx-1 flex-shrink-0 my-2" />
-
-      {/* Sugerencia */}
-      <p className="hidden min-[1350px]:block flex-1 text-[11px] text-white/70 leading-snug min-w-0 line-clamp-2">
-        {vm.suggestion}
-      </p>
-
-      {/* Botón cerrar */}
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="flex-shrink-0 p-1 text-white/40 hover:text-white/80 transition-colors"
-          aria-label="Cerrar"
+      <div className={`flex items-center gap-4 min-w-0 ${isPanel ? 'w-full' : 'flex-1'}`}>
+        <div
+          className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #1e3a5f, #2d5986)' }}
         >
-          <X size={16} strokeWidth={1.5} />
-        </button>
+          <WeatherIcon type={vm.type} isDay={vm.isDay} sizePx={36} />
+        </div>
+
+        <div className="flex-shrink-0 flex flex-col justify-center min-w-0 flex-1">
+          <p className="text-[10px] font-semibold tracking-wide text-white/60 flex items-center gap-1">
+            <MapPin size={11} strokeWidth={2} className="flex-shrink-0 text-white/50" aria-hidden />
+            <span className="truncate">{displayLocation}</span>
+          </p>
+          <div className="flex items-baseline gap-1.5 mt-0.5">
+            <span className="text-sm font-bold leading-none">{vm.temperature}°C</span>
+            <span className="text-[11px] text-white/80">{vm.condition}</span>
+          </div>
+        </div>
+
+        {!isPanel && (
+          <>
+            <div className="hidden min-[1350px]:block self-stretch w-px bg-white/10 mx-1 flex-shrink-0 my-2" />
+            <p className="hidden min-[1350px]:block flex-1 text-[11px] text-white/70 leading-snug min-w-0 line-clamp-2">
+              {vm.suggestion}
+            </p>
+          </>
+        )}
+
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 p-1 text-white/40 hover:text-white/80 transition-colors ml-auto"
+            aria-label="Cerrar"
+          >
+            <X size={16} strokeWidth={1.5} />
+          </button>
+        )}
+      </div>
+
+      {isPanel && (
+        <p className="text-[11px] text-white/70 leading-snug border-t border-white/10 pt-2">
+          {vm.suggestion}
+        </p>
       )}
     </div>
   );

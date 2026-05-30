@@ -9,11 +9,23 @@ import {
   Minus,
   Plus,
   DollarSign,
-  Trash2
+  Trash2,
+  Info
 } from 'lucide-react';
 import Nav from '../Navbar/Nav';
 import clienteAxios from '../../config/axios';
 import paymentsAxios from '../../config/paymentsAxios';
+
+const SERVICE_FEE_PERCENTAGE = Number(import.meta.env.VITE_SERVICE_FEE_PERCENTAGE ?? 7);
+const SERVICE_FEE_FIXED_AMOUNT = Number(import.meta.env.VITE_SERVICE_FEE_FIXED_AMOUNT ?? 0);
+const SERVICE_FEE_RATE = SERVICE_FEE_PERCENTAGE > 1 ? SERVICE_FEE_PERCENTAGE / 100 : SERVICE_FEE_PERCENTAGE;
+const DEFAULT_MAX_PASSENGERS = 10;
+
+function parseCapacity(value) {
+  if (value === null || value === undefined) return null;
+  const parsed = Number(String(value).replace(/[^\d]/g, ''));
+  return Number.isFinite(parsed) && parsed > 1 ? parsed : null;
+}
 
 export default function CheckoutPage({ onBack }) {
   const navigate = useNavigate();
@@ -72,21 +84,33 @@ export default function CheckoutPage({ onBack }) {
   }, 0);
 
   const capacidadMinimaEntreItems = selectedItems.reduce((min, item) => {
-    const cap = item.capacidad || item.capacity || 10;
+    const cap = parseCapacity(
+      item.capacity ||
+      item.capacidadMaxima ||
+      item.maxCapacity ||
+      item.maxPersonas ||
+      item.cupos ||
+      item.capacidad
+    ) || DEFAULT_MAX_PASSENGERS;
     return cap < min ? cap : min;
   }, 999);
 
-  const capacidadMaxima = selectedItems.length > 0 ? capacidadMinimaEntreItems : 10;
+  const capacidadMaxima = selectedItems.length > 0 ? capacidadMinimaEntreItems : DEFAULT_MAX_PASSENGERS;
 
   const subtotal = precioBase * cantidadPersonas;
   const discount = appliedCoupon ? appliedCoupon.type === 'percent' ? (subtotal * appliedCoupon.value) / 100 : appliedCoupon.value : 0;
-  const totalPrice = Math.max(subtotal - discount, 0);
+  const subtotalConDescuento = Math.max(subtotal - discount, 0);
+  const serviceFee = Math.max(Math.round((subtotalConDescuento * SERVICE_FEE_RATE) + SERVICE_FEE_FIXED_AMOUNT), 0);
+  const totalPrice = subtotalConDescuento + serviceFee;
 
   const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(value || 0));
 
   const handleCantidadChange = (delta) => {
-    const nextValue = cantidadPersonas + delta;
-    if (nextValue >= 1 && nextValue <= capacidadMaxima) { setCantidadPersonas(nextValue); }
+    setCantidadPersonas((current) => {
+      const nextValue = current + delta;
+      if (nextValue < 1 || nextValue > capacidadMaxima) return current;
+      return nextValue;
+    });
   };
 
   const handleRemoveItem = (idToRemove) => {
@@ -122,6 +146,7 @@ export default function CheckoutPage({ onBack }) {
        image: item.image || ''
     })),
     total: totalPrice,
+    cargoServicio: serviceFee,
     paymentMethod,
     cantidadPersonas,
     tourId: selectedItems.map(i => i.id).join(','),
@@ -136,13 +161,13 @@ export default function CheckoutPage({ onBack }) {
     setIsSubmitting(true);
     setApiError('');
     try {
-      const itemsPayload = selectedItems.map((item) => ({
-        id: item.id || '0',
-        title: item.nombre || item.name || 'Reserva',
-        quantity: cantidadPersonas,
-        unit_price: parseFloat(String(item.precio || item.price || 0).replace(/[^\d,.-]/g, '').replace(',', '.')),
+      const itemsPayload = [{
+        id: selectedItems.map((item) => item.id || '0').join(',') || '0',
+        title: selectedItems.length > 1 ? 'Reserva Xperience' : selectedItems[0]?.nombre || selectedItems[0]?.name || 'Reserva Xperience',
+        quantity: 1,
+        unit_price: totalPrice,
         currency_id: 'ARS',
-      }));
+      }];
 
       const payer = { name: formData.nombre || 'Cliente', surname: formData.apellido || '', email: formData.email };
       const response = await paymentsAxios.post('/payments/create-preference', { items: itemsPayload, payer });
@@ -354,7 +379,7 @@ export default function CheckoutPage({ onBack }) {
                 {/* Subtotales y Descuentos Compacto */}
                 <div className="space-y-1.5 text-xs font-medium mt-1">
                   <div className="flex justify-between text-slate-600">
-                    <span>Subtotal itinerario ({selectedItems.length})</span>
+                    <span>Subtotal itinerario x {cantidadPersonas}</span>
                     <span className="font-bold text-slate-800">{formatCurrency(subtotal)}</span>
                   </div>
                   {appliedCoupon && (
@@ -363,6 +388,16 @@ export default function CheckoutPage({ onBack }) {
                       <span className="font-bold text-xs">-{formatCurrency(discount)}</span>
                     </div>
                   )}
+                  <div className="flex justify-between items-center text-slate-600 bg-orange-50/70 px-2 py-1 rounded-md border border-orange-100">
+                    <span className="flex items-center gap-1.5">
+                      Cargo por servicio
+                      <Info
+                        className="w-3.5 h-3.5 text-orange-500 cursor-help"
+                        title="Este cargo corresponde al servicio de gestion y uso de la plataforma."
+                      />
+                    </span>
+                    <span className="font-bold text-slate-800">{formatCurrency(serviceFee)}</span>
+                  </div>
                 </div>
 
                 <div className="border-t border-slate-100 mt-1"></div>

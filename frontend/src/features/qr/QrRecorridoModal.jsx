@@ -67,7 +67,7 @@ export default function QrRecorridoModal({ open, onClose, recorridoId }) {
         </div>
 
         <div className="mt-3">
-          <div className="text-sm font-medium">QR (generado por backend)</div>
+          <div className="text-sm font-medium">QR</div>
           {loading && <div className="mt-2 text-sm">Generando…</div>}
           {!loading && qrBase64 && (
             <div className="mt-2 flex flex-col items-center gap-2">

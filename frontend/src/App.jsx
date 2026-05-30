@@ -20,7 +20,8 @@ import InfluencerCard from "./components/Influencers/InfluencerCard";
 import LandingPage from "./pages/LandingPage";
 import CheckoutPage from "./components/Booking/CheckoutPage";
 import AgencyDashboard from "./components/Agencias/AgencyDashboard";
-import AdvancedTourManager from "./components/Agencias/AdvancedTourManager";  
+import AdvancedTourManager from "./components/Agencias/AdvancedTourManager"; 
+import DashboardUser from "./components/Autenticacion/DashboardUser";
 
 
 // CAMBIO 1: Importamos ProtectedRoute para proteger rutas que requieren autenticación
@@ -77,6 +78,7 @@ export default function App() {
         <Route path="/agencia/crear-ruta" element={<ProtectedRoute><AdvancedTourManager /></ProtectedRoute>} />
        
        <Route path="/Chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+       <Route path = "/dashboard-user" element={<ProtectedRoute><DashboardUser /></ProtectedRoute>} />
        
         </Routes>
     );
