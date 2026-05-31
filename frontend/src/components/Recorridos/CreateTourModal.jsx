@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import clienteAxios from "../config/axios";
 
 // Constante para limitar las imágenes
 const MAX_IMAGES = 5;
@@ -102,7 +103,7 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
-    // Subida de imágenes a Cloudinary (Mantenida intacta)
+    // Subida de imágenes a Cloudinary
     if (imageFiles.length > 0 && uploadPreset && cloudName) {
       try {
         const uploadPromises = imageFiles.map(file => {
@@ -137,7 +138,7 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
       finalImageUrls = defaultImagesArray;
     }
 
-    // Armamos el objeto con la data final de la ruta
+    // Objeto estructurado para el CreateRecorridoDto del backend
     const tourData = {
       title: form.title,
       description: form.description,
@@ -152,15 +153,19 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
       includedTours: form.selectedToursForPackage
     };
 
-    // 🔥 NUEVO: Enviar datos al componente padre para guardar en BD
+    // Envío directo a la Base de Datos a través del controlador de NestJS
     try {
+      const respuesta = await clienteAxios.post("/api/recorrido", tourData); 
+      
       if (onCreated) {
-        await onCreated(tourData); // Esto debe comunicarse con tu endpoint POST en el padre
+        await onCreated(respuesta.data); 
       }
-      onClose(); // Cerramos el modal si la publicación fue exitosa
+      
+      onClose(); 
     } catch (error) {
       console.error("Error al publicar la ruta:", error);
-      alert("Hubo un problema al guardar la ruta. Inténtalo de nuevo.");
+      const msgError = error.response?.data?.message || "Hubo un problema al guardar la ruta. Inténtalo de nuevo.";
+      alert(msgError);
     } finally {
       setIsUploading(false);
     }
@@ -190,12 +195,14 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
         {/* TABS: Seleccionar qué crear */}
         <div className="flex bg-slate-950/50 p-1 rounded-xl mb-6 flex-shrink-0">
           <button 
+            type="button"
             onClick={() => setCreationType("actividad")}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${creationType === "actividad" ? "bg-slate-800 text-white shadow-sm" : "text-slate-500 hover:text-slate-300"}`}
           >
             Actividad Individual
           </button>
           <button 
+            type="button"
             onClick={() => setCreationType("paquete")}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${creationType === "paquete" ? "bg-orange-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-300"}`}
           >
