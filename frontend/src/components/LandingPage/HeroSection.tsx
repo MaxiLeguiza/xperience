@@ -1,8 +1,10 @@
 import { Button } from './ui/button';
 import { ArrowRight, Play, Zap, TrendingUp } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useNavigate } from 'react-router-dom';
 
 export function HeroSection() {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
       {/* Background Image with Parallax Effect */}
@@ -39,7 +41,7 @@ export function HeroSection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-          <Button size="lg" className="bg-gradient-to-r from-[#ef4444] to-[#d86015] hover:from-[#ef4444]/90 hover:to-[#d86015]/90 text-white text-sm sm:text-base lg:text-lg px-6 sm:px-8 hover:scale-105 hover:shadow-2xl hover:shadow-[#d86015]/30 transition-all w-full sm:w-auto">
+          <Button onClick={() => navigate('/login')} size="lg" className="bg-gradient-to-r from-[#ef4444] to-[#d86015] hover:from-[#ef4444]/90 hover:to-[#d86015]/90 text-white text-sm sm:text-base lg:text-lg px-6 sm:px-8 hover:scale-105 hover:shadow-2xl hover:shadow-[#d86015]/30 transition-all w-full sm:w-auto">
             Explorar Ahora
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
           </Button>
