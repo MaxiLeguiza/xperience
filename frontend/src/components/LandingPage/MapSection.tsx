@@ -95,8 +95,9 @@ export function MapSection() {
           <div className="inline-block mb-4 px-4 py-2 bg-gradient-to-r from-[#ef4444]/10 to-[#d86015]/10 rounded-full border border-[#ef4444]/20">
             <span className="text-sm text-[#ef4444]">Explora el Mundo</span>
           </div>
-          <h2 className="mb-4 text-black text-[96px]">Mapa de Aventuras</h2>
-          <p className="text-slate-600 max-w-2xl mx-auto text-[20px]">
+<h2 className="mb-4 text-black text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-center">
+  Mapa de Aventuras
+</h2>          <p className="text-slate-600 max-w-2xl mx-auto text-[20px]">
             Descubre y gestiona las mejores ubicaciones para deportes extremos.
             Crea rutas personalizadas y explora nuevos destinos.
           </p>

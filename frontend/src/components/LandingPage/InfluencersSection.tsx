@@ -85,8 +85,10 @@ export function InfluencersSection() {
           <Badge className="mb-4 bg-gradient-to-r from-[#ef4444] to-[#d86015] text-white border-none">
             Atletas Destacados
           </Badge>
-          <h2 className="mb-4 text-black text-[64px]">Influencers de Deportes Extremos</h2>
-          <p className="text-slate-600 max-w-2xl mx-auto text-[24px] text-center">
+<h2 className="mb-4 text-black text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-center">
+  Influencers de Deportes Extremos
+</h2>         
+ <p className="text-slate-600 max-w-2xl mx-auto text-[24px] text-center">
             Conoce a los atletas más influyentes que están redefiniendo los límites de la aventura
           </p>
         </div>

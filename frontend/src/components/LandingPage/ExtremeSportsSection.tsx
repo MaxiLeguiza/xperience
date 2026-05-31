@@ -99,7 +99,9 @@ export function ExtremeSportsSection() {
           <Badge className="mb-4 bg-gradient-to-r from-[#ef4444] to-[#d86015] text-white border-none">
             Top Deportes 2026
           </Badge>
-          <h2 className="mb-4 text-white text-[64px]">Mejores Deportes Extremos</h2>
+          <h2 className="mb-4 text-white text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-center">
+            Mejores Deportes Extremos
+          </h2>
           <p className="text-white/80 max-w-2xl mx-auto text-[24px]">
             Descubre las disciplinas más emocionantes y desafiantes del mundo de los deportes extremos
           </p>
