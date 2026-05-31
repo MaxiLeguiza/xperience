@@ -185,7 +185,7 @@ Método de Pago: ${reserva.paymentMethod || 'No especificado'}
             <main className="min-h-screen bg-card-white text-white p-6 md:p-12 lg:px-24">
                 <header className="mb-12 pb-6 border-b border-neutral-800/80">
                     <h1 className="text-4xl md:text-5xl font-extrabold text-orange-500 tracking-tight mb-3">
-                        Mi Panel
+                        Mi cuenta
                     </h1>
                     <p className="text-black text-lg md:text-xl">
                         Bienvenido, <span className="text-orange-500 font-semibold">{auth?.nombre || auth?.email?.split("@")[0]}</span>! Aquí tienes el historial de tus experiencias.

@@ -116,7 +116,7 @@ export default function CheckoutPage({ onBack }) {
   const handleRemoveItem = (idToRemove) => {
     const newItems = selectedItems.filter(item => item.id !== idToRemove);
     setSelectedItems(newItems);
-    if(newItems.length === 0) navigate(-1);
+    if (newItems.length === 0) navigate(-1);
   };
 
   const handleApplyCoupon = () => {
@@ -139,11 +139,11 @@ export default function CheckoutPage({ onBack }) {
     fecha: formData.fecha || new Date().toISOString().split('T')[0],
     notas: formData.notas,
     items: selectedItems.map(item => ({
-       id: item.id || '',
-       nombre: item.nombre || item.name || 'Aventura',
-       precio: typeof item.precio === 'string' ? item.precio : formatCurrency(item.precio || item.price || 0),
-       capacidad: cantidadPersonas,
-       image: item.image || ''
+      id: item.id || '',
+      nombre: item.nombre || item.name || 'Aventura',
+      precio: typeof item.precio === 'string' ? item.precio : formatCurrency(item.precio || item.price || 0),
+      capacidad: cantidadPersonas,
+      image: item.image || ''
     })),
     total: totalPrice,
     cargoServicio: serviceFee,
@@ -223,14 +223,14 @@ export default function CheckoutPage({ onBack }) {
 
   return (
     <div className="flex flex-col h-screen bg-[#F1F5F9] text-slate-900 font-sans overflow-hidden">
-      
+
       <div className="flex-shrink-0 z-50">
         <Nav />
       </div>
-      
+
       {/* Redujimos el padding general de py-6 a py-4 para ganar espacio vertical */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-6 py-4 flex flex-col min-h-0">
-        
+
         {/* Redujimos margen mb-6 a mb-4 */}
         <div className="flex-shrink-0 relative mb-4 flex justify-center items-center w-full">
           <button
@@ -244,31 +244,31 @@ export default function CheckoutPage({ onBack }) {
           </h1>
         </div>
 
-          {fromExito && (
-            <div className="mb-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
-              Estás modificando la reserva anterior. Revisa los datos y ajusta lo que quieras cambiar.
-            </div>
-          )}
+        {fromExito && (
+          <div className="mb-4 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+            Estás modificando la reserva anterior. Revisa los datos y ajusta lo que quieras cambiar.
+          </div>
+        )}
 
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
-            <div className="lg:col-span-7 flex flex-col gap-4 h-full overflow-y-auto no-scrollbar pb-6 pr-2">
-              <section className="bg-white rounded-[20px] p-5 shadow-sm border border-slate-200 flex-shrink-0">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                    <User className="text-orange-600 w-4 h-4" />
-                  </div>
-                  <h2 className="text-lg font-bold text-slate-900">Información del titular</h2>
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
+          <div className="lg:col-span-7 flex flex-col gap-4 h-full overflow-y-auto no-scrollbar pb-6 pr-2">
+            <section className="bg-white rounded-[20px] p-5 shadow-sm border border-slate-200 flex-shrink-0">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                  <User className="text-orange-600 w-4 h-4" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input name="nombre" value={formData.nombre} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Nombre" />
-                  <input name="apellido" value={formData.apellido} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Apellido" />
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Correo electrónico" />
-                  <input type="tel" name="telefono" value={formData.telefono} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Teléfono" />
-                  <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" />
-                  <div />
-                  <textarea name="notas" value={formData.notas} onChange={handleChange} className="md:col-span-2 w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none min-h-[60px] resize-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Notas adicionales (opcional)" />
-                </div>
-              </section>
+                <h2 className="text-lg font-bold text-slate-900">Información del titular</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input name="nombre" value={formData.nombre} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Nombre" />
+                <input name="apellido" value={formData.apellido} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Apellido" />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Correo electrónico" />
+                <input type="tel" name="telefono" value={formData.telefono} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Teléfono" />
+                <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" />
+                <div />
+                <textarea name="notas" value={formData.notas} onChange={handleChange} className="md:col-span-2 w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none min-h-[60px] resize-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Notas adicionales (opcional)" />
+              </div>
+            </section>
 
             {/* Formulario Método de Pago */}
             <section className="bg-white rounded-[20px] p-5 shadow-sm border border-slate-200 flex-shrink-0">
@@ -278,7 +278,7 @@ export default function CheckoutPage({ onBack }) {
                 </div>
                 <h2 className="text-lg font-bold text-slate-900">Método de Pago</h2>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
                   { id: 'Pago en destino', label: 'En destino', icon: DollarSign },
@@ -317,11 +317,11 @@ export default function CheckoutPage({ onBack }) {
               {/* 🔥 ITINERARIO MÚLTIPLE COMPACTO (MAX 160px para 2 items exactos) 🔥 */}
               <div className="overflow-y-auto no-scrollbar space-y-2 pr-1 max-h-[160px]">
                 {selectedItems.map((item, index) => {
-                  const isInfluencer = !!item.influencer; 
+                  const isInfluencer = !!item.influencer;
                   return (
                     <div key={`${item.id}-${index}`} className="flex gap-3 bg-slate-50 p-2 rounded-xl border border-slate-100 relative group transition-colors hover:border-slate-200">
                       <button onClick={() => handleRemoveItem(item.id)} className="absolute top-1 right-1 bg-white text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-full transition-all shadow-sm opacity-0 group-hover:opacity-100 z-10">
-                         <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
 
                       {/* Imagen compacta */}
@@ -352,7 +352,7 @@ export default function CheckoutPage({ onBack }) {
 
               {/* CONTROLES INFERIORES: Márgenes y espaciados reducidos para entrar en pantalla */}
               <div className="flex-shrink-0 pt-3 mt-3 border-t border-slate-100 flex flex-col gap-3">
-                
+
                 {/* Control de Personas Compacto */}
                 <div className="flex items-center justify-between bg-slate-50 rounded-xl p-2.5 border border-slate-100">
                   <span className="text-xs font-bold text-slate-600">Pasajeros (aplica a todos)</span>
