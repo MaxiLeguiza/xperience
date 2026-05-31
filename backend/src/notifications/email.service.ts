@@ -43,6 +43,13 @@ export class EmailService {
     }
   }
 
+  // Mantenemos solo el formateo de fecha para evitar el desfase de días en los servidores de Render
+  private getFechaAR(date: Date): string {
+    return new Date(date).toLocaleDateString('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+    });
+  }
+
   async sendReservationEmail(data: ReservaEmailData) {
     if (!this.transporter || !this.from) {
       this.logger.warn(
@@ -54,50 +61,22 @@ export class EmailService {
     const itemsText =
       data.items?.length > 0
         ? data.items
-          .map(
-            (i) =>
-              `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`,
-          )
-          .join('\n')
+            .map((i) => `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`)
+            .join('\n')
         : '- (sin items)';
 
     const itemsHtml =
       data.items?.length > 0
         ? data.items
-          .map(
-            (i) =>
-              `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
-          )
-          .join('')
+            .map(
+              (i) =>
+                `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
+            )
+            .join('')
         : '<li>(sin items)</li>';
 
-    const formatMoney = (value?: number) =>
-      new Intl.NumberFormat('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        maximumFractionDigits: 0,
-      }).format(Number(value || 0));
-
-    const fecha = new Date(data.fecha).toLocaleDateString('es-AR');
-    const nombreCompleto = [data.nombre, data.apellido]
-      .filter(Boolean)
-      .join(' ');
-    const descuentoText =
-      Number(data.descuento || 0) > 0
-        ? `Descuento: -${formatMoney(data.descuento)}\n`
-        : '';
-    const cargoServicioText =
-      Number(data.cargoServicio || 0) > 0
-        ? `Cargo por servicio: ${formatMoney(data.cargoServicio)}\n`
-        : '';
-    const descuentoHtml =
-      Number(data.descuento || 0) > 0
-        ? `<p><strong>Descuento:</strong> -${formatMoney(data.descuento)}</p>`
-        : '';
-    const cargoServicioHtml =
-      Number(data.cargoServicio || 0) > 0
-        ? `<p><strong>Cargo por servicio:</strong> ${formatMoney(data.cargoServicio)}</p>`
-        : '';
+    const fecha = this.getFechaAR(data.fecha);
+    const nombreCompleto = [data.nombre, data.apellido].filter(Boolean).join(' ');
 
     const subject = 'Confirmacion de reserva - Xperience';
     const text = `Hola ${nombreCompleto || data.nombre},
@@ -108,12 +87,14 @@ Codigo de reserva: ${data.reservaId ?? 'Se asignara al confirmar'}
 Fecha: ${fecha}
 Metodo de pago: ${data.paymentMethod || 'credito'}
 Cantidad de personas: ${data.cantidadPersonas ?? 'No informada'}
+Descuento: $${data.descuento ?? 0}
+Email de agencia: ${data.emailAgencia || 'No informado'}
 Telefono: ${data.telefono || 'No informado'}
 Notas: ${data.notas || 'Sin notas adicionales'}
 Items:
 ${itemsText}
 
-${descuentoText}${cargoServicioText}Total a pagar: ${formatMoney(data.total)}
+Total: $${data.total}
 
 Gracias por elegir Xperience.`;
 
@@ -125,24 +106,29 @@ Gracias por elegir Xperience.`;
         <p><strong>Fecha:</strong> ${fecha}</p>
         <p><strong>Metodo de pago:</strong> ${data.paymentMethod || 'credito'}</p>
         <p><strong>Cantidad de personas:</strong> ${data.cantidadPersonas ?? 'No informada'}</p>
+        <p><strong>Descuento:</strong> $${data.descuento ?? 0}</p>
+        <p><strong>Email de agencia:</strong> ${data.emailAgencia || 'No informado'}</p>
         <p><strong>Telefono:</strong> ${data.telefono || 'No informado'}</p>
         <p><strong>Notas:</strong> ${data.notas || 'Sin notas adicionales'}</p>
         <p><strong>Items:</strong></p>
         <ul>${itemsHtml}</ul>
-        ${descuentoHtml}
-        ${cargoServicioHtml}
-        <p style="font-size:18px;"><strong>Total a pagar:</strong> ${formatMoney(data.total)}</p>
+        <p><strong>Total:</strong> $${data.total}</p>
         <p>Gracias por elegir Xperience.</p>
       </div>
     `;
 
-    await this.transporter.sendMail({
-      from: this.from,
-      to: data.to,
-      subject,
-      text,
-      html,
-    });
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to: data.to,
+        subject,
+        text,
+        html,
+      });
+      this.logger.log(`Email de confirmación enviado con éxito a: ${data.to}`);
+    } catch (error) {
+      this.logger.error(`Error al enviar correo de confirmación a ${data.to}:`, error);
+    }
   }
 
   async sendReservationCancelledEmail(data: ReservaEmailData) {
@@ -156,27 +142,25 @@ Gracias por elegir Xperience.`;
     const itemsText =
       data.items?.length > 0
         ? data.items
-          .map(
-            (i) =>
-              `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`,
-          )
-          .join('\n')
+            .map(
+              (i) =>
+                `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`,
+            )
+            .join('\n')
         : '- (sin items)';
 
     const itemsHtml =
       data.items?.length > 0
         ? data.items
-          .map(
-            (i) =>
-              `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
-          )
-          .join('')
+            .map(
+              (i) =>
+                `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
+            )
+            .join('')
         : '<li>(sin items)</li>';
 
-    const fecha = new Date(data.fecha).toLocaleDateString('es-AR');
-    const nombreCompleto = [data.nombre, data.apellido]
-      .filter(Boolean)
-      .join(' ');
+    const fecha = this.getFechaAR(data.fecha);
+    const nombreCompleto = [data.nombre, data.apellido].filter(Boolean).join(' ');
 
     const subject = 'Cancelacion de reserva - Xperience';
     const text = `Hola ${nombreCompleto || data.nombre},
@@ -202,17 +186,22 @@ Si necesitabas ayuda adicional, podes responder a este correo.`;
         <p><strong>Metodo de pago:</strong> ${data.paymentMethod || 'credito'}</p>
         <p><strong>Items:</strong></p>
         <ul>${itemsHtml}</ul>
-        <p><strong>Total:</strong> $${data.total}</p>
+        <p style="font-size:18px;"><strong>Total:</strong> $${data.total}</p>
         <p>Si necesitabas ayuda adicional, podes responder a este correo.</p>
       </div>
     `;
 
-    await this.transporter.sendMail({
-      from: this.from,
-      to: data.to,
-      subject,
-      text,
-      html,
-    });
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to: data.to,
+        subject,
+        text,
+        html,
+      });
+      this.logger.log(`Email de cancelación enviado con éxito a: ${data.to}`);
+    } catch (error) {
+      this.logger.error(`Error al enviar correo de cancelación a ${data.to}:`, error);
+    }
   }
 }
