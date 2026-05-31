@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import clienteAxios from "../config/axios";
+import clienteAxios from "../../config/axios";
 
 // Constante para limitar las imágenes
 const MAX_IMAGES = 5;
@@ -15,9 +15,9 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
     title: "",
     description: "",
     author: "",
-    durationMinutes: 0,
-    distanceKm: 0,
-    price: 0,
+    durationMinutes: "",
+    distanceKm: "",
+    price: "", // 🔥 Ahora inicia vacío en lugar de 0 para que el placeholder se vea
     recommendedPackageId: "",
     allowMultiRoute: true,
     selectedToursForPackage: []
@@ -39,9 +39,9 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
         title: "",
         description: "",
         author: currentUser?.nombre || currentUser?.name || "",
-        durationMinutes: 0,
-        distanceKm: 0,
-        price: 0,
+        durationMinutes: "",
+        distanceKm: "",
+        price: "", // 🔥 También reinicia vacío
         recommendedPackageId: "",
         allowMultiRoute: true,
         selectedToursForPackage: []
@@ -95,7 +95,7 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
     e.preventDefault();
     setIsUploading(true);
 
-    const duration = form.durationMinutes || Math.round(form.distanceKm * 12);
+    const duration = form.durationMinutes || Math.round((form.distanceKm || 0) * 12);
     
     let uploadedImageUrls = [];
     const defaultImagesArray = ["https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"];
@@ -138,22 +138,32 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
       finalImageUrls = defaultImagesArray;
     }
 
-    // Objeto estructurado para el CreateRecorridoDto del backend
+    // Objeto estructurado
     const tourData = {
+      // Obligatorios
+      name: form.title, 
+      category: creationType === "paquete" ? "Paquete" : "Senderismo",
+      difficulty: "Moderada",
+      rating: 5,
+      location: {
+        lat: -32.8894, 
+        lng: -68.8458,
+        name: "Mendoza, Argentina"
+      },
+
+      // Opcionales
       title: form.title,
       description: form.description,
       author: form.author,
       durationMinutes: duration,
-      distanceKm: form.distanceKm,
-      price: form.price,
+      distanceKm: Number(form.distanceKm) || 0,
+      price: form.price === "" ? 0 : Number(form.price), // 🔥 Aseguramos que se envíe 0 si queda vacío o en Gratis
       images: finalImageUrls,
       waypoints: [],
       allowMultiRoute: form.allowMultiRoute,
-      isPackage: creationType === "paquete",
-      includedTours: form.selectedToursForPackage
+      isPackage: creationType === "paquete"
     };
 
-    // Envío directo a la Base de Datos a través del controlador de NestJS
     try {
       const respuesta = await clienteAxios.post("/api/recorrido", tourData); 
       
@@ -277,7 +287,23 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
               <label className="block text-xs font-semibold tracking-wider text-slate-400 uppercase mb-2">Precio Sugerido (ARS)</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                <input type="number" min="0" placeholder="5000" className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl pl-8 pr-5 py-3.5 text-sm text-slate-100 outline-none focus:border-orange-500" value={form.price || ""} onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) }))} />
+                <input 
+                  type="number" 
+                  min="0" 
+                  placeholder="Ej: 0 para gratis" 
+                  className={`w-full bg-slate-950/50 border border-slate-800 rounded-2xl pl-8 py-3.5 text-sm text-slate-100 outline-none focus:border-orange-500 transition-all ${form.price === 0 ? 'pr-20 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.1)]' : 'pr-5'}`} 
+                  value={form.price === "" ? "" : form.price} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setForm((f) => ({ ...f, price: val === "" ? "" : Number(val) }));
+                  }} 
+                />
+                {/* 🔥 Etiqueta interactiva de ¡Gratis! */}
+                {form.price === 0 && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider bg-green-500/20 text-green-400 px-2 py-1 rounded-md animate-pulse">
+                    ¡Gratis!
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -286,11 +312,11 @@ export default function CreateTourModal({ open, onClose, onCreated, packages, ex
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold tracking-wider text-slate-400 uppercase mb-2">Distancia (km)</label>
-              <input type="number" min="0" step="0.1" placeholder="Ej: 10" className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3.5 text-sm text-slate-100 outline-none focus:border-orange-500" value={form.distanceKm || ""} onChange={(e) => setForm((f) => ({ ...f, distanceKm: Number(e.target.value) }))} />
+              <input type="number" min="0" step="0.1" placeholder="Ej: 10" className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3.5 text-sm text-slate-100 outline-none focus:border-orange-500" value={form.distanceKm === "" ? "" : form.distanceKm} onChange={(e) => setForm((f) => ({ ...f, distanceKm: e.target.value === "" ? "" : Number(e.target.value) }))} />
             </div>
             <div>
               <label className="block text-xs font-semibold tracking-wider text-slate-400 uppercase mb-2">Minutos</label>
-              <input type="number" min="0" placeholder="Ej: 90" className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3.5 text-sm text-slate-100 outline-none focus:border-orange-500" value={form.durationMinutes || ""} onChange={(e) => setForm((f) => ({ ...f, durationMinutes: Number(e.target.value) }))} />
+              <input type="number" min="0" placeholder="Ej: 90" className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3.5 text-sm text-slate-100 outline-none focus:border-orange-500" value={form.durationMinutes === "" ? "" : form.durationMinutes} onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value === "" ? "" : Number(e.target.value) }))} />
             </div>
           </div>
 
