@@ -13,6 +13,7 @@ async function bootstrap() {
     }),
   );
   const allowedOrigins = [
+    'https://xperience-swart.vercel.app',
     'https://localhost:5173',
     'https://localhost:5174',
     'https://localhost:5175',
@@ -46,4 +47,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT || 3000, '0.0.0.0');
 }
-bootstrap();
+bootstrap();  

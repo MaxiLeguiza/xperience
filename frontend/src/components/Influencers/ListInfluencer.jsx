@@ -8,30 +8,6 @@ import { Search, ChevronDown, Users, MapPin, Video, Map, Navigation, Plus, X, Im
 import { useAuth } from "../../hooks/useAuth";
 import axios from "axios";
 
-// Datos base por defecto
-const initialInfluencersData = [
-  {
-    id: "infl-1",
-    name: "Carlos Aventura",
-    handle: "@carlos_aventura",
-    description: "Apasionado por los deportes aéreos y de montaña. Comparto mis experiencias desde las cimas más altas de Mendoza y el mundo.",
-    tags: ["Parapente", "Rafting", "Trekking"],
-    stats: { followers: "1.2M", countries: 23, videos: 78 },
-    image: "https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=800&q=80",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
-  },
-  {
-    id: "infl-2",
-    name: "Sofía Explora",
-    handle: "@sofia_explora",
-    description: "Amante del turismo enológico y las cabalgatas al atardecer. Descubriendo los rincones más exclusivos de la ruta del vino.",
-    tags: ["Enoturismo", "Cabalgatas", "Relax"],
-    stats: { followers: "850K", countries: 12, videos: 142 },
-    image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=800&q=80",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80"
-  }
-];
-
 const InfluencerCard = ({ influencer }) => (
   <Link
     to={`/Influencers/${influencer.id || influencer._id}`}
