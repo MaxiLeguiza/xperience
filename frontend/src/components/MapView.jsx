@@ -19,7 +19,7 @@ import Notification_central from "./Notifications/Notification_central";
 import { useMaxWidth } from "../hooks/useMaxWidth";
 import { ChevronUp, Flame, MapPin } from "lucide-react";
 
-import "./MapView.css";
+import "./mapview.css";
 
 /* -------------------- Helpers -------------------- */
 function InvalidateSizeOnce() {
