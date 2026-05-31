@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { CalendarDays, MapPin, Tag, Loader2, Ticket, Compass, Download, XCircle } from 'lucide-react'; 
+import { CalendarDays, MapPin, Loader2, Ticket, Compass, Download, XCircle } from 'lucide-react'; 
 import Nav from "../Navbar/Nav"; 
+// 1. IMPORTA TU CLIENTE AXIOS CONFIGURADO
+// Asegúrate de que esta ruta relativa sea correcta hacia tu archivo src/config/axios.js
+import clienteAxios from "../../config/axios"; 
 
 export default function DashboardUser() {
     const { auth } = useAuth();
@@ -9,30 +12,23 @@ export default function DashboardUser() {
     const [reservas, setReservas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [cancelingId, setCancelingId] = useState(null); // Estado para el botón de cancelar
+    const [cancelingId, setCancelingId] = useState(null); 
 
     useEffect(() => {
         const obtenerReservas = async () => {
             try {
                 setLoading(true);
-                const respuesta = await fetch("http://localhost:3000/api/reserva/mis-reservas", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!respuesta.ok) {
-                    const errorDelBackend = await respuesta.json();
-                    throw new Error(`Error ${respuesta.status}: ${errorDelBackend.message || "Fallo en el servidor"}`);
-                }
-
-                const datos = await respuesta.json();
-                setReservas(datos);
+                // 2. USA AXIOS EN LUGAR DE FETCH. 
+                // Ya no necesitas poner el dominio completo ni los headers manualmente (el interceptor lo hace).
+                const { data } = await clienteAxios.get("/api/reserva/mis-reservas");
+                
+                // Axios ya convierte automáticamente la respuesta a JSON
+                setReservas(data);
             } catch (err) {
+                // Axios guarda el mensaje de error del backend en err.response.data.message
                 console.error("Error al conectar con la BD:", err);
-                setError(err.message);
+                const msg = err.response?.data?.message || "No se pudor conectar con el servidor";
+                setError(msg);
             } finally {
                 setLoading(false);
             }
@@ -44,29 +40,20 @@ export default function DashboardUser() {
     }, [auth]);
 
     // --------------------------------------------------------
-    // NUEVAS FUNCIONALIDADES DE LOS BOTONES
+    // FUNCIONALIDADES DE LOS BOTONES CORREGIDAS
     // --------------------------------------------------------
 
-    // 1. Lógica para Cancelar Reserva
     const handleCancelarReserva = async (idReserva) => {
         const confirmar = window.confirm("¿Estás seguro que deseas cancelar esta aventura? Esta acción no se puede deshacer.");
         if (!confirmar) return;
 
         try {
-            setCancelingId(idReserva); // Activamos el spinner en este botón específico
+            setCancelingId(idReserva); 
             
-            // Llamamos a tu endpoint PATCH :id/cancel
-            const respuesta = await fetch(`http://localhost:3000/api/reserva/${idReserva}/cancel`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            // 3. USA AXIOS PATCH AQUÍ TAMBIÉN. Sin URL quemada.
+            await clienteAxios.patch(`/api/reserva/${idReserva}/cancel`);
 
-            if (!respuesta.ok) throw new Error("No se pudo cancelar la reserva.");
-
-            // Si fue exitoso, actualizamos la UI instantáneamente sin recargar la página
+            // Si fue exitoso (Axios no lanzó error), actualizamos la UI
             setReservas(reservasAnteriores => 
                 reservasAnteriores.map(res => 
                     res._id === idReserva ? { ...res, estado: 'cancelada' } : res
@@ -75,13 +62,14 @@ export default function DashboardUser() {
 
         } catch (err) {
             console.error("Error cancelando:", err);
-            alert("Hubo un error al intentar cancelar la reserva. Intenta de nuevo.");
+            const msg = err.response?.data?.message || "No se pudo cancelar la reserva.";
+            alert(msg);
         } finally {
-            setCancelingId(null); // Apagamos el spinner
+            setCancelingId(null); 
         }
     };
 
-    // 2. Lógica para Descargar Comprobante (Genera un .txt descargable)
+    // 4. Lógica para Descargar Comprobante (Esta no requería cambios de red, se mantiene igual)
     const handleDescargarTicket = (reserva) => {
         const nombreActividad = reserva.items && reserva.items.length > 0
             ? reserva.items.map(item => item.nombre).join(' + ')
@@ -89,7 +77,6 @@ export default function DashboardUser() {
             
         const fechaFormateada = new Date(reserva.fecha).toLocaleDateString('es-AR');
 
-        // Armamos el contenido del ticket
         const contenidoTicket = `
 =========================================
       TICKET DE RESERVA - XPERIENCE
@@ -111,7 +98,6 @@ Método de Pago: ${reserva.paymentMethod || 'No especificado'}
 ¡Gracias por confiar en nosotros!
         `;
 
-        // Creamos un Blob y forzamos la descarga en el navegador
         const blob = new Blob([contenidoTicket], { type: 'text/plain' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -123,6 +109,8 @@ Método de Pago: ${reserva.paymentMethod || 'No especificado'}
         document.body.removeChild(a);
     };
 
+    // --------------------------------------------------------
+    // El resto del renderizado se mantiene igual
     // --------------------------------------------------------
 
     const getEstadoStyles = (estado) => {
