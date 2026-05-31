@@ -16,7 +16,7 @@ import { InfluencersModule } from './influencers/influencers.module';
   imports: [
 
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.MONGO_DB_DATABASE || 'MONGODB_URI',),
+    MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/nest-xperience',),
 
     NotificationsModule,
     UserModule,
