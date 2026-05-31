@@ -54,18 +54,21 @@ export class EmailService {
     const itemsText =
       data.items?.length > 0
         ? data.items
-            .map((i) => `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`)
-            .join('\n')
+          .map(
+            (i) =>
+              `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`,
+          )
+          .join('\n')
         : '- (sin items)';
 
     const itemsHtml =
       data.items?.length > 0
         ? data.items
-            .map(
-              (i) =>
-                `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
-            )
-            .join('')
+          .map(
+            (i) =>
+              `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
+          )
+          .join('')
         : '<li>(sin items)</li>';
 
     const formatMoney = (value?: number) =>
@@ -76,11 +79,25 @@ export class EmailService {
       }).format(Number(value || 0));
 
     const fecha = new Date(data.fecha).toLocaleDateString('es-AR');
-    const nombreCompleto = [data.nombre, data.apellido].filter(Boolean).join(' ');
-    const descuentoText = Number(data.descuento || 0) > 0 ? `Descuento: -${formatMoney(data.descuento)}\n` : '';
-    const cargoServicioText = Number(data.cargoServicio || 0) > 0 ? `Cargo por servicio: ${formatMoney(data.cargoServicio)}\n` : '';
-    const descuentoHtml = Number(data.descuento || 0) > 0 ? `<p><strong>Descuento:</strong> -${formatMoney(data.descuento)}</p>` : '';
-    const cargoServicioHtml = Number(data.cargoServicio || 0) > 0 ? `<p><strong>Cargo por servicio:</strong> ${formatMoney(data.cargoServicio)}</p>` : '';
+    const nombreCompleto = [data.nombre, data.apellido]
+      .filter(Boolean)
+      .join(' ');
+    const descuentoText =
+      Number(data.descuento || 0) > 0
+        ? `Descuento: -${formatMoney(data.descuento)}\n`
+        : '';
+    const cargoServicioText =
+      Number(data.cargoServicio || 0) > 0
+        ? `Cargo por servicio: ${formatMoney(data.cargoServicio)}\n`
+        : '';
+    const descuentoHtml =
+      Number(data.descuento || 0) > 0
+        ? `<p><strong>Descuento:</strong> -${formatMoney(data.descuento)}</p>`
+        : '';
+    const cargoServicioHtml =
+      Number(data.cargoServicio || 0) > 0
+        ? `<p><strong>Cargo por servicio:</strong> ${formatMoney(data.cargoServicio)}</p>`
+        : '';
 
     const subject = 'Confirmacion de reserva - Xperience';
     const text = `Hola ${nombreCompleto || data.nombre},
@@ -139,21 +156,21 @@ Gracias por elegir Xperience.`;
     const itemsText =
       data.items?.length > 0
         ? data.items
-            .map(
-              (i) =>
-                `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`,
-            )
-            .join('\n')
+          .map(
+            (i) =>
+              `- ${i.nombre} (${i.precio})${i.capacidad ? ` x ${i.capacidad}` : ''}`,
+          )
+          .join('\n')
         : '- (sin items)';
 
     const itemsHtml =
       data.items?.length > 0
         ? data.items
-            .map(
-              (i) =>
-                `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
-            )
-            .join('')
+          .map(
+            (i) =>
+              `<li><strong>${i.nombre}</strong> <span>${i.precio}</span>${i.capacidad ? ` <span>x ${i.capacidad}</span>` : ''}</li>`,
+          )
+          .join('')
         : '<li>(sin items)</li>';
 
     const fecha = new Date(data.fecha).toLocaleDateString('es-AR');
