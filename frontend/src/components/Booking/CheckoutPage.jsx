@@ -79,8 +79,6 @@ export default function CheckoutPage({ onBack }) {
     notas: reservaFromExito?.notas || reservaFromExito?.comentarios || '',
   });
 
-  const emailConfig = { emailAgencia: 'contacto@xperience.com' };
-
   const coupons = [
     { code: 'XP10', type: 'percent', value: 10 },
     { code: 'EXPLORA10', type: 'percent', value: 10 },
@@ -167,7 +165,6 @@ export default function CheckoutPage({ onBack }) {
     capacidadUtilizada: cantidadPersonas,
     descuentoAplicado: discount,
     metodoPago: paymentMethod,
-    emailAgencia: paymentMethod === 'Pago en destino' ? emailConfig.emailAgencia : null,
     fechaReserva: new Date().toISOString(),
   });
 
