@@ -196,14 +196,16 @@ function GeoWatcher({ onChange }) {
 
 /* ----------------------------------------------- */
 
-function ActivityPanel({ activities = [], onSelect }) {
+function ActivityPanel({ activities = [], onSelect, onReserve }) {
   const [expanded, setExpanded] = useState(false);
   const cards = activities.slice(0, 5);
 
   return (
     <aside
       className={`pointer-events-auto bg-[#0b0f19]/90 backdrop-blur-xl border-t md:border border-white/10 shadow-2xl rounded-t-2xl md:rounded-2xl overflow-hidden transition-all duration-300 ease-in-out flex flex-col ${
-        expanded ? "w-full md:w-[320px] md:max-w-[90vw]" : "w-full md:w-[280px]"
+        expanded
+          ? "w-full max-w-[calc(100vw-24px)] md:w-[320px]"
+          : "w-full max-w-[calc(100vw-24px)] md:w-[280px]"
       }`}
     >
       {/* Header / Toggle */}
@@ -240,20 +242,27 @@ function ActivityPanel({ activities = [], onSelect }) {
 
       {/* Compact list */}
       <div
-        className={`flex flex-col gap-2 px-4 pb-4 transition-opacity duration-300 ${
+        className={`flex flex-col gap-2 px-4 pb-4 pr-3 max-h-[224px] overflow-y-auto custom-scrollbar transition-opacity duration-300 ${
           expanded ? "opacity-100" : "opacity-0 hidden"
         }`}
       >
         {cards.map((activity) => (
-          <button
+          <div
             key={activity.id}
-            type="button"
+            role="button"
+            tabIndex={0}
             className={`w-full text-left group rounded-xl border px-3 py-2.5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgb(0,0,0,0.35)] flex items-center gap-3 ${
               activity.premium
                 ? "bg-gradient-to-r from-orange-500/15 to-white/[0.04] border-orange-500/30 hover:border-orange-500/60"
                 : "bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10"
             }`}
             onClick={() => onSelect(activity)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(activity);
+              }
+            }}
           >
             <div
               className={`h-10 w-10 shrink-0 rounded-lg grid place-items-center border ${
@@ -276,7 +285,17 @@ function ActivityPanel({ activities = [], onSelect }) {
                 reservas
               </p>
             </div>
-          </button>
+            <button
+              type="button"
+              className="shrink-0 rounded-full bg-orange-500 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-600"
+              onClick={(event) => {
+                event.stopPropagation();
+                onReserve(activity);
+              }}
+            >
+              Reservar
+            </button>
+          </div>
         ))}
       </div>
     </aside>
@@ -521,11 +540,11 @@ export default function MapView({ items = [] }) {
         {/* Panel de filtros “glass” */}
         {showFilters && (
           <div
-            className="absolute top-16 left-2 md:left-5 w-[calc(100vw-16px)] md:w-[340px] z-[2000]
-                        rounded-2xl border border-white/40 bg-white/90 shadow-2xl
-                        backdrop-blur-xl animate-slide-down"
+            className="absolute top-[4.5rem] sm:top-20 left-2 sm:left-4 md:left-5 w-[calc(100vw-16px)] sm:w-[340px] max-h-[calc(100vh-104px)] z-[2000]
+                        overflow-y-auto overscroll-contain rounded-2xl border border-white/40 bg-white/90 shadow-2xl
+                        backdrop-blur-xl animate-[filter-panel-in_260ms_cubic-bezier(0.16,1,0.3,1)]"
           >
-            <div className="px-5 pt-4 pb-3 border-b border-white/60 bg-gradient-to-r from-white/90 via-white/80 to-orange-50/70 rounded-t-2xl">
+            <div className="sticky top-0 z-10 px-4 sm:px-5 pt-4 pb-3 border-b border-white/60 bg-gradient-to-r from-white/95 via-white/90 to-orange-50/90 backdrop-blur-xl rounded-t-2xl">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] uppercase tracking-wide text-orange-500 font-semibold">
@@ -548,9 +567,9 @@ export default function MapView({ items = [] }) {
               </div>
             </div>
 
-            <div className="px-5 py-4 space-y-3">
+            <div className="px-4 sm:px-5 py-4 space-y-3">
               {/* Buscador + ajustar vista */}
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-col min-[380px]:flex-row gap-2 min-[380px]:items-center">
                 <div className="relative flex-1">
                   <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></span>
                   <input
@@ -565,17 +584,17 @@ export default function MapView({ items = [] }) {
                 </div>
                 <button
                   onClick={() => setFitKey((k) => k + 1)}
-                  className="bg-orange-500 text-white px-3 py-2 rounded-lg text-[11px] font-semibold 
-                           hover:bg-orange-600 transition shadow-md"
+                  className="bg-orange-500 text-white px-3 py-2 rounded-lg text-[11px] font-semibold
+                           hover:bg-orange-600 hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-md"
                 >
                   Centrar Vista
                 </button>
               </div>
 
               {/* Filtros en grilla */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3">
                 {/* Dificultad */}
-                <div className="col-span-2">
+                <div className="min-[380px]:col-span-2">
                   <label className="block text-[11px] font-semibold mb-1 text-gray-700 uppercase tracking-wide">
                     Dificultad
                   </label>
@@ -720,16 +739,16 @@ export default function MapView({ items = [] }) {
             </div>
 
             {/* Botones inferiores */}
-            <div className="px-5 py-3 border-t border-white/70 flex justify-between items-center bg-white/80 rounded-b-2xl">
+            <div className="sticky bottom-0 z-10 px-4 sm:px-5 py-3 border-t border-white/70 flex justify-between items-center bg-white/90 backdrop-blur-xl rounded-b-2xl">
               <button
                 onClick={handleReset}
-                className="text-[12px] px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 transition"
+                className="text-[12px] px-3 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 hover:-translate-y-0.5 active:translate-y-0 transition-all"
               >
                 Reiniciar
               </button>
               <button
                 onClick={handleApplyFilters}
-                className="text-[12px] px-4 py-2 rounded-lg bg-orange-500 text-white font-semibold shadow-md hover:bg-orange-600 transition"
+                className="text-[12px] px-4 py-2 rounded-lg bg-orange-500 text-white font-semibold shadow-md hover:bg-orange-600 hover:-translate-y-0.5 active:translate-y-0 transition-all"
               >
                 Ver resultados
               </button>
@@ -761,6 +780,7 @@ export default function MapView({ items = [] }) {
                 setRouteTo(null);
                 setShowWeatherCard(false);
               }}
+              onReserve={handleReserve}
             />
           </div>
         </div>
