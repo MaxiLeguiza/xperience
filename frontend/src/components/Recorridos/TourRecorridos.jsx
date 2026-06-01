@@ -704,9 +704,13 @@ export default function TourRecorridos({ onRouteBuilt }) {
         </div>
 
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-0">
-          <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 h-full overflow-y-auto no-scrollbar pb-6 pr-2">
-            <RecommendedPackages tours={tours} onSelectTour={setSelectedTour} />
-            <RecommendedInfluencers influencers={influencers} onSelect={(inf) => setSelectedInfluencerId(inf ? inf.id : null)} selectedId={selectedInfluencerId} />
+          <div className="lg:col-span-4 xl:col-span-3 grid grid-rows-2 gap-6 h-full pb-6 pr-2">
+            <div className="overflow-y-auto no-scrollbar flex-shrink-0">
+              <RecommendedPackages tours={tours} onSelectTour={setSelectedTour} />
+            </div>
+            <div className="overflow-y-auto no-scrollbar flex-shrink-0">
+              <RecommendedInfluencers influencers={influencers} onSelect={(inf) => setSelectedInfluencerId(inf ? inf.id : null)} selectedId={selectedInfluencerId} />
+            </div>
           </div>
 
           <main className="lg:col-span-8 xl:col-span-9 flex flex-col gap-6 h-full overflow-y-auto no-scrollbar pb-32 pr-2">
