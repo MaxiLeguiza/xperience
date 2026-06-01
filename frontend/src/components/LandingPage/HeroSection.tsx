@@ -1,7 +1,7 @@
-import { Button } from './ui/button';
-import { ArrowRight, Play, Zap, TrendingUp } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
-import { useNavigate } from 'react-router-dom';
+import { Button } from "./ui/button";
+import { ArrowRight, Play, Zap, TrendingUp } from "lucide-react";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { useNavigate } from "react-router-dom";
 
 export function HeroSection() {
   const navigate = useNavigate();
@@ -15,10 +15,13 @@ export function HeroSection() {
           className="w-full h-full object-cover opacity-40"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black" />
-        
+
         {/* Animated gradient orbs */}
         <div className="absolute top-5 sm:top-10 md:top-20 right-5 sm:right-10 md:right-20 w-40 sm:w-72 md:w-96 h-40 sm:h-72 md:h-96 bg-[#d86015] rounded-full opacity-10 blur-3xl animate-pulse" />
-        <div className="absolute bottom-5 sm:bottom-10 md:bottom-20 left-5 sm:left-10 md:left-20 w-32 sm:w-52 md:w-72 h-32 sm:h-52 md:h-72 bg-[#ef4444] rounded-full opacity-10 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div
+          className="absolute bottom-5 sm:bottom-10 md:bottom-20 left-5 sm:left-10 md:left-20 w-32 sm:w-52 md:w-72 h-32 sm:h-52 md:h-72 bg-[#ef4444] rounded-full opacity-10 blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
       </div>
 
       {/* Content */}
@@ -37,15 +40,31 @@ export function HeroSection() {
         </h1>
 
         <p className="text-white/80 max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed text-base sm:text-lg md:text-2xl lg:text-[24px] text-center">
-          Descubre las mejores ubicaciones, conecta con atletas profesionales y planifica tus próximas aventuras extremas en un solo lugar
+          Descubre las mejores ubicaciones, conecta con atletas profesionales y
+          planifica tus próximas aventuras extremas en un solo lugar
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-          <Button onClick={() => navigate('/login')} size="lg" className="bg-gradient-to-r from-[#ef4444] to-[#d86015] hover:from-[#ef4444]/90 hover:to-[#d86015]/90 text-white text-sm sm:text-base lg:text-lg px-6 sm:px-8 hover:scale-105 hover:shadow-2xl hover:shadow-[#d86015]/30 transition-all w-full sm:w-auto">
+          <Button
+            onClick={() => navigate("/login")}
+            size="lg"
+            className="bg-gradient-to-r from-[#ef4444] to-[#d86015] hover:from-[#ef4444]/90 hover:to-[#d86015]/90 text-white text-sm sm:text-base lg:text-lg px-6 sm:px-8 hover:scale-105 hover:shadow-2xl hover:shadow-[#d86015]/30 transition-all w-full sm:w-auto"
+          >
             Explorar Ahora
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
           </Button>
-          <Button size="lg" variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 text-sm sm:text-base lg:text-lg px-6 sm:px-8 hover:scale-105 transition-all bg-[rgba(255,0,0,0.45)] w-full sm:w-auto">
+          <Button
+            onClick={() =>
+              window.open(
+                "https://youtu.be/gulw8VYVXIU",
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
+            size="lg"
+            variant="outline"
+            className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 text-sm sm:text-base lg:text-lg px-6 sm:px-8 hover:scale-105 transition-all bg-[rgba(255,0,0,0.45)] w-full sm:w-auto"
+          >
             <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2 fill-white" />
             Ver Tutorial
           </Button>
@@ -54,20 +73,36 @@ export function HeroSection() {
         {/* Stats with enhanced design */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-8 mt-10 sm:mt-16 md:mt-20 max-w-5xl mx-auto">
           <div className="text-center p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] to-[#d86015] mb-1 sm:mb-2">500+</p>
-            <p className="text-white/70 text-xs sm:text-sm md:text-base">Ubicaciones</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] to-[#d86015] mb-1 sm:mb-2">
+              500+
+            </p>
+            <p className="text-white/70 text-xs sm:text-sm md:text-base">
+              Ubicaciones
+            </p>
           </div>
           <div className="text-center p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] to-[#d86015] mb-1 sm:mb-2">2M+</p>
-            <p className="text-white/70 text-xs sm:text-sm md:text-base">Aventureros</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] to-[#d86015] mb-1 sm:mb-2">
+              2M+
+            </p>
+            <p className="text-white/70 text-xs sm:text-sm md:text-base">
+              Aventureros
+            </p>
           </div>
           <div className="text-center p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] to-[#d86015] mb-1 sm:mb-2">50+</p>
-            <p className="text-white/70 text-xs sm:text-sm md:text-base">Disciplinas</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] to-[#d86015] mb-1 sm:mb-2">
+              50+
+            </p>
+            <p className="text-white/70 text-xs sm:text-sm md:text-base">
+              Disciplinas
+            </p>
           </div>
           <div className="text-center p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] to-[#d86015] mb-1 sm:mb-2">4.9★</p>
-            <p className="text-white/70 text-xs sm:text-sm md:text-base">Valoración</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-[#ef4444] to-[#d86015] mb-1 sm:mb-2">
+              4.9★
+            </p>
+            <p className="text-white/70 text-xs sm:text-sm md:text-base">
+              Valoración
+            </p>
           </div>
         </div>
       </div>
