@@ -142,25 +142,19 @@ export class ReservaService {
     return this.reservaModel.find();
   }
 
-
-  @Get('mis-reservas')
-  @UseGuards(JwtAuthGuard)
-  findMyReservas(@Req() req: any) {
-    console.log("=== DIAGNÓSTICO DE TOKEN ===");
-    console.log("Contenido completo de req.user:", req.user);
-    console.log("Email a buscar:", req.user?.email);
-    console.log("============================");
-
-    return this.reservaService.findByUser(req.user?.email);
-  }
-/**
-  // Agrega esto en tu reserva.service.ts
   async findByUser(email: string) {
-    // Busca los documentos donde el campo "email" coincida con el email
-    const misReservas = await this.reservaModel.find({ email: email }).exec();
+    if (!email) return []; // Previene búsquedas si el email no viaja
+
+    // Búsqueda insensible a mayúsculas/minúsculas y sin espacios extra
+    const emailLimpio = email.trim();
+    const misReservas = await this.reservaModel
+      .find({
+        email: { $regex: new RegExp(`^${emailLimpio}$`, 'i') },
+      })
+      .exec();
 
     return misReservas;
-  } */
+  }
 
   async findOne(id: string) {
     if (!isValidObjectId(id)) {
