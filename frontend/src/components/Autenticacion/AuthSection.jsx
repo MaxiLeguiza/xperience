@@ -10,7 +10,7 @@ export default function AuthSection() {
     <div className="w-82">
       {auth ? (
         <div className="flex items-center justify-end gap-4 w-full">
-          <div className="flex items-center">
+          <div className="flex leading-0.5 items-center">
             <Notifications />
           </div>
           
