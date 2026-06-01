@@ -47,7 +47,7 @@ export function HeroSection() {
           </Button>
           <Button size="lg" variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10 hover:border-white/50 text-sm sm:text-base lg:text-lg px-6 sm:px-8 hover:scale-105 transition-all bg-[rgba(255,0,0,0.45)] w-full sm:w-auto">
             <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2 fill-white" />
-            Ver Demo
+            Ver Tutorial
           </Button>
         </div>
 

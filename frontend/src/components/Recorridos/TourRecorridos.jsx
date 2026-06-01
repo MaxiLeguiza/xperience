@@ -50,8 +50,6 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
       </div>
 
       <div className="relative group">
-
-        {/* FLECHA IZQUIERDA: Reemplazada por un SVG limpio y simetría arreglada (-left-5) */}
         <button
           aria-label="Anterior"
           onClick={() => containerRef.current?.scrollBy({ left: -Math.max(160, Math.floor((containerRef.current?.clientWidth || 320) / 3)), behavior: 'smooth' })}
@@ -62,16 +60,13 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
           </svg>
         </button>
 
-        {/* CONTENEDOR: Padding ajustado para que las sombras del hover no se corten */}
         <div ref={containerRef} className="flex items-center gap-5 overflow-x-auto pb-4 pt-2 px-2 mt-2 no-scrollbar scroll-smooth">
           {influencers.map((inf) => {
             const isSelected = selectedId === inf.id;
             return (
-              /* TARJETA: Corregidos bugs de Tailwind, añadido efecto táctil de elevación al hacer hover */
               <button
                 key={inf.id}
                 onClick={() => onSelect(inf)}
-                // group/card permite controlar el hover interno de cada tarjeta por separado
                 className={`flex-shrink-0 w-60 p-3.5 rounded-2xl border transition-all duration-300 text-left flex gap-4 items-center group/card ${isSelected
                     ? "ring-2 ring-orange-500 border-transparent bg-orange-50/50 shadow-md shadow-orange-500/10"
                     : "border-slate-100 hover:border-orange-200 hover:shadow-md hover:bg-slate-50 hover:-translate-y-0.5"
@@ -96,7 +91,6 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
           })}
         </div>
 
-        {/* FLECHA DERECHA: Reemplazada por SVG y simetría arreglada (-right-5) */}
         <button
           aria-label="Siguiente"
           onClick={() => containerRef.current?.scrollBy({ left: Math.max(160, Math.floor((containerRef.current?.clientWidth || 320) / 3)), behavior: 'smooth' })}
@@ -106,7 +100,6 @@ function RecommendedInfluencers({ influencers = [], onSelect, selectedId }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-
       </div>
     </div>
   );
@@ -122,6 +115,9 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
 
   const [newComment, setNewComment] = useState("");
   const [newRating, setNewRating] = useState(0);
+
+  // 🔥 NUEVO ESTADO PARA LA IMAGEN AMPLIADA
+  const [expandedImage, setExpandedImage] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -214,262 +210,292 @@ function TourDetailModal({ tour, onClose, onReserve, auth, itinerary, onToggleRo
   const canBeJoined = tour.allowMultiRoute !== false;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all" onClick={onClose}>
-      <div className="bg-white rounded-[32px] shadow-2xl max-w-4xl w-full max-h-[90vh] relative flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all" onClick={onClose}>
+        <div className="bg-white rounded-[32px] shadow-2xl max-w-4xl w-full max-h-[90vh] relative flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
 
-        <button onClick={onClose} className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 p-2.5 rounded-full shadow-sm backdrop-blur transition-all z-20">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-        </button>
+          <button onClick={onClose} className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 p-2.5 rounded-full shadow-sm backdrop-blur transition-all z-20">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
 
-        <div className="overflow-y-auto no-scrollbar flex-1 pb-10">
-          {gallery.length > 0 && (
-            <div className="relative w-full h-64 md:h-80 bg-slate-100">
-              <img src={gallery[0]} alt={tour.title} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6">
-                {tour.isPackage && <span className="bg-gradient-to-r from-orange-500 to-pink-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full mb-2 inline-block shadow-md border border-white">Paquete de Actividades</span>}
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-md leading-tight">{tour.title}</h1>
-              </div>
-            </div>
-          )}
-
-          <div className="px-6 md:px-10 pt-8 space-y-8">
-            <div className="flex flex-col md:flex-row justify-between gap-8 items-start">
-              <div className="space-y-4 flex-1">
-                <div className="flex items-center gap-4 text-sm font-bold text-slate-500">
-                  <span className="flex items-center gap-1.5"><span className="text-xl">👤</span> {tour.author}</span>
-                  {!tour.isPackage && <span className="flex items-center gap-1.5"><span className="text-xl">⏱️</span> {tour.durationMinutes} min</span>}
-                  {!tour.isPackage && <span className="flex items-center gap-1.5"><span className="text-xl">📍</span> {tour.distanceKm} km</span>}
-                </div>
-
-                {/* 🔥 NUEVO BLOQUE: Muestra el Influencer si está asociado */}
-                {(tour.influencerId || tour.influencer) && (
-                  <div className="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-pink-50 p-4 rounded-2xl border border-orange-100/50 shadow-sm mt-4">
-                    <div className="relative">
-                      <img
-                        src={tour.influencer?.avatar || "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80"}
-                        alt="Influencer"
-                        className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-md"
-                      />
-                      <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-0.5 rounded-full border-2 border-white">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500 uppercase tracking-widest mb-0.5">
-                        Recomendado por
-                      </p>
-                      <p className="text-sm font-bold text-slate-800">
-                        {tour.influencer?.name || tour.author}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 mb-2 mt-4">Acerca del {tour.isPackage ? "paquete" : "recorrido"}</h3>
-                  <p className="text-slate-600 leading-relaxed text-sm md:text-base">{tour.description}</p>
-                </div>
-
-                {!tour.isPackage && (
-                  <div className="mt-6 border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-100">
-                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                        {tour.waypoints && tour.waypoints.length > 1 ? "Ruta del Recorrido" : "Ubicación del evento"}
-                      </h4>
-                    </div>
-                    <div className="h-48 w-full relative z-0">
-                      <MapContainer
-                        center={
-                          tour.waypoints && tour.waypoints.length > 0
-                            ? [tour.waypoints[0].lat, tour.waypoints[0].lng]
-                            : tour.pos || [-32.8895, -68.8458]
-                        }
-                        zoom={12}
-                        scrollWheelZoom={false}
-                        style={{ height: "100%", width: "100%", zIndex: 0 }}
-                      >
-                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-                        {tour.waypoints && tour.waypoints.length > 0 ? (
-                          <>
-                            {tour.waypoints.length > 1 && (
-                              <Polyline
-                                positions={tour.waypoints.map(wp => [wp.lat, wp.lng])}
-                                color="#f97316"
-                                weight={3}
-                                opacity={0.7}
-                                dashArray="5, 5"
-                              />
-                            )}
-                            {tour.waypoints.map((wp, idx) => (
-                              <Marker
-                                key={`wp-${wp.id}-${idx}`}
-                                position={[wp.lat, wp.lng]}
-                                icon={waypointIcon(idx + 1)}
-                                title={wp.name}
-                              />
-                            ))}
-                          </>
-                        ) : (
-                          <Marker position={tour.pos || [-32.8895, -68.8458]} icon={customMarker} />
-                        )}
-                      </MapContainer>
-                    </div>
-
-                    {tour.waypoints && tour.waypoints.length > 0 && (
-                      <div className="bg-slate-50/50 border-t border-slate-100 p-3 max-h-28 overflow-y-auto">
-                        <div className="space-y-2">
-                          {tour.waypoints.map((wp, idx) => (
-                            <div key={`wp-list-${wp.id}`} className="flex items-start gap-2 text-sm">
-                              <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                                {idx + 1}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-bold text-slate-800 text-xs truncate">{wp.name}</p>
-                                <p className="text-slate-500 text-[10px]">{wp.lat.toFixed(4)}, {wp.lng.toFixed(4)}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 w-full md:w-[260px] shadow-sm flex-shrink-0">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Precio total</p>
-                <p className="text-3xl font-black text-orange-500 mb-6"><span className="text-lg mr-1">$</span>{tour.price}</p>
-
-                <div className="space-y-3">
-                  <button onClick={() => onReserve(tour)} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:-translate-y-0.5 text-sm">
-                    Reservar {tour.isPackage ? "Paquete Completo" : "Solo Esto"}
-                  </button>
-
-                  {canBeJoined ? (
-                    <button onClick={() => onToggleRoute(tour)} className={`w-full font-bold py-3 px-4 rounded-xl transition-all duration-300 border text-sm ${isInRoute ? "bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"}`}>
-                      {isInRoute ? "- Quitar de itinerario" : "+ Unir a itinerario"}
-                    </button>
-                  ) : (
-                    <p className="text-xs text-center text-slate-400 mt-2 italic">⚠️ Creador no permite unir.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {gallery.length > 1 && (
-              <div>
-                <h3 className="text-lg font-bold text-slate-800 mb-3">Galería</h3>
-                <div className="flex gap-3 overflow-x-auto pb-2 snap-x no-scrollbar">
-                  {gallery.slice(1).map((img, idx) => (
-                    <img key={idx} src={img} alt={`Vista ${idx + 2}`} className="snap-start w-40 h-28 object-cover rounded-xl border border-slate-100 shadow-sm" />
-                  ))}
+          <div className="overflow-y-auto no-scrollbar flex-1 pb-10">
+            {gallery.length > 0 && (
+              <div className="relative w-full h-64 md:h-80 bg-slate-100">
+                <img src={gallery[0]} alt={tour.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                <div className="absolute bottom-6 left-6 right-6">
+                  {tour.isPackage && <span className="bg-gradient-to-r from-orange-500 to-pink-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full mb-2 inline-block shadow-md border border-white">Paquete de Actividades</span>}
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-md leading-tight">{tour.title}</h1>
                 </div>
               </div>
             )}
 
-            <div className="border-t border-slate-100 my-8"></div>
+            <div className="px-6 md:px-10 pt-8 space-y-8">
+              <div className="flex flex-col md:flex-row justify-between gap-8 items-start">
+                <div className="space-y-4 flex-1">
+                  <div className="flex items-center gap-4 text-sm font-bold text-slate-500">
+                    <span className="flex items-center gap-1.5"><span className="text-xl">👤</span> {tour.author}</span>
+                    {!tour.isPackage && <span className="flex items-center gap-1.5"><span className="text-xl">⏱️</span> {tour.durationMinutes} min</span>}
+                    {!tour.isPackage && <span className="flex items-center gap-1.5"><span className="text-xl">📍</span> {tour.distanceKm} km</span>}
+                  </div>
 
-            {/* SECCIÓN DE RESEÑAS */}
-            <div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-6">Reseñas</h3>
-
-              <div className="flex flex-col md:flex-row gap-8 mb-8">
-                <div className="flex flex-col items-center justify-center md:w-1/3">
-                  <p className="text-6xl font-black text-slate-800">{averageRating.toFixed(1)}</p>
-                  <div className="text-orange-400 text-xl tracking-widest my-2">{"★".repeat(Math.round(averageRating))}{"☆".repeat(5 - Math.round(averageRating))}</div>
-                  <p className="text-xs font-bold text-slate-400">{comments.length} calificaciones</p>
-                </div>
-                <div className="flex-1 space-y-2.5">
-                  {[5, 4, 3, 2, 1].map((rating) => {
-                    const percentage = comments.length > 0 ? (ratingCounts[rating - 1] / totalVotes) * 100 : 0;
-                    return (
-                      <div key={rating} className="flex items-center gap-3">
-                        <span className="text-sm font-bold text-slate-500 w-3">{rating}</span>
-                        <span className="text-orange-400 text-xs">★</span>
-                        <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden"><div style={{ width: `${percentage}%` }} className="bg-orange-500 h-full rounded-full transition-all duration-1000"></div></div>
-                        <span className="text-xs font-bold text-slate-400 w-8 text-right">{percentage.toFixed(0)}%</span>
+                  {(tour.influencerId || tour.influencer) && (
+                    <div className="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-pink-50 p-4 rounded-2xl border border-orange-100/50 shadow-sm mt-4">
+                      <div className="relative">
+                        <img
+                          src={tour.influencer?.avatar || "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=100&q=80"}
+                          alt="Influencer"
+                          className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-md"
+                        />
+                        <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-0.5 rounded-full border-2 border-white">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                        </div>
                       </div>
-                    );
-                  })}
+                      <div>
+                        <p className="text-[10px] font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500 uppercase tracking-widest mb-0.5">
+                          Recomendado por
+                        </p>
+                        <p className="text-sm font-bold text-slate-800">
+                          {tour.influencer?.name || tour.author}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2 mt-4">Acerca del {tour.isPackage ? "paquete" : "recorrido"}</h3>
+                    <p className="text-slate-600 leading-relaxed text-sm md:text-base">{tour.description}</p>
+                  </div>
+
+                  {!tour.isPackage && (
+                    <div className="mt-6 border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+                      <div className="bg-slate-50 px-4 py-3 border-b border-slate-100">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                          {tour.waypoints && tour.waypoints.length > 1 ? "Ruta del Recorrido" : "Ubicación del evento"}
+                        </h4>
+                      </div>
+                      <div className="h-48 w-full relative z-0">
+                        <MapContainer
+                          center={
+                            tour.waypoints && tour.waypoints.length > 0
+                              ? [tour.waypoints[0].lat, tour.waypoints[0].lng]
+                              : tour.pos || [-32.8895, -68.8458]
+                          }
+                          zoom={12}
+                          scrollWheelZoom={false}
+                          style={{ height: "100%", width: "100%", zIndex: 0 }}
+                        >
+                          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                          {tour.waypoints && tour.waypoints.length > 0 ? (
+                            <>
+                              {tour.waypoints.length > 1 && (
+                                <Polyline
+                                  positions={tour.waypoints.map(wp => [wp.lat, wp.lng])}
+                                  color="#f97316"
+                                  weight={3}
+                                  opacity={0.7}
+                                  dashArray="5, 5"
+                                />
+                              )}
+                              {tour.waypoints.map((wp, idx) => (
+                                <Marker
+                                  key={`wp-${wp.id}-${idx}`}
+                                  position={[wp.lat, wp.lng]}
+                                  icon={waypointIcon(idx + 1)}
+                                  title={wp.name}
+                                />
+                              ))}
+                            </>
+                          ) : (
+                            <Marker position={tour.pos || [-32.8895, -68.8458]} icon={customMarker} />
+                          )}
+                        </MapContainer>
+                      </div>
+
+                      {tour.waypoints && tour.waypoints.length > 0 && (
+                        <div className="bg-slate-50/50 border-t border-slate-100 p-3 max-h-28 overflow-y-auto">
+                          <div className="space-y-2">
+                            {tour.waypoints.map((wp, idx) => (
+                              <div key={`wp-list-${wp.id}`} className="flex items-start gap-2 text-sm">
+                                <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                  {idx + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-bold text-slate-800 text-xs truncate">{wp.name}</p>
+                                  <p className="text-slate-500 text-[10px]">{wp.lat.toFixed(4)}, {wp.lng.toFixed(4)}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 w-full md:w-[260px] shadow-sm flex-shrink-0">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Precio total</p>
+                  <p className="text-3xl font-black text-orange-500 mb-6"><span className="text-lg mr-1">$</span>{tour.price}</p>
+
+                  <div className="space-y-3">
+                    <button onClick={() => onReserve(tour)} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:-translate-y-0.5 text-sm">
+                      Reservar {tour.isPackage ? "Paquete Completo" : "Solo Esto"}
+                    </button>
+
+                    {canBeJoined ? (
+                      <button onClick={() => onToggleRoute(tour)} className={`w-full font-bold py-3 px-4 rounded-xl transition-all duration-300 border text-sm ${isInRoute ? "bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"}`}>
+                        {isInRoute ? "- Quitar de itinerario" : "+ Unir a itinerario"}
+                      </button>
+                    ) : (
+                      <p className="text-xs text-center text-slate-400 mt-2 italic">⚠️ Creador no permite unir.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <form className="bg-slate-50 border border-slate-100 p-6 rounded-2xl space-y-4 mb-8" onSubmit={handleSubmitComment}>
-                <h4 className="text-base font-bold text-slate-800">Deja tu experiencia</h4>
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="text-sm font-bold text-slate-500">Tu calificación:</span>
-                  <div className="flex flex-row-reverse gap-1 text-2xl">
-                    {[5, 4, 3, 2, 1].map((rating) => (
-                      <React.Fragment key={rating}>
-                        <input id={`star${rating}`} type="radio" name="rating" value={rating} hidden checked={newRating === rating} onChange={() => setNewRating(rating)} disabled={isSubmitting} />
-                        <label htmlFor={`star${rating}`} className={`cursor-pointer transition-colors ${newRating >= rating ? "text-orange-400" : "text-slate-300 hover:text-orange-200"}`}>★</label>
-                      </React.Fragment>
+              {/* 🔥 GALERÍA MEJORADA CON CARROUSEL INTERACTIVO */}
+              {gallery.length > 1 && (
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800 mb-3">Galería</h3>
+                  <div className="flex gap-3 overflow-x-auto pb-2 snap-x no-scrollbar">
+                    {gallery.slice(1).map((img, idx) => (
+                      <img 
+                        key={idx} 
+                        src={img} 
+                        alt={`Vista ${idx + 2}`} 
+                        onClick={() => setExpandedImage(img)}
+                        className="snap-start w-40 h-28 object-cover rounded-xl border border-slate-100 shadow-sm cursor-pointer hover:opacity-80 transition-opacity" 
+                      />
                     ))}
                   </div>
                 </div>
-                <textarea
-                  className="w-full p-4 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all resize-none text-sm disabled:opacity-50"
-                  placeholder="¿Qué te pareció esta expedición?..."
-                  rows="3"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  disabled={isSubmitting}
-                />
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={!newComment.trim() || !newRating || isSubmitting}
-                    className="bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors text-sm flex items-center gap-2"
-                  >
-                    {isSubmitting ? "Publicando..." : "Publicar reseña"}
-                  </button>
-                </div>
-              </form>
+              )}
 
-              {isLoadingComments ? (
-                <div className="flex justify-center items-center py-10">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-                  <span className="ml-3 text-sm text-slate-500 font-bold">Cargando reseñas...</span>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {comments.length === 0 ? (
-                    <p className="text-center text-slate-500 text-sm py-4 italic">No hay reseñas aún. ¡Sé el primero en opinar!</p>
-                  ) : (
-                    comments.map((comment, index) => {
-                      const currentCommentId = comment._id || index;
+              <div className="border-t border-slate-100 my-8"></div>
+
+              {/* SECCIÓN DE RESEÑAS */}
+              <div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-6">Reseñas</h3>
+
+                <div className="flex flex-col md:flex-row gap-8 mb-8">
+                  <div className="flex flex-col items-center justify-center md:w-1/3">
+                    <p className="text-6xl font-black text-slate-800">{averageRating.toFixed(1)}</p>
+                    <div className="text-orange-400 text-xl tracking-widest my-2">{"★".repeat(Math.round(averageRating))}{"☆".repeat(5 - Math.round(averageRating))}</div>
+                    <p className="text-xs font-bold text-slate-400">{comments.length} calificaciones</p>
+                  </div>
+                  <div className="flex-1 space-y-2.5">
+                    {[5, 4, 3, 2, 1].map((rating) => {
+                      const percentage = comments.length > 0 ? (ratingCounts[rating - 1] / totalVotes) * 100 : 0;
                       return (
-                        <div key={currentCommentId} className="flex gap-4">
-                          <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-base flex-shrink-0">
-                            {comment.user.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-2 sm:gap-0">
-                              <div className="flex items-center gap-2">
-                                <p className="text-base font-bold text-slate-800">{comment.user}</p>
-                                <span className="text-[10px] font-bold text-slate-400 mt-0.5">
-                                  {formatDateTime(comment.timestamp)}
-                                </span>
-                              </div>
-                            </div>
-                            <span className="text-orange-400 text-xs tracking-widest block mb-1">
-                              {"★".repeat(comment.rating)}{"☆".repeat(5 - comment.rating)}
-                            </span>
-                            <p className="text-sm text-slate-600 leading-relaxed">{comment.text}</p>
-                          </div>
+                        <div key={rating} className="flex items-center gap-3">
+                          <span className="text-sm font-bold text-slate-500 w-3">{rating}</span>
+                          <span className="text-orange-400 text-xs">★</span>
+                          <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden"><div style={{ width: `${percentage}%` }} className="bg-orange-500 h-full rounded-full transition-all duration-1000"></div></div>
+                          <span className="text-xs font-bold text-slate-400 w-8 text-right">{percentage.toFixed(0)}%</span>
                         </div>
                       );
-                    })
-                  )}
+                    })}
+                  </div>
                 </div>
-              )}
+
+                <form className="bg-slate-50 border border-slate-100 p-6 rounded-2xl space-y-4 mb-8" onSubmit={handleSubmitComment}>
+                  <h4 className="text-base font-bold text-slate-800">Deja tu experiencia</h4>
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="text-sm font-bold text-slate-500">Tu calificación:</span>
+                    <div className="flex flex-row-reverse gap-1 text-2xl">
+                      {[5, 4, 3, 2, 1].map((rating) => (
+                        <React.Fragment key={rating}>
+                          <input id={`star${rating}`} type="radio" name="rating" value={rating} hidden checked={newRating === rating} onChange={() => setNewRating(rating)} disabled={isSubmitting} />
+                          <label htmlFor={`star${rating}`} className={`cursor-pointer transition-colors ${newRating >= rating ? "text-orange-400" : "text-slate-300 hover:text-orange-200"}`}>★</label>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                  <textarea
+                    className="w-full p-4 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all resize-none text-sm disabled:opacity-50"
+                    placeholder="¿Qué te pareció esta expedición?..."
+                    rows="3"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={!newComment.trim() || !newRating || isSubmitting}
+                      className="bg-slate-900 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors text-sm flex items-center gap-2"
+                    >
+                      {isSubmitting ? "Publicando..." : "Publicar reseña"}
+                    </button>
+                  </div>
+                </form>
+
+                {isLoadingComments ? (
+                  <div className="flex justify-center items-center py-10">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                    <span className="ml-3 text-sm text-slate-500 font-bold">Cargando reseñas...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {comments.length === 0 ? (
+                      <p className="text-center text-slate-500 text-sm py-4 italic">No hay reseñas aún. ¡Sé el primero en opinar!</p>
+                    ) : (
+                      comments.map((comment, index) => {
+                        const currentCommentId = comment._id || index;
+                        return (
+                          <div key={currentCommentId} className="flex gap-4">
+                            <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-base flex-shrink-0">
+                              {comment.user.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 gap-2 sm:gap-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-base font-bold text-slate-800">{comment.user}</p>
+                                  <span className="text-[10px] font-bold text-slate-400 mt-0.5">
+                                    {formatDateTime(comment.timestamp)}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="text-orange-400 text-xs tracking-widest block mb-1">
+                                {"★".repeat(comment.rating)}{"☆".repeat(5 - comment.rating)}
+                              </span>
+                              <p className="text-sm text-slate-600 leading-relaxed">{comment.text}</p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* 🔥 OVERLAY TIPO LIGHTBOX PARA IMAGEN AMPLIADA */}
+      {expandedImage && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 transition-all"
+          onClick={() => setExpandedImage(null)}
+        >
+          <div className="relative max-w-4xl w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={() => setExpandedImage(null)} 
+              className="absolute -top-12 right-0 bg-white/10 hover:bg-white text-white hover:text-slate-900 p-2 rounded-full transition-colors z-50 backdrop-blur-md"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <img 
+              src={expandedImage} 
+              alt="Vista ampliada" 
+              className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -537,9 +563,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
           waypoints: tour.waypoints || [],
           allowMultiRoute: tour.allowMultiRoute !== false,
           isPackage: tour.isPackage === true,
-          // 🔥 IMPORTANTE: Asegurar que influencerId está correctamente asignado
           influencerId: tour.influencerId || (tour.influencer && tour.influencer._id),
-          // influencer es el objeto completo con datos del influencer
           influencer: tour.influencer && tour.influencer._id
             ? {
               id: tour.influencer._id || tour.influencer.id,
@@ -569,9 +593,7 @@ export default function TourRecorridos({ onRouteBuilt }) {
             influencerIds.add(infId);
             uniqueInfluencers.push({
               id: infId,
-              // Prefer the influencer object data when available, fallback to tour author
               name: (tour.influencer && (tour.influencer.name || tour.influencer.nombre)) || tour.author,
-              // Use real avatar if provided by the influencer object, otherwise fall back to common image fields
               avatar:
                 (tour.influencer && (tour.influencer.avatar || tour.influencer.image || tour.influencer.photo)) ||
                 tour.image ||

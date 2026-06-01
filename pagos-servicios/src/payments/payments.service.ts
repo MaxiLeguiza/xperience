@@ -111,7 +111,7 @@ export class PaymentsService {
       throw new InternalServerErrorException('Error procesando la autorización de Mercado Pago.');
     }
   }
-
+/*
   async createPreference(items: Item[], payer: any) {
     if (!this.client) {
       throw new InternalServerErrorException('Mercado Pago no está conectado.');
@@ -134,6 +134,46 @@ export class PaymentsService {
           success: 'http://localhost:5173/compra-exito',
           failure: 'http://localhost:5173/compra-fallida',
           pending: 'http://localhost:5173/compra-pendiente',
+        },
+        notification_url: `${serviceUrl}/payments/webhook`,
+      };
+
+      const result = await preference.create({ body });
+      return { id: result.id, init_point: result.init_point };
+
+    } catch (error) {
+      const err = error as any;
+      console.error('Error al crear la preferencia:', err.response?.data || err.message || err);
+      throw new InternalServerErrorException('Error al crear la preferencia de pago');
+    }
+  }
+    */
+   async createPreference(items: Item[], payer: any) {
+    if (!this.client) {
+      throw new InternalServerErrorException('Mercado Pago no está conectado.');
+    }
+
+    try {
+      const preference = new Preference(this.client);
+      const serviceUrl =
+        this.configService.get<string>('PAYMENTS_SERVICE_URL') ||
+        `http://localhost:${this.configService.get<string>('PAYMENTS_SERVICE_PORT') || '3002'}`;
+
+      // 🔥 Obtenemos la URL del frontend desde las variables de entorno
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+
+      const body = {
+        items: items,
+        payer: { name: payer.name, surname: payer.surname, email: payer.email },
+        payment_methods: {
+          installments: 12,
+          default_installments: 1,
+        },
+        // 🔥 Reemplazamos localhost por la variable dinámica
+        back_urls: {
+          success: `${frontendUrl}/compra-exito`,
+          failure: `${frontendUrl}/compra-fallida`,
+          pending: `${frontendUrl}/compra-pendiente`,
         },
         notification_url: `${serviceUrl}/payments/webhook`,
       };
