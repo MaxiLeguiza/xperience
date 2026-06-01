@@ -16,10 +16,23 @@ import Nav from '../Navbar/Nav';
 import clienteAxios from '../../config/axios';
 import paymentsAxios from '../../config/paymentsAxios';
 
-const SERVICE_FEE_PERCENTAGE = Number(import.meta.env.VITE_SERVICE_FEE_PERCENTAGE ?? 7);
-const SERVICE_FEE_FIXED_AMOUNT = Number(import.meta.env.VITE_SERVICE_FEE_FIXED_AMOUNT ?? 0);
+// 1. Corrección Segura de Variables de Entorno
+const envPercentage = import.meta.env.VITE_SERVICE_FEE_PERCENTAGE;
+const SERVICE_FEE_PERCENTAGE = Number(envPercentage || 7);
+
+const envFixed = import.meta.env.VITE_SERVICE_FEE_FIXED_AMOUNT;
+const SERVICE_FEE_FIXED_AMOUNT = Number(envFixed || 0);
+
 const SERVICE_FEE_RATE = SERVICE_FEE_PERCENTAGE > 1 ? SERVICE_FEE_PERCENTAGE / 100 : SERVICE_FEE_PERCENTAGE;
 const DEFAULT_MAX_PASSENGERS = 10;
+
+// 2. Optimización: Funciones de utilidad fuera del componente para evitar re-renderizados
+const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(value || 0));
+
+const getLocalIsoDate = () => {
+  const hoy = new Date();
+  return new Date(hoy.getTime() - (hoy.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+};
 
 function parseCapacity(value) {
   if (value === null || value === undefined) return null;
@@ -74,11 +87,13 @@ export default function CheckoutPage({ onBack }) {
     { code: 'BIENVENIDO500', type: 'fixed', value: 500 },
   ];
 
+  // 3. Parseo de Precio Robusto para Argentina (ignora puntos de miles, convierte comas en decimales)
   const precioBase = selectedItems.reduce((acc, item) => {
     const precioUnitario = parseFloat(
-      String(item.precio || item.price || 0)
-        .replace(/[^\d,.-]/g, '')
-        .replace(',', '.')
+      String(item.precio || item.price || '0')
+        .replace(/\./g, '') // Elimina los puntos de miles
+        .replace(',', '.')  // Cambia la coma decimal a punto
+        .replace(/[^\d.-]/g, '') // Limpia letras o símbolos de moneda
     );
     return acc + (isNaN(precioUnitario) ? 0 : precioUnitario);
   }, 0);
@@ -102,8 +117,6 @@ export default function CheckoutPage({ onBack }) {
   const subtotalConDescuento = Math.max(subtotal - discount, 0);
   const serviceFee = Math.max(Math.round((subtotalConDescuento * SERVICE_FEE_RATE) + SERVICE_FEE_FIXED_AMOUNT), 0);
   const totalPrice = subtotalConDescuento + serviceFee;
-
-  const formatCurrency = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(value || 0));
 
   const handleCantidadChange = (delta) => {
     setCantidadPersonas((current) => {
@@ -136,7 +149,8 @@ export default function CheckoutPage({ onBack }) {
     apellido: formData.apellido,
     email: formData.email,
     telefono: formData.telefono,
-    fecha: formData.fecha || new Date().toISOString().split('T')[0],
+    // 4. Usar fecha local para evitar bug de la media noche
+    fecha: formData.fecha || getLocalIsoDate(),
     notas: formData.notas,
     items: selectedItems.map(item => ({
       id: item.id || '',
@@ -228,10 +242,8 @@ export default function CheckoutPage({ onBack }) {
         <Nav />
       </div>
 
-      {/* Redujimos el padding general de py-6 a py-4 para ganar espacio vertical */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-6 py-4 flex flex-col min-h-0">
 
-        {/* Redujimos margen mb-6 a mb-4 */}
         <div className="flex-shrink-0 relative mb-4 flex justify-center items-center w-full">
           <button
             onClick={handleBack}
@@ -314,7 +326,6 @@ export default function CheckoutPage({ onBack }) {
             <div className="bg-white rounded-[20px] p-5 shadow-sm border border-slate-200 flex flex-col h-full overflow-hidden">
               <h2 className="text-lg font-bold mb-3 text-slate-900 flex-shrink-0">Resumen de Orden</h2>
 
-              {/* 🔥 ITINERARIO MÚLTIPLE COMPACTO (MAX 160px para 2 items exactos) 🔥 */}
               <div className="overflow-y-auto no-scrollbar space-y-2 pr-1 max-h-[160px]">
                 {selectedItems.map((item, index) => {
                   const isInfluencer = !!item.influencer;
