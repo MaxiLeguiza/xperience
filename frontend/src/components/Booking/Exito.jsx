@@ -93,11 +93,14 @@ export default function Exito() {
 
   return (
     /* Reducción de min-h-screen a h-screen y overflow-hidden para forzar 1 pantalla */
-    <div className="h-screen overflow-hidden bg-[#e4e4eb] text-white flex flex-col">
-      <Nav />
+    <div className="relative h-screen overflow-hidden bg-[#e4e4eb] text-white flex flex-col">
+      {/* Degradé de verde a blanco debajo del nav hasta la reserva */}
+      <div className="absolute top-0 left-0 w-full h-[45%] bg-gradient-to-b from-green-500 via-white to-[#e4e4eb] pointer-events-none z-0" />
+
+      <div className="relative z-10"><Nav /></div>
 
       {/* Ajuste de pt-24 a pt-20, reducción general de paddings y altura dinámica */}
-      <main className="pt-20 pb-4 px-4 max-w-6xl mx-auto flex-1 flex flex-col justify-center w-full">
+      <main className="relative z-10 pt-20 pb-4 px-4 max-w-6xl mx-auto flex-1 flex flex-col justify-center w-full">
         {/* Reducción de mb-12 a mb-6 */}
         <section className="text-center mb-6">
           <div className="relative mb-3 flex justify-center">
@@ -106,21 +109,21 @@ export default function Exito() {
               className={`absolute w-16 h-16 blur-xl rounded-full ${
                 summary.status === 'cancelada'
                   ? 'bg-red-500/30'
-                  : 'bg-orange-500/30'
+                  : 'bg-green-500/40'
               }`}
             />
             <div
-              className={`relative w-12 h-12 rounded-full flex items-center justify-center ${
+              className={`relative w-12 h-12 rounded-full flex items-center justify-center shadow-lg border border-white/20 ${
                 summary.status === 'cancelada'
                   ? 'bg-red-500'
-                  : 'bg-orange-500'
+                  : 'bg-gradient-to-br from-green-400 to-green-600'
               }`}
             >
               <Icon
                 name={
                   summary.status === 'cancelada' ? 'cancel' : 'check_circle'
                 }
-                className="text-black text-2xl"
+                className="text-white text-2xl"
               />
             </div>
           </div>
