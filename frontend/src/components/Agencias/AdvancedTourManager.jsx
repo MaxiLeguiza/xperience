@@ -270,8 +270,7 @@ export default function AdvancedTourManager() {
         } catch (err) {
             const errorMsg = err.response?.data?.message || err.message || "Error al guardar la ruta";
             setMessage({ type: "error", text: errorMsg });
-        } finally {
-            setSaving(false);
+            setSaving(false); // Solo apagamos el loader en caso de error
         }
     };
 
@@ -530,8 +529,8 @@ export default function AdvancedTourManager() {
                 onConfirm={handleMapConfirm}
             />
 
-            {message.text && (
-                <div className={`fixed bottom-6 right-6 p-4 rounded-lg shadow-lg flex items-center gap-3 max-w-sm ${message.type === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' :
+            {message.text && !saving && (
+                <div className={`fixed bottom-6 right-6 p-4 rounded-lg shadow-lg flex items-center gap-3 max-w-sm z-[60] ${message.type === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' :
                         message.type === 'error' ? 'bg-rose-50 border border-rose-200 text-rose-700' :
                             'bg-blue-50 border border-blue-200 text-blue-700'
                     }`}>
@@ -541,6 +540,5 @@ export default function AdvancedTourManager() {
                     <span className="text-sm font-bold">{message.text}</span>
                 </div>
             )}
-        </div>
-    );
-}
+
+            {/* 🔥 NUEVO OVERLAY DE CARGA DE PANTALLA COMPLETA */}

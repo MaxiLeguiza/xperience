@@ -601,7 +601,7 @@ const ListInfluencer = () => {
         {isLoading ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center">
             <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
-            <p className="text-slate-500 font-bold">Cargando base de datos...</p>
+            <p className="text-slate-500 font-bold">Cargando xperiencias...</p>
           </div>
         ) : filteredInfluencers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
